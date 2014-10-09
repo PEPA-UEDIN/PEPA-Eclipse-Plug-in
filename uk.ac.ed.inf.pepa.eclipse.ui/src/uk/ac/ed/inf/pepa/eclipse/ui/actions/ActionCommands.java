@@ -19,6 +19,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.progress.IProgressService;
 
+import uk.ac.ed.inf.pepa.cpt.CPTAPI;
 import uk.ac.ed.inf.pepa.ctmc.derivation.DerivationException;
 import uk.ac.ed.inf.pepa.ctmc.solution.OptionMap;
 import uk.ac.ed.inf.pepa.ctmc.solution.SolverException;
@@ -26,6 +27,7 @@ import uk.ac.ed.inf.pepa.eclipse.core.IPepaModel;
 import uk.ac.ed.inf.pepa.eclipse.core.IProcessAlgebraModel;
 import uk.ac.ed.inf.pepa.eclipse.core.PepaLog;
 import uk.ac.ed.inf.pepa.eclipse.ui.wizards.PassageTimeWizard;
+import uk.ac.ed.inf.pepa.eclipse.ui.wizards.cpt.CapacityPlanningWizard;
 import uk.ac.ed.inf.pepa.eclipse.ui.wizards.ctmcsolver.resourceless.SolverWizard;
 import uk.ac.ed.inf.pepa.eclipse.ui.wizards.experimentation.ConcretePerformanceMetricFactory;
 import uk.ac.ed.inf.pepa.eclipse.ui.wizards.experimentation.ExperimentationWizard;
@@ -89,6 +91,17 @@ public class ActionCommands {
 		ExperimentationWizard wizard = new ExperimentationWizard(
 				new PEPAEvaluator(model),
 				new ConcretePerformanceMetricFactory());
+		WizardDialog dialog = new WizardDialog(Display.getDefault()
+				.getActiveShell(), wizard);
+		dialog.setPageSize(400, 400);
+		dialog.open();
+	}
+	
+	public static void capacityPlanning(IPepaModel model, String search, String evaluation) {
+		CPTAPI.setModel(model.getAST());
+		CPTAPI.getSearchControls().setValue(search);
+		CPTAPI.getEvaluationControls().setValue(evaluation);
+		CapacityPlanningWizard wizard = new CapacityPlanningWizard(model);
 		WizardDialog dialog = new WizardDialog(Display.getDefault()
 				.getActiveShell(), wizard);
 		dialog.setPageSize(400, 400);
