@@ -2,7 +2,7 @@
 <feature
       id="uk.ac.ed.inf.pepa.feature"
       label="PEPA Feature"
-      version="0.0.24"
+      version="0.0.25"
       provider-name="The University of Edinburgh">
 
    <description url="http://www.dcs.ed.ac.uk/pepa/tools/plugin/">

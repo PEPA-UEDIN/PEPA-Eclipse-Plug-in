@@ -74,6 +74,19 @@ public class ResultNode implements Comparator<ResultNode>, Comparable<ResultNode
 			return "";
 	}
 	
+	private String mapAsNodeStringInt(HashMap<String,Double> map){
+		String output = "";
+		
+		for(String s : map.keySet()){
+			output = output + s + "[" + (map.get(s)).intValue() + "] ";
+		}
+		
+		if(output.length() != 0)
+			return output.substring(0,output.length() - 1);
+		else
+			return "";
+	}
+	
 	private String mapAsNodeStringEquals(HashMap<String,Double> map){
 		String output = "";
 		
@@ -115,7 +128,7 @@ public class ResultNode implements Comparator<ResultNode>, Comparable<ResultNode
 	}
 	
 	public String getPopulationMapAsNodeString(){
-		return mapAsNodeString(componentPopulationMap);
+		return mapAsNodeStringInt(componentPopulationMap);
 	}
 	
 	public String peformanceMapAsNodeString(){
@@ -127,7 +140,7 @@ public class ResultNode implements Comparator<ResultNode>, Comparable<ResultNode
 	}
 	
 	public String psoMapAsNodeString(){
-		return mapAsNodeString(metaheuristicParameterMap);
+		return mapAsNodeStringInt(metaheuristicParameterMap);
 	}
 	
 	public String getTotalCostString(){
@@ -232,13 +245,18 @@ public class ResultNode implements Comparator<ResultNode>, Comparable<ResultNode
 	
 	
 	public String getName(){
+		
 		Double met;
+		
 		if(CPTAPI.getEvaluationControls().getValue().equals(Config.EVALARPT))
 			met = getPercentageOfMetPerformanceTargets(false);
 		else 
 			met = getPercentageOfMetPerformanceTargets(true);
 		if(met >= 100.0)
-			return this.name + ": MET PERFORMANCE TARGET";
+			if(!this.converged)
+				return this.name + ": MET PERFORMANCE TARGET (Inaccurate)";
+			else 
+				return this.name + ": MET PERFORMANCE TARGET";
 		else
 			return this.name + ": FAILED PERFORMANCE TARGET";
 	}
