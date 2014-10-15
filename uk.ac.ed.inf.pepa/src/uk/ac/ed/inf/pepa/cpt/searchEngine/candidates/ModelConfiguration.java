@@ -9,8 +9,8 @@ import uk.ac.ed.inf.pepa.cpt.Utils;
 import uk.ac.ed.inf.pepa.cpt.config.Config;
 import uk.ac.ed.inf.pepa.cpt.nodeHandling.SetRatesASTVisitor;
 import uk.ac.ed.inf.pepa.cpt.nodeHandling.SetSystemEquationASTVisitor;
-import uk.ac.ed.inf.pepa.cpt.searchEngine.tree.MetaHeuristicNode;
 import uk.ac.ed.inf.pepa.cpt.searchEngine.tree.ModelConfigurationCandidateNode;
+import uk.ac.ed.inf.pepa.cpt.searchEngine.tree.PSONode;
 import uk.ac.ed.inf.pepa.largescale.IParametricDerivationGraph;
 import uk.ac.ed.inf.pepa.parsing.ASTSupport;
 import uk.ac.ed.inf.pepa.parsing.ASTVisitor;
@@ -27,7 +27,7 @@ public class ModelConfiguration implements Candidate {
 	public ModelConfiguration(HashMap<String,Double> parameters,
 			HashMap<String,Double> velocity,
 			IProgressMonitor monitor, 
-			MetaHeuristicNode resultNode){
+			PSONode resultNode){
 		
 		this.myMonitor = monitor;
 		
@@ -63,7 +63,7 @@ public class ModelConfiguration implements Candidate {
 	
 	public void setParameters(HashMap<String,Double> parameters, 
 			HashMap<String,Double> velocity, 
-			MetaHeuristicNode resultNode){
+			PSONode resultNode){
 		
 		if(this.myLocalbest.getFitness() > this.myNode.getFitness()){
 			this.myLocalbest = this.myNode;

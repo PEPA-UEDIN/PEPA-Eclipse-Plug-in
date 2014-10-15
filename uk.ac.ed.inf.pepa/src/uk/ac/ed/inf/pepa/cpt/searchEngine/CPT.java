@@ -12,7 +12,6 @@ import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubProgressMonitor;
 
-
 import uk.ac.ed.inf.pepa.cpt.CPTAPI;
 import uk.ac.ed.inf.pepa.cpt.config.Config;
 import uk.ac.ed.inf.pepa.cpt.searchEngine.candidates.HillClimbingLab;
@@ -63,8 +62,8 @@ public class CPT {
 		
 		try{
 			
+			@SuppressWarnings("resource")
 			FileWriter writer = new FileWriter(CPTAPI.getFileName());
-			
 			
 			int rqs = this.resultsQueue.size();
 			int qSize = this.resultsQueue.size();
@@ -234,7 +233,7 @@ public class CPT {
 		}
 		catch(IOException e){
 			e.printStackTrace();
-		}
+		} 
 			
 	}
 	

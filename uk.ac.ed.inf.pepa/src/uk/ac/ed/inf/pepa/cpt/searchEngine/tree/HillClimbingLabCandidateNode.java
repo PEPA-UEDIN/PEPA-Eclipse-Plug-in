@@ -1,5 +1,6 @@
 package uk.ac.ed.inf.pepa.cpt.searchEngine.tree;
 
+import java.util.ArrayList;
 import java.util.PriorityQueue;
 
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -9,10 +10,14 @@ import uk.ac.ed.inf.pepa.cpt.Utils;
 import uk.ac.ed.inf.pepa.cpt.config.Config;
 
 public class HillClimbingLabCandidateNode extends CandidateNode {
+
+	protected ArrayList<HCNode> children;
 	
 	public HillClimbingLabCandidateNode(String name, 
 			MetaHeuristicNode parent){
 		super(name, parent);
+		
+		this.children = new ArrayList<HCNode>();
 		
 		setMyMap();
 		
@@ -30,7 +35,6 @@ public class HillClimbingLabCandidateNode extends CandidateNode {
 		}
 	}
 
-	@Override
 	public void fillQueue(PriorityQueue<ResultNode> resultsQueue, IProgressMonitor monitor) {
 		for(int i = 0; i < this.children.size(); i++){
 			this.children.get(i).fillQueue(resultsQueue,monitor);
@@ -51,6 +55,11 @@ public class HillClimbingLabCandidateNode extends CandidateNode {
 		}
 		
 	}
-
+	
+	public void registerChild(HCNode child){
+		children.add(child);
+		childUIDToIndex.put(child.getUID(), children.size() - 1);
+	}
+	
 	
 }

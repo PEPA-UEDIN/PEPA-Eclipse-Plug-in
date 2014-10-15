@@ -211,6 +211,7 @@ public class CPTAPI {
 		CPTAPI.configuration.results.addChildToFront(node);
 	}
 	
+	@SuppressWarnings("rawtypes")
 	public static List getPACSList(){
 		if(CPTAPI.configuration == null){
 			return ModelProvider.INSTANCE.getpacs();

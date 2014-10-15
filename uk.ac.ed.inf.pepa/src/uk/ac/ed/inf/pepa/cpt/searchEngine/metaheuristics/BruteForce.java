@@ -10,7 +10,6 @@ import uk.ac.ed.inf.pepa.cpt.CPTAPI;
 import uk.ac.ed.inf.pepa.cpt.Utils;
 import uk.ac.ed.inf.pepa.cpt.config.Config;
 //import uk.ac.ed.inf.pepa.cpt.ode.Dummy;
-import uk.ac.ed.inf.pepa.cpt.ode.Dummy;
 import uk.ac.ed.inf.pepa.cpt.ode.FluidSteadyState;
 import uk.ac.ed.inf.pepa.cpt.searchEngine.candidates.ModelConfiguration;
 import uk.ac.ed.inf.pepa.cpt.searchEngine.tree.PSONode;
@@ -73,7 +72,14 @@ public class BruteForce implements MetaHeuristics {
 		}
 		
 		public boolean hasMaxed(){
-			return (this.pointer == this.max);
+			
+			boolean hasMaxed;
+			
+			hasMaxed = (this.pointer.equals(this.max));
+			if(hasChild)
+				hasMaxed = hasMaxed && this.child.hasMaxed();
+			
+			return hasMaxed;
 		}
 		
 		
@@ -85,13 +91,16 @@ public class BruteForce implements MetaHeuristics {
 				if(pointer > max)
 					pointer = min;
 			} else {
-				this.child.getPopulations(output);
-				output.put(this.name, pointer);
+				
 				if(this.child.hasMaxed()){
 					pointer++;
 					if(pointer > max)
 						pointer = min;
+					
 				}
+				this.child.getPopulations(output);
+				output.put(this.name, pointer);
+				
 			}
 			
 			return output;
@@ -160,11 +169,13 @@ public class BruteForce implements MetaHeuristics {
 				maxs.put(s,Double.parseDouble(CPTAPI.getPopulationControls().getValue(s, Config.LABMAX)));
 			}
 			
-			this.populationCounter = new Counter(mins,maxs);
+			this.populationCounter = new Counter(maxs,mins);
 			
 			for(int i = 0; i < keys.length; i++){
 				count = count * Double.parseDouble(CPTAPI.getPopulationControls().getValue(keys[i], Config.LABRAN));
 			}
+			
+			
 			
 			for(int i = 0; i < 10;i++){
 				this.population.add(new ModelConfiguration(Utils.copyHashMap(this.populationCounter.getPopulations(new HashMap<String,Double>())), 
@@ -175,7 +186,6 @@ public class BruteForce implements MetaHeuristics {
 			}
 			
 			
-			int i = 1;
 			while(count > 0){
 				
 				this.myMonitor.subTask("Working... please wait: " + this.myNode.getName() + " " + count + " left." );
@@ -189,8 +199,6 @@ public class BruteForce implements MetaHeuristics {
 				}
 				
 				evaluateAll();
-				
-				i++;
 				
 				if(this.myMonitor.isCanceled()){
 					throw new OperationCanceledException();
@@ -230,7 +238,7 @@ public class BruteForce implements MetaHeuristics {
 //			Runnable worker = new Dummy(CPTAPI.getLabels(), 
 //			population.get(i).getNode(),
 //			this.counter);
-//			
+			
 			this.executor.execute(worker);
 		}
 		

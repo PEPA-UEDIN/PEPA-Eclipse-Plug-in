@@ -1,10 +1,6 @@
 package uk.ac.ed.inf.pepa.cpt.searchEngine.tree;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.PriorityQueue;
-
-import org.eclipse.core.runtime.IProgressMonitor;
 
 
 public abstract class CandidateNode implements Node {
@@ -17,9 +13,7 @@ public abstract class CandidateNode implements Node {
 	protected long timeFinished;
 	protected Double fitness;
 	private MetaHeuristicNode parent;
-	protected ArrayList<MetaHeuristicNode> children;
-	private HashMap<Integer,Integer> childUIDToIndex;
-	private ModelConfigurationCandidateNode fittestNode;
+	protected HashMap<Integer,Integer> childUIDToIndex;
 	private CandidateNode sister;
 	private String familyUID;
 	
@@ -27,7 +21,6 @@ public abstract class CandidateNode implements Node {
 			MetaHeuristicNode parent){
 		
 		this.myMap = new HashMap<String,Double>();
-		this.children = new ArrayList<MetaHeuristicNode>();
 		this.childUIDToIndex = new HashMap<Integer, Integer>();
 		
 		setUpUID();
@@ -45,11 +38,6 @@ public abstract class CandidateNode implements Node {
 	public abstract void setUpUID();
 
 	
-	public void registerChild(MetaHeuristicNode child){
-		children.add(child);
-		childUIDToIndex.put(child.getUID(), children.size() - 1);
-	}
-
 	public abstract void setMyMap();
 
 	public HashMap<String,Double> getMyMap() {
@@ -94,42 +82,6 @@ public abstract class CandidateNode implements Node {
 	public Double getFitness() {
 		return this.fitness;
 	}
-	
-	public void updateFitness(){
-		
-		Double top, mean, std, art, fitness;
-		
-		top = 10000.0;
-		mean = 0.0;
-		art = 0.0;
-		std = 0.0;
-		
-		for(int i = 0; i < this.children.size(); i++){
-			fitness = this.children.get(i).getFittestNode().getFitness();
-			if(fitness < top){
-				top = fitness;
-				this.fittestNode = this.children.get(i).getFittestNode();
-			}
-			mean += fitness;
-			art += ((Long) this.children.get(i).getRunTime()).doubleValue();
-		}
-		
-		mean = mean/this.children.size();
-		art = mean/this.children.size();
-		
-		for(int i = 0; i < this.children.size(); i++){
-			fitness = this.children.get(i).getFittestNode().getFitness();
-			std += Math.pow(mean - fitness,2);
-		}
-		
-		std = std/this.children.size();
-		
-		this.fitness = (0.25 * top) + (0.25 * mean) + (0.25 * std) + (0.25 * art); 
-	}
-
-	public ModelConfigurationCandidateNode getFittestNode() {
-		return this.fittestNode;
-	}
 
 	public void setSister(CandidateNode node) {
 		this.sister = node;
@@ -149,24 +101,6 @@ public abstract class CandidateNode implements Node {
 			return false;
 		}
 	}
-	
-	public abstract void fillQueue(PriorityQueue<ResultNode> resultsQueue, IProgressMonitor monitor);
-
-//	public void fillQueue(PriorityQueue<ResultNode> resultsQueue) {
-//		
-//		for(int i = 0; i < this.children.size(); i++){
-//			this.children.get(i).fillQueue(resultsQueue);
-//		}
-//		
-//	}
-
-//	public void fillQueue(double runTime, PriorityQueue<ResultNode> resultsQueue) {
-//		
-//		for(int i = 0; i < this.children.size(); i++){
-//			this.children.get(i).fillQueue(this, runTime, resultsQueue);
-//		}
-//		
-//	}
 	
 	public void updateFinishTime(){
 		this.timeFinished = System.currentTimeMillis();

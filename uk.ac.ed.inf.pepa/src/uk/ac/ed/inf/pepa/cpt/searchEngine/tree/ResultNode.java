@@ -61,18 +61,18 @@ public class ResultNode implements Comparator<ResultNode>, Comparable<ResultNode
 			return "";
 	}
 	
-	private String mapAsNodeString(HashMap<String,Double> map){
-		String output = "";
-		
-		for(String s : map.keySet()){
-			output = output + s + "[" + map.get(s) + "] ";
-		}
-		
-		if(output.length() != 0)
-			return output.substring(0,output.length() - 1);
-		else
-			return "";
-	}
+//	private String mapAsNodeString(HashMap<String,Double> map){
+//		String output = "";
+//		
+//		for(String s : map.keySet()){
+//			output = output + s + "[" + map.get(s) + "] ";
+//		}
+//		
+//		if(output.length() != 0)
+//			return output.substring(0,output.length() - 1);
+//		else
+//			return "";
+//	}
 	
 	private String mapAsNodeStringInt(HashMap<String,Double> map){
 		String output = "";

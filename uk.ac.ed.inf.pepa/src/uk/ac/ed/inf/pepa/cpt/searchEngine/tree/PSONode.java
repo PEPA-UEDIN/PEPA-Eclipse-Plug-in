@@ -1,5 +1,6 @@
 package uk.ac.ed.inf.pepa.cpt.searchEngine.tree;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.PriorityQueue;
 
@@ -12,19 +13,20 @@ public class PSONode extends MetaHeuristicNode {
 
 	HashMap<String,Double> parameters;
 	private PriorityQueue<CandidateNode> modelConfigurationQueue;
+	protected ArrayList<ModelConfigurationCandidateNode> children;
 	
 	public PSONode(String name,
 			HashMap<String,Double> parameters,
 			CandidateNode particleSwarmOptimisationLabCandidateNode){
 		super(name, particleSwarmOptimisationLabCandidateNode, true);
 		
+		this.children = new ArrayList<ModelConfigurationCandidateNode>();
 		this.modelConfigurationQueue = new PriorityQueue<CandidateNode>();
 		this.parameters = parameters;
 		setMyMap();
 	}
 	
-	@Override
-	public void registerChild(CandidateNode child){
+	public void registerChild(ModelConfigurationCandidateNode child){
 		modelConfigurationQueue.add(child);
 		children.add(child);
 		childUIDToIndex.put(child.getUID(), children.size() - 1);
@@ -38,16 +40,11 @@ public class PSONode extends MetaHeuristicNode {
 		this.myMap.put(Config.LABGLO, parameters.get(Config.LABGLO));
 	}
 
-	@Override
 	public void fillQueue(PriorityQueue<ResultNode> resultsQueue, IProgressMonitor monitor) {
-	
-		while(this.modelConfigurationQueue.size() > 0){
-			this.modelConfigurationQueue.poll().fillQueue(resultsQueue, monitor);
-		}
 		
-//		for(int i = 0; i < this.children.size(); i++){
-//			this.children.get(i).fillQueue(resultsQueue, monitor);
-//		}
+		for(int i = 0; i < this.children.size(); i++){
+			this.children.get(i).fillQueue(resultsQueue, monitor);
+		}
 	
 	}
 	

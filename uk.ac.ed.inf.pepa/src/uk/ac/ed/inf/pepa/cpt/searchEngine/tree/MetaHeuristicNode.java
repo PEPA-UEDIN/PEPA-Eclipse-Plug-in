@@ -1,10 +1,7 @@
 package uk.ac.ed.inf.pepa.cpt.searchEngine.tree;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.PriorityQueue;
 
-import org.eclipse.core.runtime.IProgressMonitor;
 
 public abstract class MetaHeuristicNode implements Node {
 	
@@ -14,7 +11,6 @@ public abstract class MetaHeuristicNode implements Node {
 	protected long timeCreated;
 	private long timeFinished;
 	protected CandidateNode parent;
-	protected ArrayList<CandidateNode> children;
 	protected HashMap<Integer,Integer> childUIDToIndex;
 	protected ModelConfigurationCandidateNode fittestNode;
 	public boolean isPSO;
@@ -24,7 +20,6 @@ public abstract class MetaHeuristicNode implements Node {
 			boolean isPSO){
 		
 		this.myMap = new HashMap<String,Double>();
-		this.children = new ArrayList<CandidateNode>();
 		this.childUIDToIndex = new HashMap<Integer, Integer>();
 		setUpUID();
 		
@@ -60,11 +55,6 @@ public abstract class MetaHeuristicNode implements Node {
 		return parent;
 	}
 
-	public void registerChild(CandidateNode child){
-		children.add(child);
-		childUIDToIndex.put(child.getUID(), children.size() - 1);
-	}
-
 	@Override
 	public HashMap<String, Double> getMyMap() {
 		return this.myMap;
@@ -80,8 +70,6 @@ public abstract class MetaHeuristicNode implements Node {
 		} 
 	}
 	
-	public abstract void fillQueue(PriorityQueue<ResultNode> resultsQueue, IProgressMonitor monitor);
-
 	public abstract void setMyMap();
 
 	public abstract void setResultsSize();

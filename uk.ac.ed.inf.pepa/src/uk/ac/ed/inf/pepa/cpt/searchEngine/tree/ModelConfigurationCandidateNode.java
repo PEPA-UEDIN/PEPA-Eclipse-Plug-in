@@ -112,7 +112,6 @@ implements Comparator<ModelConfigurationCandidateNode>, Comparable<ModelConfigur
 	/**
 	 * reads from local maps, uses fitness function object, returns results... 
 	 */
-	@Override
 	public void updateFitness(){
 		
 		if(this.evaluatedSuccessFully){
@@ -207,7 +206,6 @@ implements Comparator<ModelConfigurationCandidateNode>, Comparable<ModelConfigur
 		this.myMap = Utils.copyHashMap(this.parameters);
 	}
 
-	@Override
 	public void fillQueue(PriorityQueue<ResultNode> resultsQueue, IProgressMonitor monitor) {
 		
 		if(monitor.isCanceled()){
