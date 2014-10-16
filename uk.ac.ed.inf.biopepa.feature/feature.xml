@@ -2,7 +2,7 @@
 <feature
       id="uk.ac.ed.inf.biopepa"
       label="The Eclipse Bio-PEPA Plug-in"
-      version="0.2.2"
+      version="0.2.3"
       provider-name="The University of Edinburgh">
 
    <description>
