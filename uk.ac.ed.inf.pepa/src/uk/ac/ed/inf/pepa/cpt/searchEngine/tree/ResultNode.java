@@ -204,7 +204,8 @@ public class ResultNode implements Comparator<ResultNode>, Comparable<ResultNode
 		+ getPopulationCostString() + ";"
 		+ peformanceMapAsCSVString() + ";"
 		+ getTotalPopulationString() + ";;"
-		+ psoMapAsCSVString() ;
+		+ psoMapAsCSVString() + ";"
+		+ getRunTime();
 	}
 	
 	public int compare(ResultNode c1, ResultNode c2){

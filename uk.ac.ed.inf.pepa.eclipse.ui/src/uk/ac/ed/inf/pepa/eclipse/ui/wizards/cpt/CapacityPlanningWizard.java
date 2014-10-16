@@ -90,6 +90,8 @@ public class CapacityPlanningWizard extends Wizard {
 		addPage(odeOptionCapacityPlanningWizardPage);
 		addPage(populationCapacityPlanningWizardPage);
 		addPage(saveAsCapacityPlanningWizardPage);
+		
+		System.out.println("I am the new version!");
 	}
 	
 	public void createBrutePages(IPepaModel model){
