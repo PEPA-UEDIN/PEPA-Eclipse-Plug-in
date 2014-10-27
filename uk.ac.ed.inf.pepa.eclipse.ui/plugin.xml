@@ -66,6 +66,12 @@
             name="Differential Analysis"
             restorable="true">
       </view>
+      <view
+            category="uk.ac.ed.inf.pepa.eclipse.ui.pepa"
+            class="uk.ac.ed.inf.pepa.eclipse.ui.views.SystemEquationSupport"
+            id="uk.ac.ed.inf.pepa.eclipse.ui.views.SystemEquationSupport"
+            name="System Equation Support">
+      </view>
    </extension>
    <extension
          point="org.eclipse.ui.editorActions">
