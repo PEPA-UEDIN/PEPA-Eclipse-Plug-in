@@ -125,8 +125,12 @@ public class SBAModel implements DynamicExpressionModelContext {
 				} else {
 					throw new IllegalArgumentException("Unrecognised subclass of PrefixData.");
 				}
-				reaction.addComponent(behaviour);
-				recordReaction(reaction);
+				/**
+				 * CDW 26.11.14 removed following two lines.
+				 * These cause an error which prevents BIO-PEPA from working.
+				 */
+				//reaction.addComponent(behaviour);
+				//recordReaction(reaction);
 			}
 		}
 

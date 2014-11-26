@@ -2,7 +2,7 @@
 <feature
       id="uk.ac.ed.inf.common.feature"
       label="Enabling Features"
-      version="0.0.12"
+      version="0.0.13"
       provider-name="The University of Edinburgh">
 
    <description>
