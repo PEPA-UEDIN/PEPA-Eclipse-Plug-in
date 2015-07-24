@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: PEPA User Interface
 Bundle-SymbolicName: uk.ac.ed.inf.pepa.eclipse.ui; singleton:=true
-Bundle-Version: 0.0.24
+Bundle-Version: 0.0.25
 Bundle-Activator: uk.ac.ed.inf.pepa.eclipse.ui.Activator
 Bundle-Localization: plugin
 Require-Bundle: org.eclipse.ui,
