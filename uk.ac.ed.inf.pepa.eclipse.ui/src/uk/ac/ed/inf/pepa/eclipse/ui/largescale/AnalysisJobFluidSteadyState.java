@@ -139,7 +139,7 @@ public class AnalysisJobFluidSteadyState extends AnalysisJob {
 					message += new Formatter().format(
 							"Convergence norm is: %e\nSteady state detetected at %5.3f time units",
 							routine.getConvergenceNorm(), routine.getTimePoint());
-					MessageDialog.openInformation(Display.getCurrent()
+					PEPAMessageDialog.openInformation(Display.getCurrent()
 							.getActiveShell(), title, message);
 				}
 			}

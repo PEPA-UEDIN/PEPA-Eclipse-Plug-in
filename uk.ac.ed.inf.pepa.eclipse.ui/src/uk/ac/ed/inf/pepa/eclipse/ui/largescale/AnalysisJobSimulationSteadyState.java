@@ -79,7 +79,7 @@ public class AnalysisJobSimulationSteadyState extends AnalysisJob {
 							"Lag-1 Correlation: %e\n", simulation
 									.computeLagOneAutoCorrelation(i)));
 				}
-				MessageDialog.openInformation(Display.getCurrent()
+				PEPAMessageDialog.openInformation(Display.getCurrent()
 						.getActiveShell(), "Steady-state Simulation Results",
 						message.toString());
 
