@@ -21,6 +21,13 @@ import java.util.Iterator;
 public interface PartitionBlock<T, V> {
 
 	/**
+	 * Add a non-marked state to the block.
+	 * 
+	 * @param state
+	 */
+	public void addState(T state);
+	
+	/**
 	 * True if this block of the partition doesn't contain any state.
 	 * 
 	 * @return True if the block is empty, False otherwise.
