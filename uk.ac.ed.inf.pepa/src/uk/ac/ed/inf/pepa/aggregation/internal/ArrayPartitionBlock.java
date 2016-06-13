@@ -4,6 +4,7 @@
 package uk.ac.ed.inf.pepa.aggregation.internal;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
@@ -20,13 +21,17 @@ public class ArrayPartitionBlock<T, V> implements PartitionBlock<T, V> {
 	private ArrayList<T> states;
 	private int markIndex = 0;
 	
+	private HashMap<T, V> mapToValues;
+	
 	
 	public ArrayPartitionBlock() {
 		states = new ArrayList<T>();
+		mapToValues = new HashMap<>();
 	}
 	
 	public ArrayPartitionBlock(List<T> sts) {
 		states.addAll(sts);
+		mapToValues = new HashMap<>();
 	}
 	
 	@Override
@@ -123,14 +128,37 @@ public class ArrayPartitionBlock<T, V> implements PartitionBlock<T, V> {
 	
 	@Override
 	public void setValue(T state, V value) throws StateNotFoundException, StateIsMarkedException {
-		// TODO Auto-generated method stub
+		if (value == null) {
+			throw new NullPointerException("Cannot assign a null value!");
+		}
 		
+		checkStateExistNonMarked(state);
+		
+		mapToValues.put(state, value);
 	}
 	@Override
 	public V getValue(T state) throws StateNotFoundException, StateIsMarkedException {
-		// TODO Auto-generated method stub
-		return null;
+		V value = mapToValues.get(state);
+		if (value == null) {
+			if (mapToValues.containsKey(state)) {
+				throw new RuntimeException("Impossible happened: null value assigned to state.");
+			}
+			
+			checkStateExistNonMarked(state);
+			
+		}
+		
+		return value;
 	}
 	
-	
+
+	private void checkStateExistNonMarked(T state)
+			throws StateNotFoundException, StateIsMarkedException {
+		int i = states.indexOf(state);
+		if (i < 0) {
+			throw new StateNotFoundException("The state: " + state.toString() + " could not be found.");
+		} else if (i < markIndex) {
+			throw new StateIsMarkedException("The state: " + state.toString() + " is marked.");
+		}
+	}
 }
