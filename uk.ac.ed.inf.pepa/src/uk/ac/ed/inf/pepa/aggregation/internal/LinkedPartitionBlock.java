@@ -16,14 +16,14 @@ import uk.ac.ed.inf.pepa.aggregation.StateNotFoundException;
  * @param <T>
  *
  */
-public class PartitionBlockImpl<T, V> implements PartitionBlock<T, V> {
+public class LinkedPartitionBlock<T, V> implements PartitionBlock<T, V> {
 
 	private LinkedList<T> nonMarkedStates;
 	private LinkedList<T> markedStates;
 	
 	private HashMap<T, V> mapToValues;
 	
-	public PartitionBlockImpl(LinkedList<T> states) {
+	public LinkedPartitionBlock(LinkedList<T> states) {
 		nonMarkedStates = states;
 	}
 	
@@ -86,7 +86,7 @@ public class PartitionBlockImpl<T, V> implements PartitionBlock<T, V> {
 
 	@Override
 	public PartitionBlock<T, V> splitMarkedStates() {
-		PartitionBlock<T, V> marked = new PartitionBlockImpl<>(markedStates);
+		PartitionBlock<T, V> marked = new LinkedPartitionBlock<>(markedStates);
 		this.markedStates = new LinkedList<>();
 		return marked;
 	}
