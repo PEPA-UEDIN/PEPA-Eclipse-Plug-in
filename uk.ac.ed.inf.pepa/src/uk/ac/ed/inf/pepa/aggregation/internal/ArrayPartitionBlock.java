@@ -96,7 +96,7 @@ public class ArrayPartitionBlock<T, V> implements PartitionBlock<T, V> {
 	public void markState(T state) throws StateNotFoundException {
 		int i = states.indexOf(state);
 		if (i < 0) {
-			throw new StateNotFoundException("The state: " state.toString() + " was not found.");
+			throw new StateNotFoundException("The state: " + state.toString() + " was not found.");
 		}
 		// We swap the first non-marked state with the state we want to mark,
 		// and increase the markIndex.
@@ -110,7 +110,7 @@ public class ArrayPartitionBlock<T, V> implements PartitionBlock<T, V> {
 	@Override
 	public boolean isMarked(T state) throws StateNotFoundException {
 		for (int i=0; i < states.size(); i++) {
-			boolean found = state.equals(states.get(i))
+			boolean found = state.equals(states.get(i));
 			if (i < markIndex && found) {
 				return true;
 			} else if (found) {

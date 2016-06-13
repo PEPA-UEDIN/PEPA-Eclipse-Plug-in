@@ -5,6 +5,7 @@ package uk.ac.ed.inf.pepa.aggregation;
 
 import java.util.Iterator;
 
+
 /**
  * An interface that represents blocks of a partition of the state space.
  * 
