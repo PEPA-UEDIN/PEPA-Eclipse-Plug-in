@@ -12,8 +12,9 @@ import uk.ac.ed.inf.pepa.aggregation.StateIsMarkedException;
 import uk.ac.ed.inf.pepa.aggregation.StateNotFoundException;
 
 /**
- * @author giacomo
- * @param <T>
+ * @author Giacomo Alzetta
+ * @param <T> The type of the states in the block.
+ * @param <B> The type of the values associated with states in the block.
  *
  */
 public class LinkedPartitionBlock<T, V> implements PartitionBlock<T, V> {
