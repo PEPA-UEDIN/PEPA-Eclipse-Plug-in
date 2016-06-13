@@ -19,7 +19,7 @@ import java.util.Iterator;
  * @author Giacomo Alzetta
  */
 public interface PartitionBlock<T, V> {
-
+	
 	/**
 	 * Add a non-marked state to the block.
 	 * 
@@ -68,24 +68,38 @@ public interface PartitionBlock<T, V> {
 	
 	/**
 	 * Marks the given state in the block.
+	 * If the state is already marked does nothing.
+	 * Raises a <code>StateNotFoundException</code> if the state
+	 * could not be found.
+	 * 
 	 * @param state	A state of the block.
 	 */
-	public void markState(T state);
+	public void markState(T state) throws StateNotFoundException;
+	
+	/**
+	 * Return true if the given state is a marked state in the block.
+	 * 
+	 * @param state a state of the block.
+	 * @return
+	 */
+	public boolean isMarked(T state) throws StateNotFoundException;
 	
 	/**
 	 * Sets the value associated with a state.
+	 * The state should <b>not</b> be a marked state.
 	 * 
 	 * @param state A state of the block
 	 * @param value The value to be associated with this state.
 	 */
-	public void setValue(T state, V value);
+	public void setValue(T state, V value) throws StateNotFoundException, StateIsMarkedException;
 	
 	/**
 	 * Return the value associated with a state.
+	 * The state should <b>not</b> be a marked state.
 	 * 
 	 * @param state A state of the block
 	 * @return The value associated with the state or <code>null</code> if no value was set.
 	 */
-	public V getValue(T state);
+	public V getValue(T state) throws StateNotFoundException, StateIsMarkedException;
 	
 }
