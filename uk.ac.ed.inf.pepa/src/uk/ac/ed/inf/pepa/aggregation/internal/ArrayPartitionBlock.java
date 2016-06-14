@@ -4,19 +4,24 @@
 package uk.ac.ed.inf.pepa.aggregation.internal;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import uk.ac.ed.inf.pepa.aggregation.PartitionBlock;
+import uk.ac.ed.inf.pepa.aggregation.PartitioningUtils;
 import uk.ac.ed.inf.pepa.aggregation.StateIsMarkedException;
 import uk.ac.ed.inf.pepa.aggregation.StateNotFoundException;
+import uk.ac.ed.inf.pepa.model.Rate;
+import uk.ac.ed.inf.pepa.model.RateMath;
 
 /**
  * @author Giacomo Alzetta
  *
  */
-public class ArrayPartitionBlock<T, V> implements PartitionBlock<T, V> {
+public class ArrayPartitionBlock<T, V extends Rate> implements PartitionBlock<T, V> {
 
 	private ArrayList<T> states;
 	private int markIndex = 0;
@@ -93,8 +98,45 @@ public class ArrayPartitionBlock<T, V> implements PartitionBlock<T, V> {
 	
 	@Override
 	public Iterator<PartitionBlock<T, V>> splitBlock() {
-		// TODO Auto-generated method stub
-		return null;
+		ArrayList<V> values = new ArrayList<>(mapToValues.values());
+		V pmc = PartitioningUtils.pmc(values);
+		HashMap<T, V> mappingNotPmc = new HashMap<>(mapToValues);
+		HashMap<T, V> mappingOfPmc = PartitioningUtils.splitMapOnValue(mappingNotPmc, pmc);
+		
+		PartitionBlock<T, V> pmcBlock = new ArrayPartitionBlock<>();
+		for (Map.Entry<T, V> entry: mappingOfPmc.entrySet()) {
+			pmcBlock.addState(entry.getKey());
+		}
+		
+		ArrayList<Map.Entry<T, V>> entries = new ArrayList<>(mappingNotPmc.entrySet());
+		entries.sort(new Comparator<Map.Entry<T, V>>() {
+			
+			@Override
+			public int compare(Map.Entry<T, V> e1, Map.Entry<T, V> e2) {
+				V v1 = e1.getValue();
+				V v2 = e2.getValue();
+				
+				// TODO: check that this comparison is sound.
+				if (e1.getValue().equals(e2.getValue())) {
+					return 0;
+				} else {
+					return RateMath.min(v1, v2).equals(v1) ? -1 : 1;
+				}
+			}
+		});
+		
+		HashMap<V, PartitionBlock<T, V>> blocks = new HashMap<>();
+		blocks.put(pmc, pmcBlock);
+		
+		for (Map.Entry<T, V> entry : entries) {
+			V val = entry.getValue();
+			if (!blocks.containsKey(val)) {
+				blocks.put(val, new ArrayPartitionBlock<>());
+			}
+			blocks.get(val).addState(entry.getKey());
+		}
+		
+		return blocks.values().iterator();
 	}
 	
 	@Override

@@ -10,6 +10,7 @@ import java.util.LinkedList;
 import uk.ac.ed.inf.pepa.aggregation.PartitionBlock;
 import uk.ac.ed.inf.pepa.aggregation.StateIsMarkedException;
 import uk.ac.ed.inf.pepa.aggregation.StateNotFoundException;
+import uk.ac.ed.inf.pepa.model.Rate;
 
 /**
  * @author Giacomo Alzetta
@@ -17,7 +18,7 @@ import uk.ac.ed.inf.pepa.aggregation.StateNotFoundException;
  * @param <B> The type of the values associated with states in the block.
  *
  */
-public class LinkedPartitionBlock<T, V> implements PartitionBlock<T, V> {
+public class LinkedPartitionBlock<T, V extends Rate> implements PartitionBlock<T, V> {
 
 	private LinkedList<T> nonMarkedStates;
 	private LinkedList<T> markedStates;

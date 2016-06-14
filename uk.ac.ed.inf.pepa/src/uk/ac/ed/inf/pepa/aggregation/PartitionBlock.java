@@ -5,6 +5,8 @@ package uk.ac.ed.inf.pepa.aggregation;
 
 import java.util.Iterator;
 
+import uk.ac.ed.inf.pepa.model.Rate;
+
 
 /**
  * An interface that represents blocks of a partition of the state space.
@@ -19,7 +21,7 @@ import java.util.Iterator;
  * V represents a generic value assigned to a given state.
  * @author Giacomo Alzetta
  */
-public interface PartitionBlock<T, V> {
+public interface PartitionBlock<T, V extends Rate> {
 	
 	/**
 	 * Add a non-marked state to the block.
