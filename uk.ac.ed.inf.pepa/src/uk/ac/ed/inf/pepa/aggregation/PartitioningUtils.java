@@ -23,7 +23,7 @@ public final class PartitioningUtils {
 	/**
 	 * Compute the possible majority candidate of a sequence of values.
 	 * 
-	 * A possible majority candidate for a list of values X is the most common
+	 * A possible majority candidate for a list of values is the most common
 	 * value if there is a value that appears in at list 50% of the positions,
 	 * otherwise any value at all contained in the list.
 	 */
@@ -46,10 +46,14 @@ public final class PartitioningUtils {
 	}
 	
 	/**
-	 * Separates the elements of the map that
-	 * @param mapping
-	 * @param pivot
-	 * @return
+	 * Separates the elements of the map associated with a specific value.
+	 * 
+	 * This method removes all elements mapped to <code>pivot</code> and returns
+	 * them in a new mapping.
+	 * 
+	 * @param mapping The mapping to be split
+	 * @param pivot   The value on which the entries should be divided
+	 * @return        The mapping of all keys mapping to pivot
 	 */
 	public static <K, V> HashMap<K, V> splitMapOnValue(HashMap<K, V> mapping, V pivot) {
 		HashMap<K, V> newMap = new HashMap<K, V>();

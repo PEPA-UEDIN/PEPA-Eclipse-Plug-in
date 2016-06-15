@@ -4,6 +4,10 @@
 package uk.ac.ed.inf.pepa.aggregation;
 
 /**
+ * Exception thrown whenever someone tries to perform an operation
+ * on a state of the state space that either doesn't exist or
+ * isn't referenced from this data structure.
+ * 
  * @author Giacomo Alzetta
  *
  */

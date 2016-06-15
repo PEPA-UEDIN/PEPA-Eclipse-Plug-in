@@ -1,5 +1,13 @@
 package uk.ac.ed.inf.pepa.aggregation;
 
+/**
+ * Exception raised whenever someone tries to perform an operation
+ * on a marked state but marked state are not supposed to be subject
+ * to that operation.
+ * 
+ * @author Giacomo Alzetta
+ *
+ */
 public class StateIsMarkedException extends PartitioningException {
 
 	/**

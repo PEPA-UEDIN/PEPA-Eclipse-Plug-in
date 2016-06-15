@@ -18,6 +18,15 @@ import uk.ac.ed.inf.pepa.model.Rate;
 import uk.ac.ed.inf.pepa.model.RateMath;
 
 /**
+ * A partition refinement data structure implementing using an array and a mapping.
+ * 
+ * All the states of the block are stored in an array <code>states</code>.
+ * When a state is added to the block it is appended to the array.
+ * We also keep track of an index <code>markIndex</code> inside the array.
+ * All states at positions <em>before</em> <code>markIndex</code> are marked
+ * states. To mark a state we simply swap it with the state at position
+ * <code>markIndex</code> and increase <code>markIndex</code> by <code>1</code>.
+ * 
  * @author Giacomo Alzetta
  *
  */
@@ -28,12 +37,19 @@ public class ArrayPartitionBlock<T, V extends Rate> implements PartitionBlock<T,
 	
 	private HashMap<T, V> mapToValues;
 	
-	
+	/**
+	 * Create an empty partition block.
+	 */
 	public ArrayPartitionBlock() {
 		states = new ArrayList<T>();
 		mapToValues = new HashMap<>();
 	}
 	
+	/**
+	 * Create a partition block that contains the given states.
+	 * 
+	 * @param sts
+	 */
 	public ArrayPartitionBlock(List<T> sts) {
 		states.addAll(sts);
 		mapToValues = new HashMap<>();
@@ -44,10 +60,18 @@ public class ArrayPartitionBlock<T, V extends Rate> implements PartitionBlock<T,
 		states.add(state);
 		
 	}
+	
 	@Override
 	public boolean isEmpty() {
 		return states.isEmpty();
 	}
+	
+	/**
+	 * Iterate over all the states in the block.
+	 * 
+	 * Implementation detail: the states are not ordered but currently
+	 * all marked states are returned before the non-marked states.
+	 */
 	@Override
 	public Iterator<T> getStates() {
 		return new Iterator<T>() {
@@ -85,14 +109,18 @@ public class ArrayPartitionBlock<T, V extends Rate> implements PartitionBlock<T,
 			}
 		};
 	}
+	
 	@Override
 	public PartitionBlock<T, V> splitMarkedStates() {
 		ArrayPartitionBlock<T, V> newBlock = new ArrayPartitionBlock<>(states.subList(0, markIndex));
-		ArrayList<T> newStates = new ArrayList<>(states.size() - markIndex);
+		// TODO: optimization: if markIndex << size we can just swap
+		//       the last markIndex states at the beginning, instead of moving
+		// 	     all remaining states backwards.
 		for (int i=markIndex; i < states.size(); i++) {
-			newStates.set(i, states.get(i));
+			states.set(i-markIndex, states.get(i));
 		}
-		states = newStates;
+		
+		states.trimToSize();
 		return newBlock;
 	}
 	
@@ -120,6 +148,7 @@ public class ArrayPartitionBlock<T, V extends Rate> implements PartitionBlock<T,
 				if (e1.getValue().equals(e2.getValue())) {
 					return 0;
 				} else {
+					// in particular here
 					return RateMath.min(v1, v2).equals(v1) ? -1 : 1;
 				}
 			}
@@ -136,6 +165,7 @@ public class ArrayPartitionBlock<T, V extends Rate> implements PartitionBlock<T,
 			blocks.get(val).addState(entry.getKey());
 		}
 		
+		// TODO: We do not want to allow modifications...
 		return blocks.values().iterator();
 	}
 	
@@ -194,6 +224,13 @@ public class ArrayPartitionBlock<T, V extends Rate> implements PartitionBlock<T,
 	}
 	
 
+	/**
+	 * Simple parameter checking function.
+	 * 
+	 * @param state
+	 * @throws StateNotFoundException
+	 * @throws StateIsMarkedException
+	 */
 	private void checkStateExistNonMarked(T state)
 			throws StateNotFoundException, StateIsMarkedException {
 		int i = states.indexOf(state);

@@ -9,7 +9,8 @@ import uk.ac.ed.inf.pepa.model.Rate;
 
 
 /**
- * An interface that represents blocks of a partition of the state space.
+ * An interface that represents blocks of a partition refinement data structure
+ * of a state space.
  * 
  * Each block of the partition contains states that can be marked or not.
  * This class provides operations to mark states and also the ability to set
@@ -19,6 +20,7 @@ import uk.ac.ed.inf.pepa.model.Rate;
  * 
  * Note that the type T is represents a generic state while the type
  * V represents a generic value assigned to a given state.
+ * 
  * @author Giacomo Alzetta
  */
 public interface PartitionBlock<T, V extends Rate> {
