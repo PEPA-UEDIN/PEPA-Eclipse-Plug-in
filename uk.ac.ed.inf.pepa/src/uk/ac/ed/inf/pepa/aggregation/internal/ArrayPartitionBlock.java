@@ -11,7 +11,6 @@ import java.util.List;
 import java.util.Map;
 
 import uk.ac.ed.inf.pepa.aggregation.PartitionBlock;
-import uk.ac.ed.inf.pepa.aggregation.PartitioningUtils;
 import uk.ac.ed.inf.pepa.aggregation.StateIsMarkedException;
 import uk.ac.ed.inf.pepa.aggregation.StateNotFoundException;
 import uk.ac.ed.inf.pepa.model.Rate;

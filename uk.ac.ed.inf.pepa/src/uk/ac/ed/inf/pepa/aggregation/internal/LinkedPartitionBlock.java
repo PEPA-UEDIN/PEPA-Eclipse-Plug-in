@@ -3,14 +3,18 @@
  */
 package uk.ac.ed.inf.pepa.aggregation.internal;
 
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.Map;
 
 import uk.ac.ed.inf.pepa.aggregation.PartitionBlock;
 import uk.ac.ed.inf.pepa.aggregation.StateIsMarkedException;
 import uk.ac.ed.inf.pepa.aggregation.StateNotFoundException;
 import uk.ac.ed.inf.pepa.model.Rate;
+import uk.ac.ed.inf.pepa.model.RateMath;
 
 /**
  * @author Giacomo Alzetta
@@ -24,6 +28,10 @@ public class LinkedPartitionBlock<T, V extends Rate> implements PartitionBlock<T
 	private LinkedList<T> markedStates;
 	
 	private HashMap<T, V> mapToValues;
+	
+	public LinkedPartitionBlock() {
+		nonMarkedStates = new LinkedList<>();
+	}
 	
 	public LinkedPartitionBlock(LinkedList<T> states) {
 		nonMarkedStates = states;
@@ -95,8 +103,47 @@ public class LinkedPartitionBlock<T, V extends Rate> implements PartitionBlock<T
 
 	@Override
 	public Iterator<PartitionBlock<T, V>> splitBlock() {
-		// TODO Auto-generated method stub
-		return null;
+		ArrayList<V> values = new ArrayList<>(mapToValues.values());
+		V pmc = PartitioningUtils.pmc(values);
+		HashMap<T, V> mappingNotPmc = new HashMap<>(mapToValues);
+		HashMap<T, V> mappingOfPmc = PartitioningUtils.splitMapOnValue(mappingNotPmc, pmc);
+		
+		PartitionBlock<T, V> pmcBlock = new LinkedPartitionBlock<T, V>();
+		for (Map.Entry<T, V> entry: mappingOfPmc.entrySet()) {
+			pmcBlock.addState(entry.getKey());
+		}
+		
+		ArrayList<Map.Entry<T, V>> entries = new ArrayList<>(mappingNotPmc.entrySet());
+		entries.sort(new Comparator<Map.Entry<T, V>>() {
+			
+			@Override
+			public int compare(Map.Entry<T, V> e1, Map.Entry<T, V> e2) {
+				V v1 = e1.getValue();
+				V v2 = e2.getValue();
+				
+				// TODO: check that this comparison is sound.
+				if (e1.getValue().equals(e2.getValue())) {
+					return 0;
+				} else {
+					// in particular here
+					return RateMath.min(v1, v2).equals(v1) ? -1 : 1;
+				}
+			}
+		});
+		
+		HashMap<V, PartitionBlock<T, V>> blocks = new HashMap<>();
+		blocks.put(pmc, pmcBlock);
+		
+		for (Map.Entry<T, V> entry : entries) {
+			V val = entry.getValue();
+			if (!blocks.containsKey(val)) {
+				blocks.put(val, new LinkedPartitionBlock<>());
+			}
+			blocks.get(val).addState(entry.getKey());
+		}
+		
+		// TODO: We do not want to allow modifications...
+		return blocks.values().iterator();
 	}
 
 	@Override
