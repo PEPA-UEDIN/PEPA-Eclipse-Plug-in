@@ -4,6 +4,7 @@
 package uk.ac.ed.inf.pepa.aggregation.internal;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 import uk.ac.ed.inf.pepa.aggregation.AggregationAlgorithm;
@@ -20,12 +21,12 @@ public class ContextualLumpability<T, V extends Rate> implements AggregationAlgo
 	@Override
 	public IStateSpace aggregate(IStateSpace initial) {
 		List<PartitionBlock<T, V>> partition = initialPartition(initial);
-		List<PartitionBlock<T, V>> splitters = new ArrayList<>(partition);
+		LinkedList<PartitionBlock<T, V>> splitters = new LinkedList<>(partition);
 		List<PartitionBlock<T, V>> touchedBlocks = new ArrayList<>();
 		ArrayList<V> weights = new ArrayList<>();
 		
 		while (!splitters.isEmpty()) {
-			PartitionBlock<T, V> splitter = splitters.pop();
+			PartitionBlock<T, V> splitter = splitters.pollFirst();
 			// compute pre-images
 			// compute weights.
 		}
