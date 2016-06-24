@@ -5,9 +5,14 @@ import java.util.List;
 import java.util.HashMap;
 
 import uk.ac.ed.inf.pepa.aggregation.LabelledTransitionSystem;
+import uk.ac.ed.inf.pepa.ctmc.derivation.IStateSpace;
+import uk.ac.ed.inf.pepa.model.Action;
 import uk.ac.ed.inf.pepa.model.Activity;
 import uk.ac.ed.inf.pepa.model.Model;
+import uk.ac.ed.inf.pepa.model.NamedAction;
 import uk.ac.ed.inf.pepa.model.NamedRate;
+import uk.ac.ed.inf.pepa.model.internal.ActivityImpl;
+import uk.ac.ed.inf.pepa.model.internal.NamedActionImpl;
 
 public class LtsModel<S> implements LabelledTransitionSystem<S> {
 
@@ -54,19 +59,35 @@ public class LtsModel<S> implements LabelledTransitionSystem<S> {
 
 	@Override
 	public boolean addState(S state) {
-		states.add(state);
+		boolean wasPresent =  states.add(state);
 		transitionMap.put(state, new HashMap<>());
-		preImageMap.put(state, new HashMap<>());
+		preImageMap.put(state, new ArrayList<>());
+		
+		return wasPresent;
 	}
 
 	@Override
 	public boolean addTransition(S source, S target, NamedRate rate) {
-		HashMap<S, HashMap<S, Activity>> map = transitionMap.get(source);
+		HashMap<S, Activity> map = transitionMap.get(source);
 		if (map == null) {
 			map = new HashMap<>();
 			transitionMap.put(source, map);
 		}
-		
+		ActivityImpl act = new ActivityImpl();
+		act.setRate(rate);
+		NamedActionImpl aName = new NamedActionImpl();
+		aName.setName(rate.getName());
+		act.setAction(aName);
+		Activity old = map.put(target, act);
+		if (old == null)
+			return false;
+		return act.equals(old);
+	}
+
+	@Override
+	public IStateSpace toStateSpace() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

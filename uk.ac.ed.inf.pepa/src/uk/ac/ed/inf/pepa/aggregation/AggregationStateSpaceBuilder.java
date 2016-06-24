@@ -10,6 +10,7 @@ import uk.ac.ed.inf.pepa.ctmc.derivation.IStateSpaceBuilder;
 import uk.ac.ed.inf.pepa.ctmc.derivation.MeasurementData;
 import uk.ac.ed.inf.pepa.ctmc.derivation.common.IStateExplorer;
 import uk.ac.ed.inf.pepa.ctmc.derivation.common.ISymbolGenerator;
+import uk.ac.ed.inf.pepa.ctmc.derivation.common.State;
 import uk.ac.ed.inf.pepa.parsing.DefaultVisitor;
 import uk.ac.ed.inf.pepa.parsing.ModelNode;
 import uk.ac.ed.inf.pepa.parsing.ProcessNode;
@@ -44,7 +45,10 @@ public class AggregationStateSpaceBuilder implements IStateSpaceBuilder {
 			throws DerivationException {
 		SystemEquationVisitor visitor = new SystemEquationVisitor();
 		systemEquation.accept(visitor);
-		final AggregatedModelComponent original = visitor.result;
+		LabelledTransitionSystem<State> original = visitor.result;
+		AggregationAlgorithm algorithm;
+		LabelledTransitionSystem<AggregatedState> lts = algorithm.aggregate(original);
+		return lts.toStateSpace();
 		
 	}
 
@@ -61,6 +65,11 @@ public class AggregationStateSpaceBuilder implements IStateSpaceBuilder {
 	
 	private class SystemEquationVisitor extends DefaultVisitor {
 		
+		protected LabelledTransitionSystem<State> result;
+		
+		SystemEquationVisitor() {
+			result = new LtsModel();
+		}
 		
 	}
 	

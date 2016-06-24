@@ -1,8 +1,10 @@
 package uk.ac.ed.inf.pepa.aggregation;
 
+import uk.ac.ed.inf.pepa.ctmc.derivation.IStateSpace;
 import uk.ac.ed.inf.pepa.model.NamedRate;
 import uk.ac.ed.inf.pepa.model.RateMath;
 import java.util.List;
+
 
 /**
  * Interface to represent a PEPA's LTS semantics.
@@ -24,7 +26,8 @@ public interface LabelledTransitionSystem<S> {
 		NamedRate[] rates = new NamedRate[targets.length];
 		int i = 0;
 		for (S target: targets) {
-			rates[i++] = getApparentRate(source, target, action);
+			NamedRate x = getApparentRate(source, target, action);
+			rates[i++] = x;
 		}
 		
 		NamedRate result = rates[0];
@@ -38,4 +41,6 @@ public interface LabelledTransitionSystem<S> {
 	public List<S> getImage(S source);
 	
 	public List<S> getPreImage(S target);
+	
+	public IStateSpace toStateSpace();
 }

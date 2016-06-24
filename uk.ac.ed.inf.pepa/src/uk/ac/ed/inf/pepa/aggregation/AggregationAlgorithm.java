@@ -3,6 +3,7 @@ package uk.ac.ed.inf.pepa.aggregation;
 import java.util.List;
 
 import uk.ac.ed.inf.pepa.ctmc.derivation.IStateSpace;
+import uk.ac.ed.inf.pepa.ctmc.derivation.common.State;
 import uk.ac.ed.inf.pepa.model.Rate;
 
 /**
@@ -11,7 +12,7 @@ import uk.ac.ed.inf.pepa.model.Rate;
  * @author Giacomo Alzetta
  *
  */
-public interface AggregationAlgorithm<T, V extends Rate> {
+public interface AggregationAlgorithm {
 
-	public IStateSpace aggregate(IStateSpace initial);
+	public LabelledTransitionSystem<AggregatedState> aggregate(LabelledTransitionSystem<State> initial);
 }

@@ -14,16 +14,13 @@ import uk.ac.ed.inf.pepa.ctmc.derivation.common.State;
  * @author Giacomo Alzetta
  *
  */
-public class AggregatedState implements Iterable<State> {
+public class AggregatedState extends State implements Iterable<State> {
 
 	private Set<State> internalStates = new HashSet<State>();
-	private short[] repr = null;
-	
-	public AggregatedState() {}
 	
 	public AggregatedState(short[] state) {
+		super(state, Arrays.hashCode(state));
 		add(state);
-		repr = state;
 	}
 	
 	public int size() {
@@ -31,9 +28,6 @@ public class AggregatedState implements Iterable<State> {
 	}
 	
 	public boolean add(short[] state) {
-		if (repr == null) {
-			repr = state;
-		}
 		return internalStates.add(new State(state, Arrays.hashCode(state)));
 	}
 	
@@ -42,7 +36,7 @@ public class AggregatedState implements Iterable<State> {
 	}
 	
 	public short[] getRepresentative() {
-		return repr;
+		return fState;
 	}
 	
 	@Override
@@ -53,6 +47,7 @@ public class AggregatedState implements Iterable<State> {
 		
 		return internalStates.equals(((AggregatedState) obj).internalStates);
 	}
+	// FIXME: we may want to override hashCode too...
 	
 	@Override
 	public Iterator<State> iterator() {
