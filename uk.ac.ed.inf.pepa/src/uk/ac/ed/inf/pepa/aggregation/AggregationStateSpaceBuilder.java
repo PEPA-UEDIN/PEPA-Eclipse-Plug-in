@@ -4,6 +4,7 @@
 package uk.ac.ed.inf.pepa.aggregation;
 
 import uk.ac.ed.inf.pepa.IProgressMonitor;
+import uk.ac.ed.inf.pepa.aggregation.internal.LtsModel;
 import uk.ac.ed.inf.pepa.ctmc.derivation.DerivationException;
 import uk.ac.ed.inf.pepa.ctmc.derivation.IStateSpace;
 import uk.ac.ed.inf.pepa.ctmc.derivation.IStateSpaceBuilder;
@@ -11,9 +12,16 @@ import uk.ac.ed.inf.pepa.ctmc.derivation.MeasurementData;
 import uk.ac.ed.inf.pepa.ctmc.derivation.common.IStateExplorer;
 import uk.ac.ed.inf.pepa.ctmc.derivation.common.ISymbolGenerator;
 import uk.ac.ed.inf.pepa.ctmc.derivation.common.State;
+import uk.ac.ed.inf.pepa.parsing.AggregationNode;
+import uk.ac.ed.inf.pepa.parsing.ConstantProcessNode;
+import uk.ac.ed.inf.pepa.parsing.CooperationNode;
 import uk.ac.ed.inf.pepa.parsing.DefaultVisitor;
+import uk.ac.ed.inf.pepa.parsing.HidingNode;
 import uk.ac.ed.inf.pepa.parsing.ModelNode;
+import uk.ac.ed.inf.pepa.parsing.PrefixNode;
 import uk.ac.ed.inf.pepa.parsing.ProcessNode;
+import uk.ac.ed.inf.pepa.parsing.RateDoubleNode;
+import uk.ac.ed.inf.pepa.parsing.WildcardCooperationNode;
 
 /**
  * @author Giacomo Alzetta
@@ -22,16 +30,15 @@ import uk.ac.ed.inf.pepa.parsing.ProcessNode;
 public class AggregationStateSpaceBuilder implements IStateSpaceBuilder {
 	
 	private final ISymbolGenerator generator;
-	private IStateExplorer explorer;
 	
 	private ProcessNode systemEquation;
 	private boolean aggregateArrays;
 	
 
-	public AggregationStateSpaceBuilder(IStateExplorer explorer,
-			ISymbolGenerator generator, ModelNode model,
+	public AggregationStateSpaceBuilder(
+			ISymbolGenerator generator,
+			ModelNode model,
 			boolean aggregateArrays) {
-		this.explorer = explorer;
 		this.generator = generator;
 		this.systemEquation = model.getSystemEquation();
 		this.aggregateArrays = aggregateArrays;
@@ -60,17 +67,80 @@ public class AggregationStateSpaceBuilder implements IStateSpaceBuilder {
 		// TODO Auto-generated method stub
 		return null;
 	}
-
 	
 	
 	private class SystemEquationVisitor extends DefaultVisitor {
 		
-		protected LabelledTransitionSystem<State> result;
+		int stateSize;
+		int multiplicity;
+		AggregatedModelComponent resultComponent;
 		
 		SystemEquationVisitor() {
-			result = new LtsModel();
+			stateSize = 0;
 		}
 		
+		@Override
+		public void visitCooperationNode(CooperationNode cooperation) {
+			cooperation.getLeft().accept(this);
+			AggregatedModelComponent comp = resultComponent;
+			cooperation.getRight().accept(this);
+			resultComponent = null;
+		}
+		
+		@Override
+		public void visitHidingNode(HidingNode hiding) {
+			hiding.getProcess().accept(this);
+		}
+		
+		@Override
+		public void visitWildcardCooperationNode(WildcardCooperationNode wildcard) {
+			wildcard.getLeft().accept(this);
+			AggregatedModelComponent comp = resultComponent;
+			wildcard.getRight().accept(this);
+			// create the cooperation component from comp and resultComponent.
+			resultComponent = null;
+		}
+		
+		@Override
+		public void visitAggregationNode(AggregationNode aggregation) {
+			// Aggregated arrays get desugared into wildcard cooperations
+			ProcessNode seq = aggregation.getProcessNode();
+			aggregation.getCopies().accept(this);
+			int copies = multiplicity;
+			
+			if (multiplicity == 1) {
+				seq.accept(this);
+			} else {
+				WildcardCooperationNode coop = new WildcardCooperationNode();
+				WildcardCooperationNode c = coop;
+				WildcardCooperationNode c2;
+				while (copies > 2) {
+					c2 = new WildcardCooperationNode();
+					c.setLeft(seq);
+					c.setRight(c2);
+					c = c2;
+					copies--;
+				}
+				c.setLeft(seq);
+				c.setRight(seq);
+				coop.accept(this);
+			}
+		}
+		
+		@Override
+		public void visitConstantProcessNode(ConstantProcessNode constant) {
+			resultComponent = null;
+			stateSize++;
+		}
+		
+		
+		/**
+		 * Used to compute the number of copies of Aggregated Arrays.
+		 */
+		@Override
+		public void visitRateDoubleNode(RateDoubleNode node) {
+			multiplicity = (int) node.getValue();
+		}
 	}
 	
 }
