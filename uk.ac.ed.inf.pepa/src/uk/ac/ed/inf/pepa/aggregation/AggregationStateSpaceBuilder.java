@@ -3,6 +3,11 @@
  */
 package uk.ac.ed.inf.pepa.aggregation;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.LinkedList;
+
+import java.util.Queue;
 import uk.ac.ed.inf.pepa.IProgressMonitor;
 import uk.ac.ed.inf.pepa.aggregation.internal.LtsModel;
 import uk.ac.ed.inf.pepa.ctmc.derivation.DerivationException;
@@ -69,11 +74,32 @@ public class AggregationStateSpaceBuilder implements IStateSpaceBuilder {
 	}
 	
 	
+	public Component constructModelComponent(int componentId, short localInitialState[]) {
+		Component comp = new Component();
+		comp.offset = componentId;
+		Queue<short[]> queue = new LinkedList<short[]>();
+		queue.add(localInitialState);
+		comp.addState(new short[] {localInitialState[0]});
+		
+		while (!queue.isEmpty()) {
+			short[] state = queue.remove();
+			ArrayList<Transition> found = getTransitions(state[0]);
+			for (Transition t: found) {
+				short s[] = new short[1];
+				s[0] = t.targetProcess;
+				if (!comp.containsState(s)) {
+					comp.addState(s);
+					queue.add(s);
+				}
+			}
+		}
+	}
+	
 	private class SystemEquationVisitor extends DefaultVisitor {
 		
 		int stateSize;
 		int multiplicity;
-		AggregatedModelComponent resultComponent;
+		Component resultComponent;
 		
 		SystemEquationVisitor() {
 			stateSize = 0;
@@ -129,7 +155,13 @@ public class AggregationStateSpaceBuilder implements IStateSpaceBuilder {
 		
 		@Override
 		public void visitConstantProcessNode(ConstantProcessNode constant) {
-			resultComponent = null;
+			short[] initialState = generator.getInitialState();
+			int componentId = stateSize;
+			short localInitialState[] = Arrays.copyOfRange(
+					initialState, componentId, componentId + 1);
+			resultComponent = constructModelComponent(
+					componentId, localInitialState);
+			
 			stateSize++;
 		}
 		
