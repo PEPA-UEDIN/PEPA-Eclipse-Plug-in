@@ -95,7 +95,7 @@ public class AggregationStateSpaceBuilder implements IStateSpaceBuilder {
 			}
 		}
 		
-		comp.buildTransitions();
+		// comp.buildTransitions();  // possible optimization.
 		for (int i = 0; i < comp.size(); i++) {
 			short state[] = comp.getState(i);
 			ArrayList<Transition> found = getTransitions(state[0]);
@@ -103,7 +103,7 @@ public class AggregationStateSpaceBuilder implements IStateSpaceBuilder {
 			for (Transition t : found) {
 				short target[] = new short[1];
 				target[0] = t.fTargetProcess[componentId];
-				comp.addTransition(state, target, t.fRate, t.fActionId);
+				comp.addTransition(state, target, t.fActionId, t.fRate);
 			}
 		}
 		
@@ -111,7 +111,7 @@ public class AggregationStateSpaceBuilder implements IStateSpaceBuilder {
 	}
 	
 	private ArrayList<Transition> getTransitions(short processId) {
-		
+		// TODO: write this!
 		return new ArrayList<>();
 	}
 	
@@ -149,7 +149,7 @@ public class AggregationStateSpaceBuilder implements IStateSpaceBuilder {
 		
 		@Override
 		public void visitAggregationNode(AggregationNode aggregation) {
-			// Aggregated arrays get desugared into wildcard cooperations
+			// Aggregated arrays get de-sugared into wildcard cooperations
 			ProcessNode seq = aggregation.getProcessNode();
 			aggregation.getCopies().accept(this);
 			int copies = multiplicity;
@@ -176,13 +176,11 @@ public class AggregationStateSpaceBuilder implements IStateSpaceBuilder {
 		@Override
 		public void visitConstantProcessNode(ConstantProcessNode constant) {
 			short[] initialState = generator.getInitialState();
-			int componentId = stateSize;
+			int componentId = stateSize++;
 			short localInitialState[] = Arrays.copyOfRange(
 					initialState, componentId, componentId + 1);
 			resultComponent = constructModelComponent(
 					componentId, localInitialState);
-			
-			stateSize++;
 		}
 		
 		

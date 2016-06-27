@@ -34,6 +34,8 @@ public class Component {
 	public int length;
 	
 	// TODO: transition map needed!
+	protected TransitionMap transitionsMap;
+	
 	/**
 	 * All the outgoing transitions of this component.
 	 */
@@ -53,6 +55,7 @@ public class Component {
 	public Component() {
 		outgoingTransitions = new ArrayList<>();
 		hidingSet = new BitSet();
+		transitionsMap = new TransitionMap();
 	}
 	
 	public Component(String name) {
@@ -77,6 +80,29 @@ public class Component {
 		return name;
 	}
 	
+	public void addTransition(short[] source, short[] target, short actionId, double rate) {
+		Transition val = new Transition();
+		val.fActionId = actionId;
+		val.fTargetProcess = target;
+		val.fRate = rate;
+		val.fState = new State(source, Arrays.hashCode(source));
+		transitionsMap.put(getIndex(source), getIndex(target), val);
+	}
+	
+	/**
+	 * @param state
+	 * @return The index of state inside the states array.
+	 */
+	public int getIndex(short[] state) {
+		int i=0;
+		for (State s: states) {
+			if (Arrays.equals(s.fState, state)) {
+				return i;
+			}
+			++i;
+		}
+		return -1;
+	}
 	/**
 	 * @return the number of states in this component.
 	 */
