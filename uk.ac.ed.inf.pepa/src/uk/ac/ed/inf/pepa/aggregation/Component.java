@@ -8,6 +8,7 @@ import java.util.Arrays;
 import java.util.BitSet;
 
 import uk.ac.ed.inf.pepa.ctmc.derivation.common.State;
+import uk.ac.ed.inf.pepa.ctmc.derivation.common.Transition;
 
 /**
  * Note: it might be possible to re-use pepa.ctmt.derivation.common.Component
@@ -32,6 +33,7 @@ public class Component {
 	 */
 	public int length;
 	
+	// TODO: transition map needed!
 	/**
 	 * All the outgoing transitions of this component.
 	 */
@@ -67,7 +69,18 @@ public class Component {
 		return states.contains(new State(state, Arrays.hashCode(state)));
 	}
 	
+	public short[] getState(int stateIndex) {
+		return states.get(stateIndex).fState;
+	}
+	
 	public String getName() {
 		return name;
+	}
+	
+	/**
+	 * @return the number of states in this component.
+	 */
+	public int size() {
+		return states.size();
 	}
 }

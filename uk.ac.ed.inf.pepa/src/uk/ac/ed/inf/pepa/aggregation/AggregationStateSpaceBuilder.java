@@ -6,7 +6,7 @@ package uk.ac.ed.inf.pepa.aggregation;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
-
+import java.util.List;
 import java.util.Queue;
 import uk.ac.ed.inf.pepa.IProgressMonitor;
 import uk.ac.ed.inf.pepa.aggregation.internal.LtsModel;
@@ -17,6 +17,7 @@ import uk.ac.ed.inf.pepa.ctmc.derivation.MeasurementData;
 import uk.ac.ed.inf.pepa.ctmc.derivation.common.IStateExplorer;
 import uk.ac.ed.inf.pepa.ctmc.derivation.common.ISymbolGenerator;
 import uk.ac.ed.inf.pepa.ctmc.derivation.common.State;
+import uk.ac.ed.inf.pepa.ctmc.derivation.common.Transition;
 import uk.ac.ed.inf.pepa.parsing.AggregationNode;
 import uk.ac.ed.inf.pepa.parsing.ConstantProcessNode;
 import uk.ac.ed.inf.pepa.parsing.CooperationNode;
@@ -86,13 +87,32 @@ public class AggregationStateSpaceBuilder implements IStateSpaceBuilder {
 			ArrayList<Transition> found = getTransitions(state[0]);
 			for (Transition t: found) {
 				short s[] = new short[1];
-				s[0] = t.targetProcess;
+				s[0] = t.fTargetProcess[componentId];
 				if (!comp.containsState(s)) {
 					comp.addState(s);
 					queue.add(s);
 				}
 			}
 		}
+		
+		comp.buildTransitions();
+		for (int i = 0; i < comp.size(); i++) {
+			short state[] = comp.getState(i);
+			ArrayList<Transition> found = getTransitions(state[0]);
+
+			for (Transition t : found) {
+				short target[] = new short[1];
+				target[0] = t.fTargetProcess[componentId];
+				comp.addTransition(state, target, t.fRate, t.fActionId);
+			}
+		}
+		
+		return comp;
+	}
+	
+	private ArrayList<Transition> getTransitions(short processId) {
+		
+		return new ArrayList<>();
 	}
 	
 	private class SystemEquationVisitor extends DefaultVisitor {
