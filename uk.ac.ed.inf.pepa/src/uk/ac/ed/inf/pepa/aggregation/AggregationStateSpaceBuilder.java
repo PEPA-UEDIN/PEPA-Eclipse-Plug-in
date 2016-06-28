@@ -5,6 +5,7 @@ package uk.ac.ed.inf.pepa.aggregation;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
@@ -18,6 +19,7 @@ import uk.ac.ed.inf.pepa.ctmc.derivation.common.IStateExplorer;
 import uk.ac.ed.inf.pepa.ctmc.derivation.common.ISymbolGenerator;
 import uk.ac.ed.inf.pepa.ctmc.derivation.common.State;
 import uk.ac.ed.inf.pepa.ctmc.derivation.common.Transition;
+import uk.ac.ed.inf.pepa.model.RateMath;
 import uk.ac.ed.inf.pepa.parsing.AggregationNode;
 import uk.ac.ed.inf.pepa.parsing.ConstantProcessNode;
 import uk.ac.ed.inf.pepa.parsing.CooperationNode;
@@ -30,21 +32,28 @@ import uk.ac.ed.inf.pepa.parsing.RateDoubleNode;
 import uk.ac.ed.inf.pepa.parsing.WildcardCooperationNode;
 
 /**
+ * Computes the aggregated state space.
+ * 
+ * Note: in order to use this builder you must first create a StateSpaceBuilder
+ * and pass the explorer and symbol generator from that builder to this one.
  * @author Giacomo Alzetta
  *
  */
 public class AggregationStateSpaceBuilder implements IStateSpaceBuilder {
 	
 	private final ISymbolGenerator generator;
+	private IStateExplorer explorer;
 	
 	private ProcessNode systemEquation;
 	private boolean aggregateArrays;
 	
 
 	public AggregationStateSpaceBuilder(
+			IStateExplorer explorer,
 			ISymbolGenerator generator,
 			ModelNode model,
 			boolean aggregateArrays) {
+		this.explorer = explorer;
 		this.generator = generator;
 		this.systemEquation = model.getSystemEquation();
 		this.aggregateArrays = aggregateArrays;
@@ -100,7 +109,64 @@ public class AggregationStateSpaceBuilder implements IStateSpaceBuilder {
 			short state[] = comp.getState(i);
 			ArrayList<Transition> found = getTransitions(state[0]);
 
+			found.sort(new Comparator<Transition>() {
+
+				@Override
+				public int compare(Transition o1, Transition o2) {
+					// First sort by target process.
+					short[] t1 = o1.fTargetProcess;
+					short[] t2 = o2.fTargetProcess;
+					for (int i=0; i < t1.length; i++) {
+						if (t1[i] < t2[i]) {
+							return -1;
+						} else if (t1[i] > t2[i]) {
+							return 1;
+						}
+					}
+					
+					// if we end up here the target processes are the same
+					// so we sort by actionId
+					return o1.fActionId - o2.fActionId;
+				}
+			});
+			
+			// The transitions found by the StateExplorer could be multiple
+			// in our LTS we would to sum rates from the same pair of
+			// states and same label. This is what we do here.
+			ArrayList<Transition> grouped = new ArrayList<>(found.size());
+			
+			short[] curTarget = null;
+			double curRate = 0.0d;
+			short curActionId = -1;
 			for (Transition t : found) {
+				if (curTarget == null) {
+					curTarget = t.fTargetProcess;
+					curActionId = t.fActionId;
+					curRate = t.fRate;
+				} else if (Arrays.equals(curTarget, t.fTargetProcess)) {
+					if (curActionId == t.fActionId) {
+						curRate += t.fRate;
+					} else {
+						Transition newT = new Transition();
+						newT.fTargetProcess = Arrays.copyOf(curTarget, curTarget.length);
+						newT.fActionId = curActionId;
+						newT.fRate = curRate;
+						grouped.add(newT);
+						
+						curActionId = t.fActionId;
+						curRate = t.fRate;
+					}
+				}
+			}
+			Transition newT = new Transition();
+			newT.fTargetProcess = Arrays.copyOf(curTarget, curTarget.length);
+			newT.fActionId = curActionId;
+			newT.fRate = curRate;
+			grouped.add(newT);
+			
+			grouped.trimToSize();
+			
+			for (Transition t : grouped) {
 				short target[] = new short[1];
 				target[0] = t.fTargetProcess[componentId];
 				comp.addTransition(state, target, t.fActionId, t.fRate);
@@ -111,8 +177,7 @@ public class AggregationStateSpaceBuilder implements IStateSpaceBuilder {
 	}
 	
 	private ArrayList<Transition> getTransitions(short processId) {
-		// TODO: write this!
-		return new ArrayList<>();
+		return explorer.getData(processId).fFirstStepDerivative;
 	}
 	
 	private class SystemEquationVisitor extends DefaultVisitor {
