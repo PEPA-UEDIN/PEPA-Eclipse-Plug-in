@@ -99,8 +99,7 @@ public class MemoryCallback implements ICallbackListener {
 			hasVariableLength = true;
 		t_count += transitions.length;
 		Arrays.sort(transitions);
-		for (int i = 0; i < transitions.length; i++) {
-			Transition t = transitions[i];
+		for (Transition t: transitions) {
 
 			/*
 			 * System.err.println("--\nFound:"); for (short s :
@@ -132,6 +131,7 @@ public class MemoryCallback implements ICallbackListener {
 			currentAction = action;
 			sum = 0;
 		}
+		
 		if (currentAction != action) {
 			writeAction();
 			currentAction = action;
