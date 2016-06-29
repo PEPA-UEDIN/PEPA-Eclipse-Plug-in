@@ -18,14 +18,18 @@ import uk.ac.ed.inf.pepa.ctmc.derivation.DerivationException;
 import uk.ac.ed.inf.pepa.ctmc.derivation.IStateSpace;
 import uk.ac.ed.inf.pepa.ctmc.derivation.IStateSpaceBuilder;
 import uk.ac.ed.inf.pepa.ctmc.derivation.MeasurementData;
+import uk.ac.ed.inf.pepa.ctmc.derivation.common.DoubleArray;
 import uk.ac.ed.inf.pepa.ctmc.derivation.common.IStateExplorer;
 import uk.ac.ed.inf.pepa.ctmc.derivation.common.ISymbolGenerator;
+import uk.ac.ed.inf.pepa.ctmc.derivation.common.IntegerArray;
 import uk.ac.ed.inf.pepa.ctmc.derivation.common.MemoryCallback;
 import uk.ac.ed.inf.pepa.ctmc.derivation.common.OptimisedHashMap;
 import uk.ac.ed.inf.pepa.ctmc.derivation.common.State;
 import uk.ac.ed.inf.pepa.ctmc.derivation.common.Transition;
 import uk.ac.ed.inf.pepa.ctmc.derivation.common.OptimisedHashMap.InsertionResult;
+import uk.ac.ed.inf.pepa.model.NamedRate;
 import uk.ac.ed.inf.pepa.model.RateMath;
+import uk.ac.ed.inf.pepa.model.internal.NamedRateImpl;
 import uk.ac.ed.inf.pepa.parsing.AggregationNode;
 import uk.ac.ed.inf.pepa.parsing.ConstantProcessNode;
 import uk.ac.ed.inf.pepa.parsing.CooperationNode;
@@ -161,21 +165,54 @@ public class AggregationStateSpaceBuilder implements IStateSpaceBuilder {
 		states.trimToSize();
 		callback.done(generator, states);
 		
+		IntegerArray row = callback.getRow();
+		IntegerArray col = callback.getColumn();
+		DoubleArray rates = callback.getRates();
+		IntegerArray actionIds = callback.getActions();
+		
+		LtsModel<Integer> lts = new LtsModel<>();
+		int i = 0;
+		for (State s: states) {
+			lts.addState(s.stateNumber);
+			
+			int rangeStart = row.get(i);
+			int rangeEnd = (i == row.size()-1 ? col.size() : row.get(i+1));
+			for (int j=rangeStart; j < rangeEnd; j += 2) {
+				int colVal = col.get(j);
+				int colRangeStart = col.get(j+1);
+				int colRangeEnd  = (j < col.size() - 3 ? col.get(j+3): rates.size());
+				
+				// add transitions by actions.
+				for (int k=colRangeStart; k < colRangeEnd; k++) {
+					double rate = rates.get(k);
+					short actionId = (short)actionIds.get(k);
+					// FIXME: the lts shouldn't use strings as labels,
+					// but the shorts.
+					lts.addTransition(s.stateNumber, colVal, rate, actionId);
+				}
+			}
+			
+			
+			++i;
+		}
+		
 		// Build the LTS here
 		
 		// Aggregate the LTS here
 		
 		// Derive the CTMC here
-		IStateSpace result;
+		IStateSpace result = null;
 		monitor.done();
 		
 		return result;
 	}
 	
 	private DerivationException createException(State state, String message) {
-		StringBuffer buf = new StringBuffer();
-		buf.append(message + " State number: ");
-		buf.append(state.stateNumber + ". ");
+		StringBuilder buf = new StringBuilder();
+		buf.append(message);
+		buf.append(" State number: ");
+		buf.append(String.valueOf(state.stateNumber));
+		buf.append(". ");
 		buf.append("State: ");
 		for (int i = 0; i < state.fState.length; i++) {
 			buf.append(generator.getProcessLabel(state.fState[i]));

@@ -13,10 +13,12 @@ import uk.ac.ed.inf.pepa.model.NamedAction;
 import uk.ac.ed.inf.pepa.model.NamedRate;
 import uk.ac.ed.inf.pepa.model.internal.ActivityImpl;
 import uk.ac.ed.inf.pepa.model.internal.NamedActionImpl;
+import uk.ac.ed.inf.pepa.model.FiniteRate;
 
 public class LtsModel<S> implements LabelledTransitionSystem<S> {
 
 	private ArrayList<S> states;
+	// FIXME: we shouldn't use Activity here.
 	private HashMap<S, HashMap<S, Activity>> transitionMap;
 	private HashMap<S, ArrayList<S>> preImageMap;
 	
@@ -37,8 +39,8 @@ public class LtsModel<S> implements LabelledTransitionSystem<S> {
 	}
 
 	@Override
-	public NamedRate getApparentRate(S source, S target, String action) {
-		return (NamedRate) transitionMap.get(source).get(target).getRate();
+	public double getApparentRate(S source, S target, short actionId) {
+		return ((FiniteRate) transitionMap.get(source).get(target).getRate()).getValue();
 	}
 
 	@Override
@@ -67,7 +69,7 @@ public class LtsModel<S> implements LabelledTransitionSystem<S> {
 	}
 
 	@Override
-	public boolean addTransition(S source, S target, NamedRate rate) {
+	public boolean addTransition(S source, S target, double rate, short actionId) {
 		HashMap<S, Activity> map = transitionMap.get(source);
 		if (map == null) {
 			map = new HashMap<>();
@@ -82,12 +84,6 @@ public class LtsModel<S> implements LabelledTransitionSystem<S> {
 		if (old == null)
 			return false;
 		return act.equals(old);
-	}
-
-	@Override
-	public IStateSpace toStateSpace() {
-		// TODO Auto-generated method stub
-		return null;
 	}
 
 }
