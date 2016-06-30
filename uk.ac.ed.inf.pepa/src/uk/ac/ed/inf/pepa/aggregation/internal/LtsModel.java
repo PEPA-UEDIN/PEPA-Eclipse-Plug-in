@@ -2,7 +2,9 @@ package uk.ac.ed.inf.pepa.aggregation.internal;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.HashMap;
+import java.util.Iterator;
 
 import uk.ac.ed.inf.pepa.aggregation.LabelledTransitionSystem;
 import uk.ac.ed.inf.pepa.ctmc.derivation.IStateSpace;
@@ -57,6 +59,12 @@ public class LtsModel<S> implements LabelledTransitionSystem<S> {
 	public List<S> getPreImage(S target) {
 		return preImageMap.get(target);
 	}
+	
+	@Override
+	public Set<Short> getActions(S source, S target) {
+		HashMap<Short, Double> map = get(source, target);
+		return map.keySet();
+	}
 
 	@Override
 	public boolean addState(S state) {
@@ -69,16 +77,27 @@ public class LtsModel<S> implements LabelledTransitionSystem<S> {
 
 	@Override
 	public boolean addTransition(S source, S target, double rate, short actionId) {
-		HashMap<S, HashMap<Short,Double>> map = transitionMap.get(source);
+		HashMap<Short,Double> targetMap = get(source, target);
+		return targetMap.put(actionId, rate) == null;
+	}
+	
+	@Override
+	public Iterator<S> iterator() {
+		return states.iterator();
+	}
+	
+	
+	private HashMap<Short, Double>get(S source, S target) {
+		HashMap<S, HashMap<Short,Double>> targetsMap = transitionMap.get(source);
+		// targetsMap cannot be null. If it is then source is not in the LTS.
+		assert targetsMap != null;
+		
+		HashMap<Short, Double> map = targetsMap.get(target);
 		if (map == null) {
 			map = new HashMap<>();
-			transitionMap.put(source, map);
+			targetsMap.put(target, map);
 		}
-		HashMap<Short,Double> targetMap = map.get(target);
-		if (targetMap == null) {
-			targetMap = new HashMap<>();
-			map.put(target, targetMap);
-		}
-		return targetMap.put(actionId, rate) == null;
+		
+		return map;
 	}
 }

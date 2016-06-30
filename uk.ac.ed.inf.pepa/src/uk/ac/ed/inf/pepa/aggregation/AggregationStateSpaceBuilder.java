@@ -195,6 +195,8 @@ public class AggregationStateSpaceBuilder implements IStateSpaceBuilder {
 			}
 		}
 		
+		// We should aggregate the information outside the arrays
+		// and only convert it at the end...
 		ArrayList<Integer> newRow = new ArrayList<>(row.size());
 		for (int t=0; t < row.size(); ++t) {
 			newRow.add(row.get(t));

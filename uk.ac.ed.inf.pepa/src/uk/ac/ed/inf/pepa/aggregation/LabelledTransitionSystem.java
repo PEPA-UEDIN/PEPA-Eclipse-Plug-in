@@ -6,6 +6,7 @@ import uk.ac.ed.inf.pepa.model.RateMath;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 
 /**
@@ -23,6 +24,7 @@ public interface LabelledTransitionSystem<S> extends Iterable<S> {
 	public boolean addState(S state);
 	public boolean addTransition(S source, S target, double rate, short actionId);
 	
+	public Set<Short> getActions(S source, S target);
 	public double getApparentRate(S source, S target, short actionId);
 	default double getApparentRate(S source, S[] targets, short actionId) {
 		double[] rates = new double[targets.length];
