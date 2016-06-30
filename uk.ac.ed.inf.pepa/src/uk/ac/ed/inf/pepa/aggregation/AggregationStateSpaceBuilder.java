@@ -56,6 +56,7 @@ public class AggregationStateSpaceBuilder implements IStateSpaceBuilder {
 	
 	private ProcessNode systemEquation;
 	private boolean aggregateArrays;
+	private AggregationAlgorithm<Integer> algorithm;
 	
 	private final static int REFRESH_MONITOR = 20000;
 	
@@ -64,11 +65,13 @@ public class AggregationStateSpaceBuilder implements IStateSpaceBuilder {
 			IStateExplorer explorer,
 			ISymbolGenerator generator,
 			ModelNode model,
-			boolean aggregateArrays) {
+			boolean aggregateArrays,
+			AggregationAlgorithm<Integer> algorithm) {
 		this.explorer = explorer;
 		this.generator = generator;
 		this.systemEquation = model.getSystemEquation();
 		this.aggregateArrays = aggregateArrays;
+		this.algorithm = algorithm;
 	}
 	
 	/* (non-Javadoc)
@@ -163,6 +166,8 @@ public class AggregationStateSpaceBuilder implements IStateSpaceBuilder {
 		
 		explorer.dispose();
 		states.trimToSize();
+		// FIXME: we should modify the interface to avoid these getX functions,
+		// probably.
 		callback.done(generator, states);
 		
 		IntegerArray row = callback.getRow();
@@ -170,36 +175,65 @@ public class AggregationStateSpaceBuilder implements IStateSpaceBuilder {
 		DoubleArray rates = callback.getRates();
 		IntegerArray actionIds = callback.getActions();
 		
-		LtsModel<Integer> lts = new LtsModel<>();
-		int i = 0;
-		for (State s: states) {
-			lts.addState(s.stateNumber);
-			
-			int rangeStart = row.get(i);
-			int rangeEnd = (i == row.size()-1 ? col.size() : row.get(i+1));
-			for (int j=rangeStart; j < rangeEnd; j += 2) {
-				int colVal = col.get(j);
-				int colRangeStart = col.get(j+1);
-				int colRangeEnd  = (j < col.size() - 3 ? col.get(j+3): rates.size());
-				
-				// add transitions by actions.
-				for (int k=colRangeStart; k < colRangeEnd; k++) {
-					double rate = rates.get(k);
-					short actionId = (short)actionIds.get(k);
-					lts.addTransition(s.stateNumber, colVal, rate, actionId);
-				}
-			}
-			
-			
-			++i;
-		}
+		LtsModel<Integer> lts = deriveLts(states, row, col, rates, actionIds);
+		
 		// Aggregate the LTS here
+		LabelledTransitionSystem<Aggregated<Integer>> aggrLts = algorithm.aggregate(lts);
 		
 		// Derive the CTMC here
 		IStateSpace result = null;
 		monitor.done();
 		
 		return result;
+	}
+
+	/**
+	 * Derive the LTS model from the lists of states, and transitions produced
+	 * by the StateExplorerBuilder and the MemoryCallback.
+	 * 
+	 * @param states
+	 * @param row
+	 * @param col
+	 * @param rates
+	 * @param actionIds
+	 * @return
+	 */
+	private LtsModel<Integer> deriveLts(ArrayList<State> states,
+			IntegerArray row, IntegerArray col, DoubleArray rates,
+			IntegerArray actionIds) {
+		LtsModel<Integer> lts = new LtsModel<>();
+		int i = 0;
+		for (State s: states) {
+			// Add all states into the LTS.
+			lts.addState(s.stateNumber);
+			
+			// The ith position in row contains the index t inside the
+			// col array that contains the transitions from the state s.
+			int rangeStart = row.get(i);
+			int rangeEnd = (i == row.size()-1 ? col.size() : row.get(i+1));
+			for (int j=rangeStart; j < rangeEnd; j += 2) {
+				// The jth position inside col contains the state number
+				// of the target node in the transition. The index j+1
+				// contains the starting index in the rates and actionIds
+				// arrays that refer to transitions between state s
+				// and state target.
+				int targetId = col.get(j);
+				int colRangeStart = col.get(j+1);
+				int colRangeEnd  = (j < col.size() - 3 ? col.get(j+3): rates.size());
+				
+				// For each these transitions from state s to target
+				// and for each label, we add these to the Lts.
+				for (int k=colRangeStart; k < colRangeEnd; k++) {
+					double rate = rates.get(k);
+					short actionId = (short)actionIds.get(k);
+					lts.addTransition(s.stateNumber, targetId, rate, actionId);
+				}
+			}
+			
+			
+			++i;
+		}
+		return lts;
 	}
 	
 	private DerivationException createException(State state, String message) {
@@ -224,170 +258,6 @@ public class AggregationStateSpaceBuilder implements IStateSpaceBuilder {
 	public MeasurementData getMeasurementData() {
 		// TODO Auto-generated method stub
 		return null;
-	}
-	
-	
-	public Component constructModelComponent(int componentId, short localInitialState[]) {
-		Component comp = new Component();
-		comp.offset = componentId;
-		Queue<short[]> queue = new LinkedList<short[]>();
-		queue.add(localInitialState);
-		comp.addState(new short[] {localInitialState[0]});
-		
-		while (!queue.isEmpty()) {
-			short[] state = queue.remove();
-			ArrayList<Transition> found = getTransitions(state[0]);
-			for (Transition t: found) {
-				short s[] = new short[1];
-				s[0] = t.fTargetProcess[componentId];
-				if (!comp.containsState(s)) {
-					comp.addState(s);
-					queue.add(s);
-				}
-			}
-		}
-		
-		// comp.buildTransitions();  // possible optimization.
-		for (int i = 0; i < comp.size(); i++) {
-			short state[] = comp.getState(i);
-			ArrayList<Transition> found = getTransitions(state[0]);
-
-			found.sort(new Comparator<Transition>() {
-
-				@Override
-				public int compare(Transition o1, Transition o2) {
-					return o1.compareTo(o2);
-				}
-				
-			});
-			//Collections.sort(found);
-			
-			// The transitions found by the StateExplorer could be multiple
-			// in our LTS we would to sum rates from the same pair of
-			// states and same label. This is what we do here.
-			ArrayList<Transition> grouped = new ArrayList<>(found.size());
-			
-			short[] curTarget = null;
-			double curRate = 0.0d;
-			short curActionId = -1;
-			for (Transition t : found) {
-				if (curTarget == null) {
-					curTarget = t.fTargetProcess;
-					curActionId = t.fActionId;
-					curRate = t.fRate;
-				} else if (Arrays.equals(curTarget, t.fTargetProcess)) {
-					if (curActionId == t.fActionId) {
-						curRate += t.fRate;
-					} else {
-						Transition newT = new Transition();
-						newT.fTargetProcess = Arrays.copyOf(curTarget, curTarget.length);
-						newT.fActionId = curActionId;
-						newT.fRate = curRate;
-						grouped.add(newT);
-						
-						curActionId = t.fActionId;
-						curRate = t.fRate;
-					}
-				}
-			}
-			Transition newT = new Transition();
-			newT.fTargetProcess = Arrays.copyOf(curTarget, curTarget.length);
-			newT.fActionId = curActionId;
-			newT.fRate = curRate;
-			grouped.add(newT);
-			
-			grouped.trimToSize();
-			
-			for (Transition t : grouped) {
-				short target[] = new short[1];
-				target[0] = t.fTargetProcess[componentId];
-				comp.addTransition(state, target, t.fActionId, t.fRate);
-			}
-		}
-		
-		return comp;
-	}
-	
-	private ArrayList<Transition> getTransitions(short processId) {
-		return explorer.getData(processId).fFirstStepDerivative;
-	}
-	
-	private class SystemEquationVisitor extends DefaultVisitor {
-		
-		int stateSize;
-		int multiplicity;
-		Component resultComponent;
-		
-		SystemEquationVisitor() {
-			stateSize = 0;
-		}
-		
-		@Override
-		public void visitCooperationNode(CooperationNode cooperation) {
-			cooperation.getLeft().accept(this);
-			AggregatedModelComponent comp = resultComponent;
-			cooperation.getRight().accept(this);
-			resultComponent = null;
-		}
-		
-		@Override
-		public void visitHidingNode(HidingNode hiding) {
-			hiding.getProcess().accept(this);
-		}
-		
-		@Override
-		public void visitWildcardCooperationNode(WildcardCooperationNode wildcard) {
-			wildcard.getLeft().accept(this);
-			AggregatedModelComponent comp = resultComponent;
-			wildcard.getRight().accept(this);
-			// create the cooperation component from comp and resultComponent.
-			resultComponent = null;
-		}
-		
-		@Override
-		public void visitAggregationNode(AggregationNode aggregation) {
-			// Aggregated arrays get de-sugared into wildcard cooperations
-			ProcessNode seq = aggregation.getProcessNode();
-			aggregation.getCopies().accept(this);
-			int copies = multiplicity;
-			
-			if (multiplicity == 1) {
-				seq.accept(this);
-			} else {
-				WildcardCooperationNode coop = new WildcardCooperationNode();
-				WildcardCooperationNode c = coop;
-				WildcardCooperationNode c2;
-				while (copies > 2) {
-					c2 = new WildcardCooperationNode();
-					c.setLeft(seq);
-					c.setRight(c2);
-					c = c2;
-					copies--;
-				}
-				c.setLeft(seq);
-				c.setRight(seq);
-				coop.accept(this);
-			}
-		}
-		
-		@Override
-		public void visitConstantProcessNode(ConstantProcessNode constant) {
-			short[] initialState = generator.getInitialState();
-			int componentId = stateSize++;
-			short localInitialState[] = Arrays.copyOfRange(
-					initialState, componentId, componentId + 1);
-			resultComponent = constructModelComponent(
-					componentId, localInitialState);
-		}
-		
-		
-		/**
-		 * Used to compute the number of copies of Aggregated Arrays.
-		 */
-		@Override
-		public void visitRateDoubleNode(RateDoubleNode node) {
-			multiplicity = (int) node.getValue();
-		}
 	}
 	
 }
