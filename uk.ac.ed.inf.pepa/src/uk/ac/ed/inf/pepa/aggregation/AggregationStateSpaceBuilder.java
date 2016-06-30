@@ -186,8 +186,6 @@ public class AggregationStateSpaceBuilder implements IStateSpaceBuilder {
 				for (int k=colRangeStart; k < colRangeEnd; k++) {
 					double rate = rates.get(k);
 					short actionId = (short)actionIds.get(k);
-					// FIXME: the lts shouldn't use strings as labels,
-					// but the shorts.
 					lts.addTransition(s.stateNumber, colVal, rate, actionId);
 				}
 			}
@@ -195,9 +193,6 @@ public class AggregationStateSpaceBuilder implements IStateSpaceBuilder {
 			
 			++i;
 		}
-		
-		// Build the LTS here
-		
 		// Aggregate the LTS here
 		
 		// Derive the CTMC here

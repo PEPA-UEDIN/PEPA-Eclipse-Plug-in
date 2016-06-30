@@ -18,8 +18,7 @@ import uk.ac.ed.inf.pepa.model.FiniteRate;
 public class LtsModel<S> implements LabelledTransitionSystem<S> {
 
 	private ArrayList<S> states;
-	// FIXME: we shouldn't use Activity here.
-	private HashMap<S, HashMap<S, Activity>> transitionMap;
+	private HashMap<S, HashMap<S, HashMap<Short, Double>>> transitionMap;
 	private HashMap<S, ArrayList<S>> preImageMap;
 	
 	public LtsModel() {
@@ -40,12 +39,12 @@ public class LtsModel<S> implements LabelledTransitionSystem<S> {
 
 	@Override
 	public double getApparentRate(S source, S target, short actionId) {
-		return ((FiniteRate) transitionMap.get(source).get(target).getRate()).getValue();
+		return transitionMap.get(source).get(target).get(actionId);
 	}
 
 	@Override
 	public List<S> getImage(S source) {
-		HashMap<S, Activity> targetsMap = transitionMap.get(source);
+		HashMap<S, HashMap<Short, Double>> targetsMap = transitionMap.get(source);
 		ArrayList<S> targets = new ArrayList<>(targetsMap.size());
 		for (S key: targetsMap.keySet()) {
 			targets.add(key);
@@ -70,20 +69,16 @@ public class LtsModel<S> implements LabelledTransitionSystem<S> {
 
 	@Override
 	public boolean addTransition(S source, S target, double rate, short actionId) {
-		HashMap<S, Activity> map = transitionMap.get(source);
+		HashMap<S, HashMap<Short,Double>> map = transitionMap.get(source);
 		if (map == null) {
 			map = new HashMap<>();
 			transitionMap.put(source, map);
 		}
-		ActivityImpl act = new ActivityImpl();
-		act.setRate(rate);
-		NamedActionImpl aName = new NamedActionImpl();
-		aName.setName(rate.getName());
-		act.setAction(aName);
-		Activity old = map.put(target, act);
-		if (old == null)
-			return false;
-		return act.equals(old);
+		HashMap<Short,Double> targetMap = map.get(target);
+		if (targetMap == null) {
+			targetMap = new HashMap<>();
+			map.put(target, targetMap);
+		}
+		return targetMap.put(actionId, rate) == null;
 	}
-
 }

@@ -12,7 +12,7 @@ import uk.ac.ed.inf.pepa.model.Rate;
  * @author Giacomo Alzetta
  *
  */
-public interface AggregationAlgorithm {
+public interface AggregationAlgorithm<S> {
 
-	public LabelledTransitionSystem<AggregatedState> aggregate(LabelledTransitionSystem<State> initial);
+	public LabelledTransitionSystem<Aggregated<S>> aggregate(LabelledTransitionSystem<S> initial);
 }
