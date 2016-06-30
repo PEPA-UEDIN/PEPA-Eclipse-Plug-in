@@ -3,6 +3,8 @@ package uk.ac.ed.inf.pepa.aggregation;
 import uk.ac.ed.inf.pepa.ctmc.derivation.IStateSpace;
 import uk.ac.ed.inf.pepa.model.NamedRate;
 import uk.ac.ed.inf.pepa.model.RateMath;
+
+import java.util.Iterator;
 import java.util.List;
 
 
@@ -12,7 +14,7 @@ import java.util.List;
  * @author Giacomo Alzetta
  *
  */
-public interface LabelledTransitionSystem<S> {
+public interface LabelledTransitionSystem<S> extends Iterable<S> {
 
 	public boolean isValid();
 	

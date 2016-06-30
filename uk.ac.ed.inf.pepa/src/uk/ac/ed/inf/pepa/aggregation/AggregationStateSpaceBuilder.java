@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
@@ -180,6 +181,33 @@ public class AggregationStateSpaceBuilder implements IStateSpaceBuilder {
 		// Aggregate the LTS here
 		LabelledTransitionSystem<Aggregated<Integer>> aggrLts = algorithm.aggregate(lts);
 		
+		// FIXME: this should probably change.
+		ArrayList<Aggregated<Integer>> allAggrStates = new ArrayList<>(aggrLts.size());
+		for (Aggregated<Integer> aggrS : aggrLts) {
+			allAggrStates.add(aggrS);
+		}
+		Collections.sort(allAggrStates);
+		
+		HashMap<Integer, Aggregated<Integer>> statesToAggr = new HashMap(states.size());
+		for (Aggregated<Integer> aggrS: allAggrStates) {
+			for (Integer s: aggrS) {
+				statesToAggr.put(s,  aggrS);
+			}
+		}
+		
+		ArrayList<Integer> newRow = new ArrayList<>(row.size());
+		for (int t=0; t < row.size(); ++t) {
+			newRow.add(row.get(t));
+		}
+		
+		newRow.sort(new Comparator<Integer>() {
+
+			@Override
+			public int compare(Integer o1, Integer o2) {
+				return statesToAggr.get(o1).getRepresentative() - statesToAggr.get(o2).getRepresentative();
+			}}
+		);
+		
 		// Derive the CTMC here
 		IStateSpace result = null;
 		monitor.done();
@@ -207,12 +235,12 @@ public class AggregationStateSpaceBuilder implements IStateSpaceBuilder {
 			// Add all states into the LTS.
 			lts.addState(s.stateNumber);
 			
-			// The ith position in row contains the index t inside the
+			// The i-th position in row contains the index t inside the
 			// col array that contains the transitions from the state s.
 			int rangeStart = row.get(i);
 			int rangeEnd = (i == row.size()-1 ? col.size() : row.get(i+1));
 			for (int j=rangeStart; j < rangeEnd; j += 2) {
-				// The jth position inside col contains the state number
+				// The j-th position inside col contains the state number
 				// of the target node in the transition. The index j+1
 				// contains the starting index in the rates and actionIds
 				// arrays that refer to transitions between state s
