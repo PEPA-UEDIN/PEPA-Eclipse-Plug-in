@@ -27,6 +27,7 @@ import uk.ac.ed.inf.pepa.ctmc.derivation.common.MemoryCallback;
 import uk.ac.ed.inf.pepa.ctmc.derivation.common.OptimisedHashMap;
 import uk.ac.ed.inf.pepa.ctmc.derivation.common.State;
 import uk.ac.ed.inf.pepa.ctmc.derivation.common.Transition;
+import uk.ac.ed.inf.pepa.ctmc.derivation.internal.hbf.MemoryStateSpace;
 import uk.ac.ed.inf.pepa.ctmc.derivation.common.OptimisedHashMap.InsertionResult;
 import uk.ac.ed.inf.pepa.model.NamedRate;
 import uk.ac.ed.inf.pepa.model.RateMath;
@@ -181,37 +182,56 @@ public class AggregationStateSpaceBuilder implements IStateSpaceBuilder {
 		// Aggregate the LTS here
 		LabelledTransitionSystem<Aggregated<Integer>> aggrLts = algorithm.aggregate(lts);
 		
-		// FIXME: this should probably change.
-		ArrayList<Aggregated<Integer>> allAggrStates = new ArrayList<>(aggrLts.size());
-		for (Aggregated<Integer> aggrS : aggrLts) {
-			allAggrStates.add(aggrS);
-		}
-		Collections.sort(allAggrStates);
+		// These could be just ArrayLists.
+		HashMap<Integer, Aggregated<Integer>> newStatesToRepr = new HashMap<>(aggrLts.size());
+		HashMap<Integer, Integer> reprToNewStates = new HashMap<>(aggrLts.size());
 		
-		HashMap<Integer, Aggregated<Integer>> statesToAggr = new HashMap(states.size());
-		for (Aggregated<Integer> aggrS: allAggrStates) {
-			for (Integer s: aggrS) {
-				statesToAggr.put(s,  aggrS);
+		int i=0;
+		for (Aggregated<Integer> s: aggrLts) {
+			newStatesToRepr.put(i, s);
+			reprToNewStates.put(s.getRepresentative(), i);
+			++i;
+			
+		}
+		IntegerArray newRow = new IntegerArray(aggrLts.numberOfStates());
+		IntegerArray newCol = new IntegerArray(2*aggrLts.numberOfTransitions());
+		IntegerArray newActions = new IntegerArray(aggrLts.numberOfTransitions());
+		DoubleArray newRates = new DoubleArray(aggrLts.numberOfTransitions());
+		
+		for (i=0; i < aggrLts.numberOfStates(); ++i) {
+			Aggregated<Integer> s = newStatesToRepr.get(i);
+			for (Aggregated<Integer> target: aggrLts.getImage(s)) {
+				for (short actionId : aggrLts.getActions(s, target)) {
+					double rate = aggrLts.getApparentRate(s, target, actionId);
+					newCol.add(reprToNewStates.get(target.getRepresentative()));
+					newCol.add(newActions.size());
+					newActions.add(actionId);
+					newRates.add(rate);
+				}
 			}
 		}
 		
-		// We should aggregate the information outside the arrays
-		// and only convert it at the end...
-		ArrayList<Integer> newRow = new ArrayList<>(row.size());
-		for (int t=0; t < row.size(); ++t) {
-			newRow.add(row.get(t));
+
+		ArrayList<State> newStates = new ArrayList<>(aggrLts.size());
+		int maxSize = 0;
+		for (i=0; i < aggrLts.size(); ++i) {
+			State s = states.get(newStatesToRepr.get(i).getRepresentative());
+			newStates.add(s);
+			if (s.fState.length > maxSize) {
+				maxSize = s.fState.length;
+			}
 		}
 		
-		newRow.sort(new Comparator<Integer>() {
-
-			@Override
-			public int compare(Integer o1, Integer o2) {
-				return statesToAggr.get(o1).getRepresentative() - statesToAggr.get(o2).getRepresentative();
-			}}
-		);
-		
 		// Derive the CTMC here
-		IStateSpace result = null;
+		IStateSpace result = new MemoryStateSpace(
+				generator,
+				newStates,
+				newRow,
+				newCol,
+				newActions,
+				newRates,
+				false,  // FIXME: this should be checked!
+				maxSize);
 		monitor.done();
 		
 		return result;

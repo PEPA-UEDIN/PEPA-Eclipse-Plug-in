@@ -20,6 +20,11 @@ public interface LabelledTransitionSystem<S> extends Iterable<S> {
 	public boolean isValid();
 	
 	public int size();
+	default int numberOfStates() {
+		return size();
+	}
+	
+	public int numberOfTransitions();
 	
 	public boolean addState(S state);
 	public boolean addTransition(S source, S target, double rate, short actionId);

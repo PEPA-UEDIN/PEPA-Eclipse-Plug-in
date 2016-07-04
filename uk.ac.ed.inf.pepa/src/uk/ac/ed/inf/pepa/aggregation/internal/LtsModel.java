@@ -100,4 +100,16 @@ public class LtsModel<S> implements LabelledTransitionSystem<S> {
 		
 		return map;
 	}
+
+	@Override
+	public int numberOfTransitions() {
+		int total = 0;
+		for (HashMap<S, HashMap<Short, Double>> trans : transitionMap.values()) {
+			for (HashMap<Short, Double> m : trans.values()) {
+				total += m.size();
+			}
+		}
+		
+		return total;
+	}
 }

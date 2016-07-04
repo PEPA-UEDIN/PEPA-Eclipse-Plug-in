@@ -13,9 +13,10 @@ import java.util.Set;
 public class Aggregated<S extends Comparable<S>> implements Iterable<S>, Comparable<Aggregated<S>> {
 
 	private Set<S> internalStates = new HashSet<S>();
+	private S representative = null;
 	
 	public S getRepresentative() {
-		return internalStates.iterator().next();
+		return representative;
 	}
 	
 	public int size() {
@@ -23,6 +24,9 @@ public class Aggregated<S extends Comparable<S>> implements Iterable<S>, Compara
 	}
 	
 	public void add(S state) {
+		if (state.compareTo(representative) < 0) {
+			representative = state;
+		}
 		internalStates.add(state);
 	}
 	
@@ -37,6 +41,7 @@ public class Aggregated<S extends Comparable<S>> implements Iterable<S>, Compara
 
 	@Override
 	public int compareTo(Aggregated<S> o) {
+		// FIXME: is this correct? 
 		return getRepresentative().compareTo(o.getRepresentative());
 	}
 }
