@@ -23,7 +23,7 @@ import uk.ac.ed.inf.pepa.model.Rate;
  * 
  * @author Giacomo Alzetta
  */
-public interface PartitionBlock<S> {
+public interface PartitionBlock<S> extends Iterable<S> {
 	
 	/**
 	 * Add a non-marked state to the block.
@@ -107,4 +107,7 @@ public interface PartitionBlock<S> {
 	 */
 	public double getValue(S state) throws StateNotFoundException, StateIsMarkedException;
 	
+	default Iterator<S> iterator() {
+		return getStates();
+	}
 }
