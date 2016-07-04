@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
+import uk.ac.ed.inf.pepa.aggregation.Aggregated;
 import uk.ac.ed.inf.pepa.aggregation.AggregationAlgorithm;
 import uk.ac.ed.inf.pepa.aggregation.LabelledTransitionSystem;
 import uk.ac.ed.inf.pepa.aggregation.PartitionBlock;
@@ -17,17 +18,17 @@ import uk.ac.ed.inf.pepa.model.Rate;
  * @author Giacomo Alzetta
  *
  */
-public class ContextualLumpability<S extends Comparable> implements AggregationAlgorithm<S> {
+public class ContextualLumpability<S extends Comparable<S>> implements AggregationAlgorithm<S> {
 
 	@Override
 	public LabelledTransitionSystem<Aggregated<S>> aggregate(LabelledTransitionSystem<S> initial) {
-		List<PartitionBlock<T, V>> partition = initialPartition(initial);
-		LinkedList<PartitionBlock<T, V>> splitters = new LinkedList<>(partition);
-		List<PartitionBlock<T, V>> touchedBlocks = new ArrayList<>();
-		ArrayList<V> weights = new ArrayList<>();
+		List<PartitionBlock<S>> partition = initialPartition(initial);
+		LinkedList<PartitionBlock<S>> splitters = new LinkedList<>(partition);
+		List<PartitionBlock<S>> touchedBlocks = new ArrayList<>();
+		ArrayList<Double> weights = new ArrayList<>();
 		
 		while (!splitters.isEmpty()) {
-			PartitionBlock<T, V> splitter = splitters.pollFirst();
+			PartitionBlock<S> splitter = splitters.pollFirst();
 			// compute pre-images
 			// compute weights.
 		}
@@ -35,9 +36,9 @@ public class ContextualLumpability<S extends Comparable> implements AggregationA
 		return null;
 	}
 
-	public List<PartitionBlock<T, V>> initialPartition(IStateSpace initial) {
-		PartitionBlock<T, V> p = new ArrayPartitionBlock<>();
-		ArrayList<PartitionBlock<T, V>> res = new ArrayList<>();
+	public List<PartitionBlock<S>> initialPartition(LabelledTransitionSystem<S> initial) {
+		PartitionBlock<S> p = new ArrayPartitionBlock<>();
+		ArrayList<PartitionBlock<S>> res = new ArrayList<>();
 		res.add(p);
 		return res;
 	}
