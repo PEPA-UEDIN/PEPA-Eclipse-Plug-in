@@ -8,12 +8,14 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 import uk.ac.ed.inf.pepa.aggregation.Aggregated;
 import uk.ac.ed.inf.pepa.aggregation.AggregationAlgorithm;
 import uk.ac.ed.inf.pepa.aggregation.LabelledTransitionSystem;
 import uk.ac.ed.inf.pepa.aggregation.Partition;
 import uk.ac.ed.inf.pepa.aggregation.PartitionBlock;
+import uk.ac.ed.inf.pepa.aggregation.StateNotFoundException;
 import uk.ac.ed.inf.pepa.ctmc.derivation.IStateSpace;
 import uk.ac.ed.inf.pepa.model.Rate;
 
@@ -28,7 +30,7 @@ public class ContextualLumpability<S extends Comparable<S>> implements Aggregati
 		Partition<S, PartitionBlock<S>> partition = initialPartition(initial);
 		LinkedList<PartitionBlock<S>> splitters = new LinkedList<>(partition.getBlocks());
 		LinkedList<PartitionBlock<S>> touchedBlocks = new LinkedList<>();
-		ArrayList<Double> weights = new ArrayList<>();
+		HashMap<S, Double> weights = new HashMap<>();
 		
 		while (!splitters.isEmpty()) {
 			PartitionBlock<S> splitter = splitters.pollFirst();
@@ -38,20 +40,37 @@ public class ContextualLumpability<S extends Comparable<S>> implements Aggregati
 			for (S state: splitter) {
 				List<S> splitPreIm = initial.getPreImage(state);
 				for (S s: splitPreIm) {
-					HashSet<Short> curActs = initial.getActions(s, state);
+					Set<Short> curActs = initial.getActions(s, state);
 					allActions.addAll(curActs);
 					for (Short act : curActs) {
-						// TODO: checks for null
-						preIm.get(state).get(act).add(s);
+						HashMap<Short, HashSet<S>> preImState = preIm.get(state);
+						if (preImState == null) {
+							preImState = new HashMap<>();
+							preIm.put(state,  preImState);
+						}
+						HashSet<S> preImTargets = preImState.get(act);
+						if (preImTargets == null) {
+							preImTargets = new HashSet<>();
+							preImState.put(act, preImTargets);
+						}
+						preImTargets.add(s);
 					}
 				}
 			}
 			
 			for (short act: allActions) {
+				weights.clear();
+				
 				ArrayList<S> seenStates = new ArrayList<>();
 				for (S state : splitter) {
 					for (S source : preIm.get(state).get(act)) {
-						// sum weights
+						Double w = weights.get(source);
+						if (w == null) {
+							w = 0.0d;
+							seenStates.add(source);
+						}
+						w += initial.getApparentRate(source, state, act);
+						weights.put(source, w);
 					}
 				}
 				
@@ -61,12 +80,20 @@ public class ContextualLumpability<S extends Comparable<S>> implements Aggregati
 					if (!block.getMarkedStates().hasNext()) {
 						touchedBlocks.add(block);
 					}
-					block.markState(state);
+					try {
+						block.markState(state);
+					} catch (StateNotFoundException e) {
+						e.printStackTrace();
+					}
 				}
 				
 				while (!touchedBlocks.isEmpty()) {
 					PartitionBlock<S> block = touchedBlocks.pollFirst();
 					PartitionBlock<S> markedBlock = block.splitMarkedStates();
+					
+					List<Double> allWeights = new ArrayList<>(weights.values());
+					Double pmc = PartitioningUtils.pmc(allWeights);
+					HashMap<S, Double> toPmc = PartitioningUtils.splitMapOnValue(weights, pmc);
 					
 				}
 			}
