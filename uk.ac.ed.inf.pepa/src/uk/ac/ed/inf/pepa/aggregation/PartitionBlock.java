@@ -23,14 +23,14 @@ import uk.ac.ed.inf.pepa.model.Rate;
  * 
  * @author Giacomo Alzetta
  */
-public interface PartitionBlock<T, V extends Rate> {
+public interface PartitionBlock<S> {
 	
 	/**
 	 * Add a non-marked state to the block.
 	 * 
 	 * @param state
 	 */
-	public void addState(T state);
+	public void addState(S state);
 	
 	/**
 	 * True if this block of the partition doesn't contain any state.
@@ -44,13 +44,13 @@ public interface PartitionBlock<T, V extends Rate> {
 	 * 
 	 * @return
 	 */
-	public Iterator<T> getStates();
+	public Iterator<S> getStates();
 	
 	/**
 	 * Iterate over all the states that were marked in this block.
 	 * @return
 	 */
-	public Iterator<T> getMarkedStates();
+	public Iterator<S> getMarkedStates();
 	
 	/**
 	 * Splits the block into two blocks: one containing the marked states and one
@@ -61,7 +61,7 @@ public interface PartitionBlock<T, V extends Rate> {
 	 * 
 	 * @return
 	 */
-	public PartitionBlock<T, V> splitMarkedStates();
+	public PartitionBlock<S> splitMarkedStates();
 	
 	/**
 	 * Splits the block into a certain number of blocks grouping together states depending
@@ -69,7 +69,7 @@ public interface PartitionBlock<T, V extends Rate> {
 	 * 
 	 * @return
 	 */
-	public Iterator<PartitionBlock<T, V>> splitBlock();
+	public Iterator<PartitionBlock<S>> splitBlock();
 	
 	/**
 	 * Marks the given state in the block.
@@ -79,7 +79,7 @@ public interface PartitionBlock<T, V extends Rate> {
 	 * 
 	 * @param state	A state of the block.
 	 */
-	public void markState(T state) throws StateNotFoundException;
+	public void markState(S state) throws StateNotFoundException;
 	
 	/**
 	 * Return true if the given state is a marked state in the block.
@@ -87,7 +87,7 @@ public interface PartitionBlock<T, V extends Rate> {
 	 * @param state a state of the block.
 	 * @return
 	 */
-	public boolean isMarked(T state) throws StateNotFoundException;
+	public boolean isMarked(S state) throws StateNotFoundException;
 	
 	/**
 	 * Sets the value associated with a state.
@@ -96,7 +96,7 @@ public interface PartitionBlock<T, V extends Rate> {
 	 * @param state A state of the block
 	 * @param value The value to be associated with this state.
 	 */
-	public void setValue(T state, V value) throws StateNotFoundException, StateIsMarkedException;
+	public void setValue(S state, double value) throws StateNotFoundException, StateIsMarkedException;
 	
 	/**
 	 * Return the value associated with a state.
@@ -105,6 +105,6 @@ public interface PartitionBlock<T, V extends Rate> {
 	 * @param state A state of the block
 	 * @return The value associated with the state or <code>null</code> if no value was set.
 	 */
-	public V getValue(T state) throws StateNotFoundException, StateIsMarkedException;
+	public double getValue(S state) throws StateNotFoundException, StateIsMarkedException;
 	
 }

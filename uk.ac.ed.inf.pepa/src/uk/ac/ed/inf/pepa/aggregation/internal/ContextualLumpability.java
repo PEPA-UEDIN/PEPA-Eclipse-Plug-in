@@ -8,6 +8,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import uk.ac.ed.inf.pepa.aggregation.AggregationAlgorithm;
+import uk.ac.ed.inf.pepa.aggregation.LabelledTransitionSystem;
 import uk.ac.ed.inf.pepa.aggregation.PartitionBlock;
 import uk.ac.ed.inf.pepa.ctmc.derivation.IStateSpace;
 import uk.ac.ed.inf.pepa.model.Rate;
@@ -16,10 +17,10 @@ import uk.ac.ed.inf.pepa.model.Rate;
  * @author Giacomo Alzetta
  *
  */
-public class ContextualLumpability<T, V extends Rate> implements AggregationAlgorithm<T, V> {
+public class ContextualLumpability<S extends Comparable> implements AggregationAlgorithm<S> {
 
 	@Override
-	public IStateSpace aggregate(IStateSpace initial) {
+	public LabelledTransitionSystem<Aggregated<S>> aggregate(LabelledTransitionSystem<S> initial) {
 		List<PartitionBlock<T, V>> partition = initialPartition(initial);
 		LinkedList<PartitionBlock<T, V>> splitters = new LinkedList<>(partition);
 		List<PartitionBlock<T, V>> touchedBlocks = new ArrayList<>();

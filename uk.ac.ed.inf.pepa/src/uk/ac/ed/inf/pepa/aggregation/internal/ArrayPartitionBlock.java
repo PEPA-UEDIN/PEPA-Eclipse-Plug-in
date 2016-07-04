@@ -29,12 +29,12 @@ import uk.ac.ed.inf.pepa.model.RateMath;
  * @author Giacomo Alzetta
  *
  */
-public class ArrayPartitionBlock<T, V extends Rate> implements PartitionBlock<T, V> {
+public class ArrayPartitionBlock<T> implements PartitionBlock<T> {
 
 	private ArrayList<T> states;
 	private int markIndex = 0;
 	
-	private HashMap<T, V> mapToValues;
+	private HashMap<T, Double> mapToValues;
 	
 	/**
 	 * Create an empty partition block.
@@ -110,8 +110,8 @@ public class ArrayPartitionBlock<T, V extends Rate> implements PartitionBlock<T,
 	}
 	
 	@Override
-	public PartitionBlock<T, V> splitMarkedStates() {
-		ArrayPartitionBlock<T, V> newBlock = new ArrayPartitionBlock<>(states.subList(0, markIndex));
+	public PartitionBlock<T> splitMarkedStates() {
+		ArrayPartitionBlock<T> newBlock = new ArrayPartitionBlock<>(states.subList(0, markIndex));
 		// TODO: optimization: if markIndex << size we can just swap
 		//       the last markIndex states at the beginning, instead of moving
 		// 	     all remaining states backwards.
@@ -124,40 +124,40 @@ public class ArrayPartitionBlock<T, V extends Rate> implements PartitionBlock<T,
 	}
 	
 	@Override
-	public Iterator<PartitionBlock<T, V>> splitBlock() {
-		ArrayList<V> values = new ArrayList<>(mapToValues.values());
-		V pmc = PartitioningUtils.pmc(values);
-		HashMap<T, V> mappingNotPmc = new HashMap<>(mapToValues);
-		HashMap<T, V> mappingOfPmc = PartitioningUtils.splitMapOnValue(mappingNotPmc, pmc);
+	public Iterator<PartitionBlock<T>> splitBlock() {
+		ArrayList<Double> values = new ArrayList<>(mapToValues.values());
+		double pmc = PartitioningUtils.pmc(values);
+		HashMap<T, Double> mappingNotPmc = new HashMap<>(mapToValues);
+		HashMap<T, Double> mappingOfPmc = PartitioningUtils.splitMapOnValue(mappingNotPmc, pmc);
 		
-		PartitionBlock<T, V> pmcBlock = new ArrayPartitionBlock<>();
-		for (Map.Entry<T, V> entry: mappingOfPmc.entrySet()) {
+		PartitionBlock<T> pmcBlock = new ArrayPartitionBlock<>();
+		for (Map.Entry<T, Double> entry: mappingOfPmc.entrySet()) {
 			pmcBlock.addState(entry.getKey());
 		}
 		
-		ArrayList<Map.Entry<T, V>> entries = new ArrayList<>(mappingNotPmc.entrySet());
-		entries.sort(new Comparator<Map.Entry<T, V>>() {
+		ArrayList<Map.Entry<T, Double>> entries = new ArrayList<>(mappingNotPmc.entrySet());
+		entries.sort(new Comparator<Map.Entry<T, Double>>() {
 			
 			@Override
-			public int compare(Map.Entry<T, V> e1, Map.Entry<T, V> e2) {
-				V v1 = e1.getValue();
-				V v2 = e2.getValue();
+			public int compare(Map.Entry<T, Double> e1, Map.Entry<T, Double> e2) {
+				double v1 = e1.getValue();
+				double v2 = e2.getValue();
 				
 				// TODO: check that this comparison is sound.
-				if (e1.getValue().equals(e2.getValue())) {
+				if (v1 == v2) {
 					return 0;
 				} else {
 					// in particular here
-					return RateMath.min(v1, v2).equals(v1) ? -1 : 1;
+					return Math.min(v1, v2) == v1 ? -1 : 1;
 				}
 			}
 		});
 		
-		HashMap<V, PartitionBlock<T, V>> blocks = new HashMap<>();
+		HashMap<Double, PartitionBlock<T>> blocks = new HashMap<>();
 		blocks.put(pmc, pmcBlock);
 		
-		for (Map.Entry<T, V> entry : entries) {
-			V val = entry.getValue();
+		for (Map.Entry<T, Double> entry : entries) {
+			Double val = entry.getValue();
 			if (!blocks.containsKey(val)) {
 				blocks.put(val, new ArrayPartitionBlock<>());
 			}
@@ -198,18 +198,15 @@ public class ArrayPartitionBlock<T, V extends Rate> implements PartitionBlock<T,
 	
 	
 	@Override
-	public void setValue(T state, V value) throws StateNotFoundException, StateIsMarkedException {
-		if (value == null) {
-			throw new NullPointerException("Cannot assign a null value!");
-		}
-		
+	public void setValue(T state, double value) throws StateNotFoundException, StateIsMarkedException {
 		checkStateExistNonMarked(state);
 		
 		mapToValues.put(state, value);
 	}
+	
 	@Override
-	public V getValue(T state) throws StateNotFoundException, StateIsMarkedException {
-		V value = mapToValues.get(state);
+	public double getValue(T state) throws StateNotFoundException, StateIsMarkedException {
+		Double value = mapToValues.get(state);
 		if (value == null) {
 			if (mapToValues.containsKey(state)) {
 				throw new RuntimeException("Impossible happened: null value assigned to state.");
