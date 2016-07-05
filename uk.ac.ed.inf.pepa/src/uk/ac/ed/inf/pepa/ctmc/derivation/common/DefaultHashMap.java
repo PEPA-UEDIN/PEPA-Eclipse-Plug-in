@@ -12,22 +12,32 @@ import java.util.Set;
  * An HashMap class that automatically creates default values
  * when they are not present.
  * 
+ * This calls allows to write code such as:
+ * <code>
+ * map.get(key).put(key2, value)
+ * </code>
+ * without having to check explicitly for null every time.
  * 
  * @author Giacomo Alzetta
  *
  */
-public class DefaultHashMap<K, V, T extends Defaulter<V>> implements Map<K, V> {
+public class DefaultHashMap<K, V> implements Map<K, V> {
 
 	private HashMap<K, V> map;
-	private T defaulter;
+	private Defaulter<V> defaulter;
 	
-	public DefaultHashMap(T defaulter, int initialCapacity) {
+	public DefaultHashMap(Defaulter<V> defaulter, int initialCapacity) {
 		this.defaulter = defaulter;
 		map = new HashMap<>(initialCapacity);
 	}
 	
-	public DefaultHashMap(T defaulter) {
+	public DefaultHashMap(Defaulter<V> defaulter) {
 		this(defaulter, 0);
+	}
+	
+	public DefaultHashMap(Defaulter<V> defaulter, Map<K, V> map) {
+		map = new HashMap<>(map);
+		this.defaulter = defaulter;
 	}
 	
 	@Override
