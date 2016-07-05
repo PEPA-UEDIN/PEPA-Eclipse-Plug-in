@@ -4,6 +4,9 @@
 package uk.ac.ed.inf.pepa.aggregation.internal;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -16,10 +19,8 @@ import uk.ac.ed.inf.pepa.aggregation.LabelledTransitionSystem;
 import uk.ac.ed.inf.pepa.aggregation.Partition;
 import uk.ac.ed.inf.pepa.aggregation.PartitionBlock;
 import uk.ac.ed.inf.pepa.aggregation.StateNotFoundException;
-import uk.ac.ed.inf.pepa.ctmc.derivation.IStateSpace;
 import uk.ac.ed.inf.pepa.ctmc.derivation.common.CommonDefaulters;
 import uk.ac.ed.inf.pepa.ctmc.derivation.common.DefaultHashMap;
-import uk.ac.ed.inf.pepa.model.Rate;
 
 /**
  * @author Giacomo Alzetta
@@ -36,6 +37,8 @@ public class ContextualLumpability<S extends Comparable<S>> implements Aggregati
 		
 		while (!splitters.isEmpty()) {
 			PartitionBlock<S> splitter = splitters.pollFirst();
+			splitter.usingAsSplitter();
+			
 			DefaultHashMap<S, DefaultHashMap<Short, HashSet<S>>> preIm =
 					new DefaultHashMap<>(
 							new CommonDefaulters.DefaultHashMapDefaulter<>(
@@ -103,6 +106,35 @@ public class ContextualLumpability<S extends Comparable<S>> implements Aggregati
 					Double pmc = PartitioningUtils.pmc(allWeights);
 					HashMap<S, Double> toPmc = PartitioningUtils.splitMapOnValue(weights, pmc);
 					
+					PartitionBlock<S> nonPmcBlock = markedBlock.splitBlockOnValue(pmc);
+					Collection<PartitionBlock<S>> subBlocks = nonPmcBlock.splitBlock();
+					
+					// TODO: check if here we are adding the right sub-blocks as splitters.
+					// the original algorithm has a bunch of "X takes the identity of Y"...
+					ArrayList<PartitionBlock<S>> interestingBlocks = new ArrayList<>();
+					if (!block.isEmpty()) {
+						interestingBlocks.add(block);
+					}
+					
+					interestingBlocks.add(markedBlock);
+					interestingBlocks.addAll(subBlocks);
+					
+					if (block.wasUsedAsSplitter()) {
+						PartitionBlock<S> fatBlock = Collections.max(
+								interestingBlocks,
+								new Comparator<PartitionBlock<S>>() {
+
+									@Override
+									public int compare(PartitionBlock<S> o1, PartitionBlock<S> o2) {
+										return o1.size() - o2.size();
+									}
+									
+								}
+						);
+						
+						interestingBlocks.remove(fatBlock);
+					}
+					splitters.addAll(interestingBlocks);
 				}
 			}
 		}

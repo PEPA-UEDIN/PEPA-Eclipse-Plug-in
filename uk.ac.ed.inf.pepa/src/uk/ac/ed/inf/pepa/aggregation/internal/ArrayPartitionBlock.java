@@ -4,6 +4,7 @@
 package uk.ac.ed.inf.pepa.aggregation.internal;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -33,6 +34,7 @@ public class ArrayPartitionBlock<T> implements PartitionBlock<T> {
 
 	private ArrayList<T> states;
 	private int markIndex = 0;
+	private boolean used = false;
 	
 	private HashMap<T, Double> mapToValues;
 	
@@ -49,9 +51,14 @@ public class ArrayPartitionBlock<T> implements PartitionBlock<T> {
 	 * 
 	 * @param sts
 	 */
-	public ArrayPartitionBlock(List<T> sts) {
+	private ArrayPartitionBlock(List<T> sts, HashMap<T, Double> map) {
 		states.addAll(sts);
+		// TODO: we might be able to just share the map and avoid
+		// copying it, but we must be sure about this!
 		mapToValues = new HashMap<>();
+		for (T state: states) {
+			mapToValues.put(state, map.get(state));
+		}
 	}
 	
 	@Override
@@ -111,7 +118,10 @@ public class ArrayPartitionBlock<T> implements PartitionBlock<T> {
 	
 	@Override
 	public PartitionBlock<T> splitMarkedStates() {
-		ArrayPartitionBlock<T> newBlock = new ArrayPartitionBlock<>(states.subList(0, markIndex));
+		ArrayPartitionBlock<T> newBlock = new ArrayPartitionBlock<>(
+				states.subList(0, markIndex), 
+				mapToValues
+		);
 		// TODO: optimization: if markIndex << size we can just swap
 		//       the last markIndex states at the beginning, instead of moving
 		// 	     all remaining states backwards.
@@ -124,7 +134,7 @@ public class ArrayPartitionBlock<T> implements PartitionBlock<T> {
 	}
 	
 	@Override
-	public Iterator<PartitionBlock<T>> splitBlock() {
+	public Collection<PartitionBlock<T>> splitBlock() {
 		ArrayList<Double> values = new ArrayList<>(mapToValues.values());
 		double pmc = PartitioningUtils.pmc(values);
 		HashMap<T, Double> mappingNotPmc = new HashMap<>(mapToValues);
@@ -165,7 +175,7 @@ public class ArrayPartitionBlock<T> implements PartitionBlock<T> {
 		}
 		
 		// TODO: We do not want to allow modifications...
-		return blocks.values().iterator();
+		return blocks.values();
 	}
 	
 	@Override
@@ -224,6 +234,15 @@ public class ArrayPartitionBlock<T> implements PartitionBlock<T> {
 		return states.size();
 	}
 	
+	@Override
+	public boolean wasUsedAsSplitter() {
+		return used;
+	}
+	
+	@Override
+	public void usingAsSplitter() {
+		this.used = true;
+	}
 
 	/**
 	 * Simple parameter checking function.

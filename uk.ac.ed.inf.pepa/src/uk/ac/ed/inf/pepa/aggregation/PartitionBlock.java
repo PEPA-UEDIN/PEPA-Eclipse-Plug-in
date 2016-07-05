@@ -4,6 +4,7 @@
 package uk.ac.ed.inf.pepa.aggregation;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 
 import uk.ac.ed.inf.pepa.model.Rate;
@@ -77,7 +78,7 @@ public interface PartitionBlock<S> extends Iterable<S> {
 	 * 
 	 * @return
 	 */
-	public Iterator<PartitionBlock<S>> splitBlock();
+	public Collection<PartitionBlock<S>> splitBlock();
 	
 	/**
 	 * Splits the block into two sub-blocks: one with the states that have
@@ -146,6 +147,20 @@ public interface PartitionBlock<S> extends Iterable<S> {
 	 * @return The value associated with the state or <code>null</code> if no value was set.
 	 */
 	public double getValue(S state) throws StateNotFoundException, StateIsMarkedException;
+	
+	/**
+	 * Return <code>true</code> if this block was already used as a splitter,
+	 * <code>false</code> otherwise.
+	 * 
+	 * @return
+	 */
+	public boolean wasUsedAsSplitter();
+	
+	/**
+	 * After calling this method the calls to <code>wasUsedAsSplitter</code>
+	 * should return <code>true</code>.
+	 */
+	public void usingAsSplitter();
 	
 	default Iterator<S> iterator() {
 		return getStates();

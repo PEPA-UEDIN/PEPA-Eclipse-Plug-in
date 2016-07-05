@@ -4,6 +4,7 @@
 package uk.ac.ed.inf.pepa.aggregation.internal;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -26,6 +27,7 @@ public class LinkedPartitionBlock<T> implements PartitionBlock<T> {
 
 	private LinkedList<T> nonMarkedStates;
 	private LinkedList<T> markedStates;
+	private boolean used = false;
 	
 	private HashMap<T, Double> mapToValues;
 	
@@ -102,7 +104,7 @@ public class LinkedPartitionBlock<T> implements PartitionBlock<T> {
 	}
 
 	@Override
-	public Iterator<PartitionBlock<T>> splitBlock() {
+	public Collection<PartitionBlock<T>> splitBlock() {
 		ArrayList<Double> values = new ArrayList<>(mapToValues.values());
 		double pmc = PartitioningUtils.pmc(values);
 		HashMap<T, Double> mappingNotPmc = new HashMap<>(mapToValues);
@@ -143,7 +145,7 @@ public class LinkedPartitionBlock<T> implements PartitionBlock<T> {
 		}
 		
 		// TODO: We do not want to allow modifications...
-		return blocks.values().iterator();
+		return blocks.values();
 	}
 
 	@Override
@@ -213,4 +215,13 @@ public class LinkedPartitionBlock<T> implements PartitionBlock<T> {
 		return markedStates.size() + nonMarkedStates.size();
 	}
 
+	@Override
+	public boolean wasUsedAsSplitter() {
+		return used;
+	}
+	
+	@Override
+	public void usingAsSplitter() {
+		this.used = true;
+	}
 }
