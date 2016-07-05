@@ -219,6 +219,11 @@ public class ArrayPartitionBlock<T> implements PartitionBlock<T> {
 		return value;
 	}
 	
+	@Override
+	public int size() {
+		return states.size();
+	}
+	
 
 	/**
 	 * Simple parameter checking function.

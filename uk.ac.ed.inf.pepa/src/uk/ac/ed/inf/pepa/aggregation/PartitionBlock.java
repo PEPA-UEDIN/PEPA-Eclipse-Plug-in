@@ -3,6 +3,7 @@
  */
 package uk.ac.ed.inf.pepa.aggregation;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 
 import uk.ac.ed.inf.pepa.model.Rate;
@@ -24,6 +25,13 @@ import uk.ac.ed.inf.pepa.model.Rate;
  * @author Giacomo Alzetta
  */
 public interface PartitionBlock<S> extends Iterable<S> {
+	
+	/**
+	 * Return the number of states in this block.
+	 * 
+	 * @return
+	 */
+	public int size();
 	
 	/**
 	 * Add a non-marked state to the block.
@@ -53,11 +61,11 @@ public interface PartitionBlock<S> extends Iterable<S> {
 	public Iterator<S> getMarkedStates();
 	
 	/**
-	 * Splits the block into two blocks: one containing the marked states and one
+	 * Splits the block into two sub-blocks: one containing the marked states and one
 	 * containing the non-marked states.
 	 * 
 	 * Note that the block containing the marked states is returned while the current
-	 * instance is modified.
+	 * instance is modified and will contain only states that were <b>not</b> marked.
 	 * 
 	 * @return
 	 */
@@ -65,11 +73,43 @@ public interface PartitionBlock<S> extends Iterable<S> {
 	
 	/**
 	 * Splits the block into a certain number of blocks grouping together states depending
-	 * on the value V associated with them.
+	 * on the value associated with them.
 	 * 
 	 * @return
 	 */
 	public Iterator<PartitionBlock<S>> splitBlock();
+	
+	/**
+	 * Splits the block into two sub-blocks: one with the states that have
+	 * been assigned the given value and the other that have been assigned a
+	 * different value.
+	 * 
+	 * The block is modified and will only contains state that have been
+	 * assigned to that value, while the sub-block containing the
+	 * states with a different value is returned.
+	 * 
+	 * NOTE: this splitting should be performed after splitting the
+	 * marked states.
+	 * 
+	 * @param value
+	 * @return The sub-block whose states have a value *different* from value.
+	 */
+	default PartitionBlock<S> splitBlockOnValue(double value) {
+		ArrayList<S> states = new ArrayList<S>(size());
+		
+		for (S state: states) {
+			try {
+				if (getValue(state) != value) {
+					markState(state);
+				}
+			} catch (StateIsMarkedException e) {
+				e.printStackTrace();
+			} catch (StateNotFoundException e) {
+				e.printStackTrace();
+			}
+		}
+		return splitMarkedStates();
+	}
 	
 	/**
 	 * Marks the given state in the block.

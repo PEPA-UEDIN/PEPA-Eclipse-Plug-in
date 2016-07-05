@@ -207,5 +207,10 @@ public class LinkedPartitionBlock<T> implements PartitionBlock<T> {
 		
 		throw new StateNotFoundException("The state: " + state.toString() + " could not be found.");
 	}
+	
+	@Override
+	public int size() {
+		return markedStates.size() + nonMarkedStates.size();
+	}
 
 }
