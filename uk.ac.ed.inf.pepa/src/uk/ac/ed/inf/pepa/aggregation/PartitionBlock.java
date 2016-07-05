@@ -49,6 +49,16 @@ public interface PartitionBlock<S> extends Iterable<S> {
 	public boolean isEmpty();
 	
 	/**
+	 * True if this block contains at least one marked state,
+	 * false otherwise.
+	 * 
+	 * @return
+	 */
+	default boolean hasMarkedStates() {
+		return getMarkedStates().hasNext();
+	}
+	
+	/**
 	 * Iterate over all the states contained in this block of the partition.
 	 * 
 	 * @return
