@@ -55,7 +55,7 @@ public final class PartitioningUtils {
 	 * @param pivot   The value on which the entries should be divided
 	 * @return        The mapping of all keys mapping to pivot
 	 */
-	public static <K, V> HashMap<K, V> splitMapOnValue(HashMap<K, V> mapping, V pivot) {
+	public static <K, V> HashMap<K, V> splitMapOnValue(Map<K, V> mapping, V pivot) {
 		HashMap<K, V> newMap = new HashMap<K, V>();
 		
 		Iterator<Map.Entry<K, V>> iterator = mapping.entrySet().iterator();

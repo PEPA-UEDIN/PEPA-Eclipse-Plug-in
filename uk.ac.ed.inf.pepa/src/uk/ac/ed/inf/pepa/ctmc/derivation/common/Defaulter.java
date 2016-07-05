@@ -9,6 +9,7 @@ package uk.ac.ed.inf.pepa.ctmc.derivation.common;
  * @author Giacomo Alzetta
  *
  */
+@FunctionalInterface
 public interface Defaulter<V> {
 	
 	public V getDefault();

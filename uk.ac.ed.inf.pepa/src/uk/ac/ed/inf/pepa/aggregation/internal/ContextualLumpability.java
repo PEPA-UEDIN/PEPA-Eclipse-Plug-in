@@ -17,6 +17,8 @@ import uk.ac.ed.inf.pepa.aggregation.Partition;
 import uk.ac.ed.inf.pepa.aggregation.PartitionBlock;
 import uk.ac.ed.inf.pepa.aggregation.StateNotFoundException;
 import uk.ac.ed.inf.pepa.ctmc.derivation.IStateSpace;
+import uk.ac.ed.inf.pepa.ctmc.derivation.common.CommonDefaulters;
+import uk.ac.ed.inf.pepa.ctmc.derivation.common.DefaultHashMap;
 import uk.ac.ed.inf.pepa.model.Rate;
 
 /**
@@ -30,11 +32,18 @@ public class ContextualLumpability<S extends Comparable<S>> implements Aggregati
 		Partition<S, PartitionBlock<S>> partition = initialPartition(initial);
 		LinkedList<PartitionBlock<S>> splitters = new LinkedList<>(partition.getBlocks());
 		LinkedList<PartitionBlock<S>> touchedBlocks = new LinkedList<>();
-		HashMap<S, Double> weights = new HashMap<>();
+		DefaultHashMap<S, Double> weights = new DefaultHashMap<>(new CommonDefaulters.Basic<Double>(0.0d));
 		
 		while (!splitters.isEmpty()) {
 			PartitionBlock<S> splitter = splitters.pollFirst();
-			HashMap<S, HashMap<Short, HashSet<S>>> preIm = new HashMap<>();
+			DefaultHashMap<S, DefaultHashMap<Short, HashSet<S>>> preIm =
+					new DefaultHashMap<>(
+							new CommonDefaulters.DefaultHashMapDefaulter<>(
+									new CommonDefaulters.HashSetDefaulter<>()
+					)
+			);
+			
+			//HashMap<S, HashMap<Short, HashSet<S>>> preIm = new HashMap<>();
 			HashSet<Short> allActions = new HashSet<>();
 			
 			for (S state: splitter) {
@@ -43,16 +52,16 @@ public class ContextualLumpability<S extends Comparable<S>> implements Aggregati
 					Set<Short> curActs = initial.getActions(s, state);
 					allActions.addAll(curActs);
 					for (Short act : curActs) {
-						HashMap<Short, HashSet<S>> preImState = preIm.get(state);
-						if (preImState == null) {
-							preImState = new HashMap<>();
-							preIm.put(state,  preImState);
-						}
+						DefaultHashMap<Short, HashSet<S>> preImState = preIm.get(state);
+						//if (preImState == null) {
+						//	preImState = new HashMap<>();
+						//	preIm.put(state,  preImState);
+						//}
 						HashSet<S> preImTargets = preImState.get(act);
-						if (preImTargets == null) {
-							preImTargets = new HashSet<>();
-							preImState.put(act, preImTargets);
-						}
+						//if (preImTargets == null) {
+						//	preImTargets = new HashSet<>();
+						//	preImState.put(act, preImTargets);
+						//}
 						preImTargets.add(s);
 					}
 				}
@@ -64,11 +73,10 @@ public class ContextualLumpability<S extends Comparable<S>> implements Aggregati
 				ArrayList<S> seenStates = new ArrayList<>();
 				for (S state : splitter) {
 					for (S source : preIm.get(state).get(act)) {
-						Double w = weights.get(source);
-						if (w == null) {
-							w = 0.0d;
+						if (weights.containsKey(source)) {
 							seenStates.add(source);
 						}
+						Double w = weights.get(source);
 						w += initial.getApparentRate(source, state, act);
 						weights.put(source, w);
 					}
@@ -97,11 +105,8 @@ public class ContextualLumpability<S extends Comparable<S>> implements Aggregati
 					
 				}
 			}
-			
-			// compute pre-images
-			// compute weights.
 		}
-		// TODO Auto-generated method stub
+		
 		return null;
 	}
 

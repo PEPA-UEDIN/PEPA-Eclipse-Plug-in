@@ -13,6 +13,27 @@ import java.util.HashSet;
  *
  */
 public class CommonDefaulters {
+	
+	/**
+	 * A defaulter that simple returns the value provided as default.
+	 * 
+	 * Suitable for defaulting doubles/ints etc.
+	 * @author Giacomo Alzetta
+	 *
+	 * @param <V>
+	 */
+	static public class Basic<V> implements Defaulter<V> {
+		
+		private V value;
+		
+		public Basic(V value) {
+			this.value = value;
+		}
+		
+		public V getDefault() {
+			return value;
+		}
+	}
 
 	/**
 	 * A defaulter that returns a new empty ArrayList as default value.
@@ -84,6 +105,28 @@ public class CommonDefaulters {
 		
 		public HashSet<V> getDefault() {
 			return new HashSet<>(initialCapacity);
+		}
+	}
+	
+	/**
+	 * A defaulter that returns a new empty DefaultHashMap for the given
+	 * defaulter of values.
+	 * 
+	 * @author Giacomo Alzetta
+	 *
+	 * @param <K>
+	 * @param <V>
+	 */
+	static public class DefaultHashMapDefaulter<K, V> implements Defaulter<DefaultHashMap<K, V>> {
+		
+		Defaulter<V> defaulter;
+		
+		public DefaultHashMapDefaulter(Defaulter<V> defaulter) {
+			this.defaulter = defaulter;
+		}
+		
+		public DefaultHashMap<K, V> getDefault() {
+			return new DefaultHashMap<>(defaulter);
 		}
 	}
 }
