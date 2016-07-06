@@ -87,7 +87,7 @@ public class LtsModel<S> implements LabelledTransitionSystem<S> {
 	}
 	
 	
-	private HashMap<Short, Double>get(S source, S target) {
+	private HashMap<Short, Double> get(S source, S target) {
 		HashMap<S, HashMap<Short,Double>> targetsMap = transitionMap.get(source);
 		// targetsMap cannot be null. If it is then source is not in the LTS.
 		assert targetsMap != null;
