@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import uk.ac.ed.inf.pepa.aggregation.Aggregated;
@@ -65,8 +66,87 @@ public class ContextualLumpability<S extends Comparable<S>> implements Aggregati
 			}
 		}
 		
-		// Build the aggregated LTS.
-		return null;
+		return makeAggregatedLts(initial, partition);
+
+	}
+
+	/**
+	 * Given a partition and a LTS computes the aggregated LTS corresponding
+	 * to the given partition.
+	 * 
+	 * @param initial
+	 * @param partition
+	 * @return
+	 */
+	private LabelledTransitionSystem<Aggregated<S>> makeAggregatedLts(
+			LabelledTransitionSystem<S> initial,
+			Partition<S, PartitionBlock<S>> partition) {
+		LabelledTransitionSystem<Aggregated<S>> aggrLts = new LtsModel<>();
+		
+		for (PartitionBlock<S> block: partition.getBlocks()) {
+			Aggregated<S> aggrBlock = new Aggregated<>(block);
+			aggrLts.addState(aggrBlock);
+		}
+		
+		List<Aggregated<S>> aggrLtsStates = new ArrayList<>(partition.size());
+		HashMap<Aggregated<S>, HashMap<Aggregated<S>, HashMap<Short, Double>>> aggrTrans = new HashMap<>();
+		HashMap<PartitionBlock<S>, Aggregated<S>> blocksToAggr = new HashMap<>(partition.size());
+		
+		for (PartitionBlock<S> block: partition.getBlocks()) {
+			Aggregated<S> aggrState = new Aggregated<>(block);
+			aggrLtsStates.add(aggrState);
+			aggrTrans.put(aggrState, new HashMap<>());
+			blocksToAggr.put(block, aggrState);
+		}
+		
+		int i=0;
+		for (PartitionBlock<S> block: partition.getBlocks()) {
+			Aggregated<S> aggrState = aggrLtsStates.get(i++);
+			
+			for (S state: block) {
+				List<S> image = initial.getImage(state);
+				List<Aggregated<S>> imAggr = new ArrayList<>();
+				for (S target: image) {
+					imAggr.add(blocksToAggr.get(partition.getBlockOf(target)));
+				}
+				
+				for (Aggregated<S> targetAggr: imAggr) {
+					aggrTrans.get(aggrState).put(targetAggr, new HashMap<>());
+					
+					for (S t: targetAggr) {
+						Set<Short> acts = initial.getActions(state, t);
+					
+						for (short act: acts) {
+							HashMap<Short, Double> m = aggrTrans.get(aggrState).get(targetAggr);
+							if (!m.containsKey(act)) {
+								m.put(act, 0.0d);
+							}
+							
+							double w = m.get(act);
+							w += initial.getApparentRate(state, t, act);
+							m.put(act, w);
+						}
+					}
+				}
+				
+				
+			}
+		}
+		
+		for (Aggregated<S> aggrS: aggrLtsStates) {
+			aggrLts.addState(aggrS);
+		}
+		
+		for (Aggregated<S> source: aggrTrans.keySet()) {
+			HashMap<Aggregated<S>, HashMap<Short, Double>> sourceImage = aggrTrans.get(source);
+			for (Aggregated<S> target: sourceImage.keySet()) {
+				HashMap<Short, Double> targetMap = sourceImage.get(target);
+				for (Map.Entry<Short, Double> entry: targetMap.entrySet()) {
+					aggrLts.addTransition(source, target, entry.getValue(), entry.getKey());
+				}
+			}
+		}
+		return aggrLts;
 	}
 
 	/**
