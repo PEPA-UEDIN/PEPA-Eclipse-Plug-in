@@ -56,8 +56,6 @@ public class AggregationStateSpaceBuilder implements IStateSpaceBuilder {
 	private final ISymbolGenerator generator;
 	private IStateExplorer explorer;
 	
-	private ProcessNode systemEquation;
-	private boolean aggregateArrays;
 	private AggregationAlgorithm<Integer> algorithm;
 	
 	private final static int REFRESH_MONITOR = 20000;
@@ -66,13 +64,9 @@ public class AggregationStateSpaceBuilder implements IStateSpaceBuilder {
 	public AggregationStateSpaceBuilder(
 			IStateExplorer explorer,
 			ISymbolGenerator generator,
-			ModelNode model,
-			boolean aggregateArrays,
 			AggregationAlgorithm<Integer> algorithm) {
 		this.explorer = explorer;
 		this.generator = generator;
-		this.systemEquation = model.getSystemEquation();
-		this.aggregateArrays = aggregateArrays;
 		this.algorithm = algorithm;
 	}
 	
@@ -82,12 +76,6 @@ public class AggregationStateSpaceBuilder implements IStateSpaceBuilder {
 	@Override
 	public IStateSpace derive(boolean allowPassiveRates, IProgressMonitor monitor)
 			throws DerivationException {
-//		SystemEquationVisitor visitor = new SystemEquationVisitor();
-//		systemEquation.accept(visitor);
-//		LabelledTransitionSystem<State> original = visitor.result;
-//		AggregationAlgorithm algorithm;
-//		LabelledTransitionSystem<AggregatedState> lts = algorithm.aggregate(original);
-//		return lts.toStateSpace();
 		
 		if (monitor == null) 
 			monitor = new DoNothingMonitor();
@@ -105,8 +93,6 @@ public class AggregationStateSpaceBuilder implements IStateSpaceBuilder {
 		
 		State initState = map.putIfNotPresentUnsync(initialState, hashCode).state;
 		queue.add(initState);
-		
-		int numTransitions = 0;
 		Transition[] found;
 		
 		while (!queue.isEmpty()) {
@@ -132,8 +118,6 @@ public class AggregationStateSpaceBuilder implements IStateSpaceBuilder {
 				monitor.done();
 				throw createException(s, "Deadlock found.");
 			}
-			
-			numTransitions += found.length;
 			
 			for (Transition t: found) {
 				if (t.fRate <= 0) {
@@ -183,13 +167,17 @@ public class AggregationStateSpaceBuilder implements IStateSpaceBuilder {
 		LabelledTransitionSystem<Aggregated<Integer>> aggrLts = algorithm.aggregate(lts);
 		
 		// These could be just ArrayLists.
-		HashMap<Integer, Aggregated<Integer>> newStatesToRepr = new HashMap<>(aggrLts.size());
-		HashMap<Integer, Integer> reprToNewStates = new HashMap<>(aggrLts.size());
+		ArrayList<Aggregated<Integer>> newStatesToRepr = new ArrayList<>(aggrLts.size());
+		ArrayList<Integer> reprToNewStates = new ArrayList<>(aggrLts.size());
+		
+		for (int i=0; i < aggrLts.size(); i++) {
+			reprToNewStates.add(-1);
+		}
 		
 		int i=0;
 		for (Aggregated<Integer> s: aggrLts) {
-			newStatesToRepr.put(i, s);
-			reprToNewStates.put(s.getRepresentative(), i);
+			newStatesToRepr.add(s);
+			reprToNewStates.set(s.getRepresentative(), i);
 			++i;
 			
 		}
@@ -198,8 +186,7 @@ public class AggregationStateSpaceBuilder implements IStateSpaceBuilder {
 		IntegerArray newActions = new IntegerArray(aggrLts.numberOfTransitions());
 		DoubleArray newRates = new DoubleArray(aggrLts.numberOfTransitions());
 		
-		for (i=0; i < aggrLts.numberOfStates(); ++i) {
-			Aggregated<Integer> s = newStatesToRepr.get(i);
+		for (Aggregated<Integer> s: newStatesToRepr) {
 			for (Aggregated<Integer> target: aggrLts.getImage(s)) {
 				for (short actionId : aggrLts.getActions(s, target)) {
 					double rate = aggrLts.getApparentRate(s, target, actionId);
@@ -214,11 +201,18 @@ public class AggregationStateSpaceBuilder implements IStateSpaceBuilder {
 
 		ArrayList<State> newStates = new ArrayList<>(aggrLts.size());
 		int maxSize = 0;
-		for (i=0; i < aggrLts.size(); ++i) {
-			State s = states.get(newStatesToRepr.get(i).getRepresentative());
+		// FIXME: this is checked only on representatives.
+		// it may be enough, but we have to check that.
+		boolean hasVariableSize = false;
+		for (Aggregated<Integer> state: newStatesToRepr) {
+			State s = states.get(state.getRepresentative());
 			newStates.add(s);
 			if (s.fState.length > maxSize) {
+				int oldMaxSize = maxSize;
 				maxSize = s.fState.length;
+				if (oldMaxSize != 0 && maxSize != oldMaxSize) {
+					hasVariableSize = true;
+				}
 			}
 		}
 		
@@ -230,7 +224,7 @@ public class AggregationStateSpaceBuilder implements IStateSpaceBuilder {
 				newCol,
 				newActions,
 				newRates,
-				false,  // FIXME: this should be checked!
+				hasVariableSize,
 				maxSize);
 		monitor.done();
 		
