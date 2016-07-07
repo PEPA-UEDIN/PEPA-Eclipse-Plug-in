@@ -8,6 +8,10 @@
 package uk.ac.ed.inf.pepa.ctmc.derivation.common;
 
 import uk.ac.ed.inf.pepa.IResourceManager;
+import uk.ac.ed.inf.pepa.aggregation.AggregationAlgorithm;
+import uk.ac.ed.inf.pepa.aggregation.AggregationStateSpaceBuilder;
+import uk.ac.ed.inf.pepa.aggregation.internal.ContextualLumpability;
+import uk.ac.ed.inf.pepa.aggregation.internal.ExactEquivalence;
 import uk.ac.ed.inf.pepa.ctmc.derivation.IStateSpaceBuilder;
 import uk.ac.ed.inf.pepa.ctmc.derivation.internal.StateExplorerBuilder;
 import uk.ac.ed.inf.pepa.ctmc.derivation.internal.hbf.NewParallelBuilder;
@@ -38,6 +42,14 @@ public class StateSpaceBuilderFactory {
 			OptionMap map, IResourceManager manager) {
 
 		boolean aggregate = (Boolean) map.get(OptionMap.AGGREGATE_ARRAYS);
+		int aggregationAlgorithm = (Integer) map.get(OptionMap.AGGREGATION);
+		boolean hasAggregation = aggregationAlgorithm > OptionMap.AGGREGATION_NONE;
+		
+		if (hasAggregation && aggregate) {
+			// Aggregation should automatically provide aggregated
+			// arrays functionality, at least in the end.
+			aggregate = false;
+		}
 
 		Model cModel = new Compiler(aggregate, model).getModel();
 
@@ -58,8 +70,22 @@ public class StateSpaceBuilderFactory {
 				sg = seb.getSymbolGenerator();
 			explorers[i] = seb.getExplorer();
 		}
+		
 		// delegates storage to implementors
-		if (kind == OptionMap.DERIVATION_SEQUENTIAL) {
+		if (hasAggregation) {
+			System.out.println("Creating aggregating sequential tool");
+			AggregationAlgorithm<Integer> alg;
+			if (aggregationAlgorithm == OptionMap.AGGREGATION_CONTEXTUAL_LUMPABILITY) {
+				alg = new ContextualLumpability<>();
+			} else if (aggregationAlgorithm == OptionMap.AGGREGATION_EXACT_EQUIVALENCE){
+				alg = new ExactEquivalence<>();
+			} else {
+				System.err.println("Invalid aggregation algorithm");
+				throw new IllegalArgumentException();
+			}
+			
+			return new AggregationStateSpaceBuilder(explorers[0], sg, alg);
+		} else if (kind == OptionMap.DERIVATION_SEQUENTIAL) {
 			System.out.println("Creating sequential tool");
 			return new
 			 SequentialBuilder(explorers[0], sg, storage, manager);
