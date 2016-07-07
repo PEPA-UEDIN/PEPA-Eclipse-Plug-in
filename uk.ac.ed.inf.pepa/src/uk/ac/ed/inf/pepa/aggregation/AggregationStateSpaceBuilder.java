@@ -82,9 +82,112 @@ public class AggregationStateSpaceBuilder implements IStateSpaceBuilder {
 		
 		
 		monitor.beginTask(IProgressMonitor.UNKNOWN);
+		// TODO: we should use a custom callback here...
 		MemoryCallback callback = new MemoryCallback();
 		ArrayList<State> states = new ArrayList<>(1000);
 		
+		if (!exploreStateSpace(monitor, callback, states)) {
+			return null;
+		}
+		
+		IntegerArray row = callback.getRow();
+		IntegerArray col = callback.getColumn();
+		DoubleArray rates = callback.getRates();
+		IntegerArray actionIds = callback.getActions();
+		
+		LtsModel<Integer> lts = deriveLts(states, row, col, rates, actionIds);
+		
+		// Aggregate the LTS here
+		LabelledTransitionSystem<Aggregated<Integer>> aggrLts = algorithm.aggregate(lts);
+		
+		IStateSpace result = createStateSpace(states, aggrLts);
+		monitor.done();
+		
+		return result;
+	}
+
+	/**
+	 * @param states
+	 * @param aggrLts
+	 * @return
+	 */
+	private IStateSpace createStateSpace(ArrayList<State> states,
+			LabelledTransitionSystem<Aggregated<Integer>> aggrLts) {
+		ArrayList<Aggregated<Integer>> newStatesToRepr = new ArrayList<>(aggrLts.size());
+		ArrayList<Integer> reprToNewStates = new ArrayList<>(aggrLts.size());
+		
+		for (int i=0; i < aggrLts.size(); i++) {
+			reprToNewStates.add(-1);
+		}
+		
+		int i=0;
+		for (Aggregated<Integer> s: aggrLts) {
+			newStatesToRepr.add(s);
+			reprToNewStates.set(s.getRepresentative(), i);
+			++i;
+			
+		}
+		
+		IntegerArray newRow = new IntegerArray(aggrLts.numberOfStates());
+		IntegerArray newCol = new IntegerArray(2*aggrLts.numberOfTransitions());
+		IntegerArray newActions = new IntegerArray(aggrLts.numberOfTransitions());
+		DoubleArray newRates = new DoubleArray(aggrLts.numberOfTransitions());
+		
+		int maxSize = 0;
+		boolean hasVariableSize = false;
+		
+		
+		for (Aggregated<Integer> s: newStatesToRepr) {
+			for (Aggregated<Integer> target: aggrLts.getImage(s)) {
+				for (short actionId : aggrLts.getActions(s, target)) {
+					double rate = aggrLts.getApparentRate(s, target, actionId);
+					newCol.add(reprToNewStates.get(target.getRepresentative()));
+					newCol.add(newActions.size());
+					newActions.add(actionId);
+					newRates.add(rate);
+				}
+			}
+		}
+		
+
+		ArrayList<State> newStates = new ArrayList<>(aggrLts.size());
+		
+		// FIXME: this is checked only on representatives.
+		// it may be enough, but we have to check that.
+		
+		for (Aggregated<Integer> state: newStatesToRepr) {
+			State s = states.get(state.getRepresentative());
+			newStates.add(s);
+			if (s.fState.length > maxSize) {
+				int oldMaxSize = maxSize;
+				maxSize = s.fState.length;
+				if (oldMaxSize != 0 && maxSize != oldMaxSize) {
+					hasVariableSize = true;
+				}
+			}
+		}
+		
+		// Derive the CTMC here
+		IStateSpace result = new MemoryStateSpace(
+				generator,
+				newStates,
+				newRow,
+				newCol,
+				newActions,
+				newRates,
+				hasVariableSize,
+				maxSize);
+		return result;
+	}
+
+	/**
+	 * @param monitor
+	 * @param callback
+	 * @param states
+	 * @throws DerivationException
+	 */
+	private boolean exploreStateSpace(IProgressMonitor monitor, MemoryCallback callback, ArrayList<State> states)
+			throws DerivationException {
 		OptimisedHashMap map = new OptimisedHashMap();
 		Queue<State> queue = new LinkedList<State>();
 		
@@ -98,7 +201,7 @@ public class AggregationStateSpaceBuilder implements IStateSpaceBuilder {
 		while (!queue.isEmpty()) {
 			if (monitor.isCanceled()) {
 				monitor.done();
-				return null;
+				return false;
 			}
 			
 			State s = queue.remove();
@@ -156,79 +259,7 @@ public class AggregationStateSpaceBuilder implements IStateSpaceBuilder {
 		// probably.
 		callback.done(generator, states);
 		
-		IntegerArray row = callback.getRow();
-		IntegerArray col = callback.getColumn();
-		DoubleArray rates = callback.getRates();
-		IntegerArray actionIds = callback.getActions();
-		
-		LtsModel<Integer> lts = deriveLts(states, row, col, rates, actionIds);
-		
-		// Aggregate the LTS here
-		LabelledTransitionSystem<Aggregated<Integer>> aggrLts = algorithm.aggregate(lts);
-		
-		// These could be just ArrayLists.
-		ArrayList<Aggregated<Integer>> newStatesToRepr = new ArrayList<>(aggrLts.size());
-		ArrayList<Integer> reprToNewStates = new ArrayList<>(aggrLts.size());
-		
-		for (int i=0; i < aggrLts.size(); i++) {
-			reprToNewStates.add(-1);
-		}
-		
-		int i=0;
-		for (Aggregated<Integer> s: aggrLts) {
-			newStatesToRepr.add(s);
-			reprToNewStates.set(s.getRepresentative(), i);
-			++i;
-			
-		}
-		IntegerArray newRow = new IntegerArray(aggrLts.numberOfStates());
-		IntegerArray newCol = new IntegerArray(2*aggrLts.numberOfTransitions());
-		IntegerArray newActions = new IntegerArray(aggrLts.numberOfTransitions());
-		DoubleArray newRates = new DoubleArray(aggrLts.numberOfTransitions());
-		
-		for (Aggregated<Integer> s: newStatesToRepr) {
-			for (Aggregated<Integer> target: aggrLts.getImage(s)) {
-				for (short actionId : aggrLts.getActions(s, target)) {
-					double rate = aggrLts.getApparentRate(s, target, actionId);
-					newCol.add(reprToNewStates.get(target.getRepresentative()));
-					newCol.add(newActions.size());
-					newActions.add(actionId);
-					newRates.add(rate);
-				}
-			}
-		}
-		
-
-		ArrayList<State> newStates = new ArrayList<>(aggrLts.size());
-		int maxSize = 0;
-		// FIXME: this is checked only on representatives.
-		// it may be enough, but we have to check that.
-		boolean hasVariableSize = false;
-		for (Aggregated<Integer> state: newStatesToRepr) {
-			State s = states.get(state.getRepresentative());
-			newStates.add(s);
-			if (s.fState.length > maxSize) {
-				int oldMaxSize = maxSize;
-				maxSize = s.fState.length;
-				if (oldMaxSize != 0 && maxSize != oldMaxSize) {
-					hasVariableSize = true;
-				}
-			}
-		}
-		
-		// Derive the CTMC here
-		IStateSpace result = new MemoryStateSpace(
-				generator,
-				newStates,
-				newRow,
-				newCol,
-				newActions,
-				newRates,
-				hasVariableSize,
-				maxSize);
-		monitor.done();
-		
-		return result;
+		return true;
 	}
 
 	/**
