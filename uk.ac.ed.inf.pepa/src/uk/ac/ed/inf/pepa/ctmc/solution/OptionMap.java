@@ -119,6 +119,14 @@ public class OptionMap {
 
 	public static final String AGGREGATE_ARRAYS = "ctmc.derivation.aggregate_arrays";
 	
+	public static final String AGGREGATION = "ctmc.derivation.aggregation";
+	
+	public static final int AGGREGATION_NONE = 0;
+	
+	public static final int AGGREGATION_CONTEXTUAL_LUMPABILITY = 1;
+	
+	public static final int AGGREGATION_EXACT_EQUIVALENCE = 2;
+	
 	/* Solvers */
 	/**
 	 * Key for specifying a solver
@@ -444,6 +452,7 @@ public class OptionMap {
 		DEFAULT.put(ILUT_TAU, 10e-6);
 		DEFAULT.put(ILUT_P, 50);
 		DEFAULT.put(AGGREGATE_ARRAYS, true);
+		DEFAULT.put(AGGREGATION, AGGREGATION_NONE);
 		DEFAULT.put(DERIVATION_STORAGE, DERIVATION_MEMORY_STORAGE);
 		DEFAULT.put(DERIVATION_PARALLEL_NUM_WORKERS, 2);
 		DEFAULT.put(DERIVATION_KIND, DERIVATION_SEQUENTIAL);
