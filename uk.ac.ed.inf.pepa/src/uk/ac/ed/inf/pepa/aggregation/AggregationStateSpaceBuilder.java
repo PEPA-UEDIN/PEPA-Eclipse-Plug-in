@@ -231,10 +231,6 @@ public class AggregationStateSpaceBuilder implements IStateSpaceBuilder {
 				}
 				
 				hashCode = Arrays.hashCode(t.fTargetProcess);
-				// IMPORTANT hashCode is calculated externally and then
-				// passed in to avoid calculating twice when a new state is
-				// added
-				//ticMap = System.nanoTime();
 				InsertionResult result = map.putIfNotPresentUnsync(
 						t.fTargetProcess,
 						hashCode
@@ -255,8 +251,6 @@ public class AggregationStateSpaceBuilder implements IStateSpaceBuilder {
 		
 		explorer.dispose();
 		states.trimToSize();
-		// FIXME: we should modify the interface to avoid these getX functions,
-		// probably.
 		callback.done(generator, states);
 		
 		return true;
@@ -276,12 +270,16 @@ public class AggregationStateSpaceBuilder implements IStateSpaceBuilder {
 	private LtsModel<Integer> deriveLts(ArrayList<State> states,
 			IntegerArray row, IntegerArray col, DoubleArray rates,
 			IntegerArray actionIds) {
+		
 		LtsModel<Integer> lts = new LtsModel<>();
+		
+		// Add all states into the LTS.
+		for (State s: states) {
+			lts.addState(s.stateNumber);
+		}
+		
 		int i = 0;
 		for (State s: states) {
-			// Add all states into the LTS.
-			lts.addState(s.stateNumber);
-			
 			// The i-th position in row contains the index t inside the
 			// col array that contains the transitions from the state s.
 			int rangeStart = row.get(i);

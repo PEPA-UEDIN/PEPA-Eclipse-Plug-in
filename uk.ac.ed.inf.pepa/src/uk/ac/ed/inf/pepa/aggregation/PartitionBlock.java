@@ -9,19 +9,20 @@ import java.util.Iterator;
 
 
 /**
- * An interface that represents blocks of a partition refinement data structure
- * of a state space.
+ * An interface that represents blocks of a Partition Refinement data structure.
  * 
  * Each block of the partition contains states that can be marked or not.
  * This class provides operations to mark states and also the ability to set
- * a value for them. It also provides operations that partition the states of this block
- * in multiple blocks depending on whether the states where marked or not or on the value
- * assigned to each state.
+ * a value for them. It also provides operations that partition the states of
+ * this block in multiple blocks depending on whether the states where marked
+ * or not or on the value assigned to each state.
  * 
- * Note that the type T is represents a generic state while the type
- * V represents a generic value assigned to a given state.
+ * A block keeps also track of whether or not it was used as a splitter
+ * to refine the other blocks in the partition.
  * 
  * @author Giacomo Alzetta
+ * 
+ * @param S The type of the states.
  */
 public interface PartitionBlock<S> extends Iterable<S> {
 	
@@ -70,21 +71,22 @@ public interface PartitionBlock<S> extends Iterable<S> {
 	public Iterator<S> getMarkedStates();
 	
 	/**
-	 * Splits the block into two sub-blocks: one containing the marked states and one
-	 * containing the non-marked states.
+	 * Splits the block into two sub-blocks: one containing the marked states
+	 * and one containing the non-marked states.
 	 * 
-	 * Note that the block containing the marked states is returned while the current
-	 * instance is modified and will contain only states that were <b>not</b> marked.
+	 * Note that the block containing the marked states is returned while
+	 * the current instance is modified and will contain only states that
+	 * were <b>not</b> marked.
 	 * 
-	 * @return
+	 * @return The sub-block consisting of all marked states.
 	 */
 	public PartitionBlock<S> splitMarkedStates();
 	
 	/**
-	 * Splits the block into a certain number of blocks grouping together states depending
-	 * on the value associated with them.
+	 * Splits the block into a certain number of blocks grouping together
+	 * states depending on the value associated with them.
 	 * 
-	 * @return
+	 * @return Partition of the current block into sub-blocks.
 	 */
 	public Collection<PartitionBlock<S>> splitBlock();
 	
@@ -101,10 +103,18 @@ public interface PartitionBlock<S> extends Iterable<S> {
 	 * marked states.
 	 * 
 	 * @param value
-	 * @return The sub-block whose states have a value *different* from value.
+	 * @return The sub-block whose states have a value *different* from <code>value</code>.
 	 */
 	default PartitionBlock<S> splitBlockOnValue(double value) {
+		// We must first copy the states because marking a state actually
+		// disrupts iteration.
 		ArrayList<S> states = new ArrayList<S>(size());
+		Iterator<S> statesIter = getStates();
+		
+		while (statesIter.hasNext()) {
+			states.add(statesIter.next());
+		}
+		
 		
 		for (S state: states) {
 			try {
@@ -145,7 +155,8 @@ public interface PartitionBlock<S> extends Iterable<S> {
 	 * @param state A state of the block
 	 * @param value The value to be associated with this state.
 	 */
-	public void setValue(S state, double value) throws StateNotFoundException, StateIsMarkedException;
+	public void setValue(S state, double value)
+			throws StateNotFoundException, StateIsMarkedException;
 	
 	/**
 	 * Return the value associated with a state.
@@ -154,13 +165,14 @@ public interface PartitionBlock<S> extends Iterable<S> {
 	 * @param state A state of the block
 	 * @return The value associated with the state or <code>null</code> if no value was set.
 	 */
-	public double getValue(S state) throws StateNotFoundException, StateIsMarkedException;
+	public double getValue(S state)
+			throws StateNotFoundException, StateIsMarkedException;
 	
 	/**
 	 * Return <code>true</code> if this block was already used as a splitter,
 	 * <code>false</code> otherwise.
 	 * 
-	 * @return
+	 * @return true if this block was used as a splitter.
 	 */
 	public boolean wasUsedAsSplitter();
 	
@@ -170,6 +182,10 @@ public interface PartitionBlock<S> extends Iterable<S> {
 	 */
 	public void usingAsSplitter();
 	
+	/**
+	 * Iterate over all the states in the block.
+	 */
+	@Override
 	default Iterator<S> iterator() {
 		return getStates();
 	}
