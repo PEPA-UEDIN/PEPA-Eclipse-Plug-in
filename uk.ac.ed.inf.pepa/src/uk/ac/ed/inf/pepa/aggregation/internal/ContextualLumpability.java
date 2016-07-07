@@ -29,8 +29,12 @@ import uk.ac.ed.inf.pepa.ctmc.derivation.common.DefaultHashMap;
  */
 public class ContextualLumpability<S extends Comparable<S>> implements AggregationAlgorithm<S> {
 
+	/**
+	 * @param initial
+	 * @return
+	 */
 	@Override
-	public LabelledTransitionSystem<Aggregated<S>> aggregate(LabelledTransitionSystem<S> initial) {
+	public Partition<S, PartitionBlock<S>> findPartition(LabelledTransitionSystem<S> initial) {
 		Partition<S, PartitionBlock<S>> partition = initialPartition(initial);
 		LinkedList<PartitionBlock<S>> splitters = new LinkedList<>(partition.getBlocks());
 		LinkedList<PartitionBlock<S>> touchedBlocks = new LinkedList<>();
@@ -65,10 +69,9 @@ public class ContextualLumpability<S extends Comparable<S>> implements Aggregati
 				weights.clear();
 			}
 		}
-		
-		return makeAggregatedLts(initial, partition);
-
+		return partition;
 	}
+	
 
 	/**
 	 * Given a partition and a LTS computes the aggregated LTS corresponding
@@ -78,9 +81,11 @@ public class ContextualLumpability<S extends Comparable<S>> implements Aggregati
 	 * @param partition
 	 * @return
 	 */
-	private LabelledTransitionSystem<Aggregated<S>> makeAggregatedLts(
+	@Override
+	public LabelledTransitionSystem<Aggregated<S>> aggregateLts(
 			LabelledTransitionSystem<S> initial,
 			Partition<S, PartitionBlock<S>> partition) {
+		// TODO: move this as default implementation in the interface.
 		LabelledTransitionSystem<Aggregated<S>> aggrLts = new LtsModel<>();
 		
 		for (PartitionBlock<S> block: partition.getBlocks()) {

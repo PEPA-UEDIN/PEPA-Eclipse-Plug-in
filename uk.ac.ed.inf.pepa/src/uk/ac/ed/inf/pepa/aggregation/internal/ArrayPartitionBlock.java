@@ -14,8 +14,6 @@ import java.util.Map;
 import uk.ac.ed.inf.pepa.aggregation.PartitionBlock;
 import uk.ac.ed.inf.pepa.aggregation.StateIsMarkedException;
 import uk.ac.ed.inf.pepa.aggregation.StateNotFoundException;
-import uk.ac.ed.inf.pepa.model.Rate;
-import uk.ac.ed.inf.pepa.model.RateMath;
 
 /**
  * A partition refinement data structure implementing using an array and a mapping.

@@ -7,8 +7,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 
-import uk.ac.ed.inf.pepa.model.Rate;
-
 
 /**
  * An interface that represents blocks of a partition refinement data structure

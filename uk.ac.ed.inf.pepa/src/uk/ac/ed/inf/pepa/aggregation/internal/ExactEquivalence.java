@@ -25,8 +25,9 @@ public class ExactEquivalence<S extends Comparable<S>> extends ContextualLumpabi
 	@Override
 	public LabelledTransitionSystem<Aggregated<S>> aggregate(LabelledTransitionSystem<S> initial) {
 		LabelledTransitionSystem<S> lts = new ReverseLtsModel<>(initial);
+		Partition<S, PartitionBlock<S>> partition = super.findPartition(initial);
 		// I believe that this should just work.
-		return super.aggregate(lts);
+		return super.aggregateLts(lts, partition);
 	}
 	
 	@Override
