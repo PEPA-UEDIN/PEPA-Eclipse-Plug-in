@@ -298,6 +298,13 @@ public class ContextualLumpability<S extends Comparable<S>> implements Aggregati
 		return allActions;
 	}
 
+	/**
+	 * The initial partition for contextual lumpability is just a single
+	 * block containing every state of the LTS.
+	 * 
+	 * @param initial The LTS to aggregate.
+	 * @return A singleton partition containing all states.
+	 */
 	public Partition<S, PartitionBlock<S>> initialPartition(LabelledTransitionSystem<S> initial) {
 		PartitionBlock<S> p = new ArrayPartitionBlock<>();
 		Partition<S, PartitionBlock<S>> partition = new Partition<>();

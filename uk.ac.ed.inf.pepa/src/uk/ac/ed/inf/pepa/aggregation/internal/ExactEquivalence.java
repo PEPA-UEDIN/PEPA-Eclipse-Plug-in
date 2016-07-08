@@ -30,6 +30,11 @@ public class ExactEquivalence<S extends Comparable<S>> extends ContextualLumpabi
 		return super.aggregateLts(lts, partition);
 	}
 	
+	/**
+	 * The initial partition for ExactEquivalenceis a partition such that
+	 * all states in each block have equal outgoing apparent rates for
+	 * every action type.
+	 */
 	@Override
 	public Partition<S, PartitionBlock<S>> initialPartition(LabelledTransitionSystem<S> initial) {
 		HashMap<S, Double> apparentRates = new HashMap<>(initial.size());
