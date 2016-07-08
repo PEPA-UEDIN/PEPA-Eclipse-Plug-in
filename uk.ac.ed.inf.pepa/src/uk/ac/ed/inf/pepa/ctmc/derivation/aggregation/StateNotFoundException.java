@@ -1,7 +1,7 @@
 /**
  * 
  */
-package uk.ac.ed.inf.pepa.aggregation;
+package uk.ac.ed.inf.pepa.ctmc.derivation.aggregation;
 
 /**
  * Exception thrown whenever someone tries to perform an operation

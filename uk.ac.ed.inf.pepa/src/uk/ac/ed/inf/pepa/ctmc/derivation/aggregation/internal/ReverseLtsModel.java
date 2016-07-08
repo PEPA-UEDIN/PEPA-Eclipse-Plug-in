@@ -1,13 +1,13 @@
 /**
  * 
  */
-package uk.ac.ed.inf.pepa.aggregation.internal;
+package uk.ac.ed.inf.pepa.ctmc.derivation.aggregation.internal;
 
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import uk.ac.ed.inf.pepa.aggregation.LabelledTransitionSystem;
+import uk.ac.ed.inf.pepa.ctmc.derivation.aggregation.LabelledTransitionSystem;
 
 /**
  * @author giacomo

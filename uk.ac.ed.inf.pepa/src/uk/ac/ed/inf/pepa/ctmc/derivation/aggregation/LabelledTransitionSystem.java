@@ -1,4 +1,4 @@
-package uk.ac.ed.inf.pepa.aggregation;
+package uk.ac.ed.inf.pepa.ctmc.derivation.aggregation;
 
 import java.util.List;
 import java.util.Set;

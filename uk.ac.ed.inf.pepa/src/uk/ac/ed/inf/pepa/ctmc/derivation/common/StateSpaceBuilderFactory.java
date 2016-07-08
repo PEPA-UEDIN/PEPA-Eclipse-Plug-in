@@ -8,11 +8,11 @@
 package uk.ac.ed.inf.pepa.ctmc.derivation.common;
 
 import uk.ac.ed.inf.pepa.IResourceManager;
-import uk.ac.ed.inf.pepa.aggregation.AggregationAlgorithm;
-import uk.ac.ed.inf.pepa.aggregation.AggregationStateSpaceBuilder;
-import uk.ac.ed.inf.pepa.aggregation.internal.ContextualLumpability;
-import uk.ac.ed.inf.pepa.aggregation.internal.ExactEquivalence;
 import uk.ac.ed.inf.pepa.ctmc.derivation.IStateSpaceBuilder;
+import uk.ac.ed.inf.pepa.ctmc.derivation.aggregation.AggregationAlgorithm;
+import uk.ac.ed.inf.pepa.ctmc.derivation.aggregation.AggregationStateSpaceBuilder;
+import uk.ac.ed.inf.pepa.ctmc.derivation.aggregation.internal.ContextualLumpability;
+import uk.ac.ed.inf.pepa.ctmc.derivation.aggregation.internal.ExactEquivalence;
 import uk.ac.ed.inf.pepa.ctmc.derivation.internal.StateExplorerBuilder;
 import uk.ac.ed.inf.pepa.ctmc.derivation.internal.hbf.NewParallelBuilder;
 import uk.ac.ed.inf.pepa.ctmc.derivation.internal.hbf.SequentialBuilder;

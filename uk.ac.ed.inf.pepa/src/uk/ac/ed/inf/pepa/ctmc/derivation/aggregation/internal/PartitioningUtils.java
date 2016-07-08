@@ -1,7 +1,7 @@
 /**
  * 
  */
-package uk.ac.ed.inf.pepa.aggregation.internal;
+package uk.ac.ed.inf.pepa.ctmc.derivation.aggregation.internal;
 
 import java.util.HashMap;
 import java.util.Map;

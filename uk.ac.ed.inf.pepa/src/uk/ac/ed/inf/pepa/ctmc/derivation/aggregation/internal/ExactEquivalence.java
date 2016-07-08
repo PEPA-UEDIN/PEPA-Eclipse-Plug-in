@@ -1,7 +1,7 @@
 /**
  * 
  */
-package uk.ac.ed.inf.pepa.aggregation.internal;
+package uk.ac.ed.inf.pepa.ctmc.derivation.aggregation.internal;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -9,10 +9,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import uk.ac.ed.inf.pepa.aggregation.Aggregated;
-import uk.ac.ed.inf.pepa.aggregation.LabelledTransitionSystem;
-import uk.ac.ed.inf.pepa.aggregation.Partition;
-import uk.ac.ed.inf.pepa.aggregation.PartitionBlock;
+import uk.ac.ed.inf.pepa.ctmc.derivation.aggregation.Aggregated;
+import uk.ac.ed.inf.pepa.ctmc.derivation.aggregation.LabelledTransitionSystem;
+import uk.ac.ed.inf.pepa.ctmc.derivation.aggregation.Partition;
+import uk.ac.ed.inf.pepa.ctmc.derivation.aggregation.PartitionBlock;
 
 /**
  * Computes the exact equivalence relation over an LTS.

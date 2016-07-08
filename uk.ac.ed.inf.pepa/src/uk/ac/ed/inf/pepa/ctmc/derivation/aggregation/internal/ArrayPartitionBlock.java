@@ -1,7 +1,7 @@
 /**
  * 
  */
-package uk.ac.ed.inf.pepa.aggregation.internal;
+package uk.ac.ed.inf.pepa.ctmc.derivation.aggregation.internal;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -11,9 +11,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import uk.ac.ed.inf.pepa.aggregation.PartitionBlock;
-import uk.ac.ed.inf.pepa.aggregation.StateIsMarkedException;
-import uk.ac.ed.inf.pepa.aggregation.StateNotFoundException;
+import uk.ac.ed.inf.pepa.ctmc.derivation.aggregation.PartitionBlock;
+import uk.ac.ed.inf.pepa.ctmc.derivation.aggregation.StateIsMarkedException;
+import uk.ac.ed.inf.pepa.ctmc.derivation.aggregation.StateNotFoundException;
 
 /**
  * A partition refinement data structure implementing using an array and a mapping.

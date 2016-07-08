@@ -1,7 +1,7 @@
 /**
  * 
  */
-package uk.ac.ed.inf.pepa.aggregation.internal;
+package uk.ac.ed.inf.pepa.ctmc.derivation.aggregation.internal;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -14,12 +14,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import uk.ac.ed.inf.pepa.aggregation.Aggregated;
-import uk.ac.ed.inf.pepa.aggregation.AggregationAlgorithm;
-import uk.ac.ed.inf.pepa.aggregation.LabelledTransitionSystem;
-import uk.ac.ed.inf.pepa.aggregation.Partition;
-import uk.ac.ed.inf.pepa.aggregation.PartitionBlock;
-import uk.ac.ed.inf.pepa.aggregation.StateNotFoundException;
+import uk.ac.ed.inf.pepa.ctmc.derivation.aggregation.Aggregated;
+import uk.ac.ed.inf.pepa.ctmc.derivation.aggregation.AggregationAlgorithm;
+import uk.ac.ed.inf.pepa.ctmc.derivation.aggregation.LabelledTransitionSystem;
+import uk.ac.ed.inf.pepa.ctmc.derivation.aggregation.Partition;
+import uk.ac.ed.inf.pepa.ctmc.derivation.aggregation.PartitionBlock;
+import uk.ac.ed.inf.pepa.ctmc.derivation.aggregation.StateNotFoundException;
 import uk.ac.ed.inf.pepa.ctmc.derivation.common.CommonDefaulters;
 import uk.ac.ed.inf.pepa.ctmc.derivation.common.DefaultHashMap;
 

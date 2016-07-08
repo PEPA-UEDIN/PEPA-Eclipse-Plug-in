@@ -1,7 +1,7 @@
 /**
  * 
  */
-package uk.ac.ed.inf.pepa.aggregation;
+package uk.ac.ed.inf.pepa.ctmc.derivation.aggregation;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -14,11 +14,11 @@ import java.util.Queue;
 
 import uk.ac.ed.inf.pepa.DoNothingMonitor;
 import uk.ac.ed.inf.pepa.IProgressMonitor;
-import uk.ac.ed.inf.pepa.aggregation.internal.LtsModel;
 import uk.ac.ed.inf.pepa.ctmc.derivation.DerivationException;
 import uk.ac.ed.inf.pepa.ctmc.derivation.IStateSpace;
 import uk.ac.ed.inf.pepa.ctmc.derivation.IStateSpaceBuilder;
 import uk.ac.ed.inf.pepa.ctmc.derivation.MeasurementData;
+import uk.ac.ed.inf.pepa.ctmc.derivation.aggregation.internal.LtsModel;
 import uk.ac.ed.inf.pepa.ctmc.derivation.common.DoubleArray;
 import uk.ac.ed.inf.pepa.ctmc.derivation.common.IStateExplorer;
 import uk.ac.ed.inf.pepa.ctmc.derivation.common.ISymbolGenerator;
