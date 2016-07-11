@@ -77,8 +77,17 @@ public class LtsModel<S> implements LabelledTransitionSystem<S> {
 
 	@Override
 	public boolean addTransition(S source, S target, double rate, short actionId) {
+		System.out.println("Transition added");
 		HashMap<Short,Double> targetMap = get(source, target);
-		return targetMap.put(actionId, rate) == null;
+		boolean res = targetMap.put(actionId, rate) == null;
+		ArrayList<S> preImTarget = preImageMap.get(target);
+		if (preImTarget == null) {
+			preImTarget = new ArrayList<>();
+			preImageMap.put(target, preImTarget);
+		}
+		preImTarget.add(source);
+		
+		return res;
 	}
 	
 	@Override

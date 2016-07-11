@@ -19,10 +19,13 @@ import uk.ac.ed.inf.pepa.ctmc.derivation.aggregation.AggregationAlgorithm;
 import uk.ac.ed.inf.pepa.ctmc.derivation.aggregation.LabelledTransitionSystem;
 import uk.ac.ed.inf.pepa.ctmc.derivation.aggregation.Partition;
 import uk.ac.ed.inf.pepa.ctmc.derivation.aggregation.PartitionBlock;
+import uk.ac.ed.inf.pepa.ctmc.derivation.aggregation.StateIsMarkedException;
 import uk.ac.ed.inf.pepa.ctmc.derivation.aggregation.StateNotFoundException;
 import uk.ac.ed.inf.pepa.ctmc.derivation.common.CommonDefaulters;
 import uk.ac.ed.inf.pepa.ctmc.derivation.common.DefaultHashMap;
 
+// TODO: we have to handle TAU specially.
+// we should do so in a protected method so that Exact Equivalence can reimplement it.
 /**
  * @author Giacomo Alzetta
  *
@@ -43,6 +46,7 @@ public class ContextualLumpability<S extends Comparable<S>> implements Aggregati
 		);
 		
 		while (!splitters.isEmpty()) {
+			System.out.println("Splitting!");
 			PartitionBlock<S> splitter = splitters.pollFirst();
 			splitter.usingAsSplitter();
 			
@@ -56,12 +60,14 @@ public class ContextualLumpability<S extends Comparable<S>> implements Aggregati
 			//HashMap<S, HashMap<Short, HashSet<S>>> preIm = new HashMap<>();
 			HashSet<Short> allActions = computeAllPreimages(initial, splitter, preIm);
 			
+			System.out.println("allActions =" + allActions.toString() + " size " + allActions.size());
 			for (short act: allActions) {
 				ArrayList<S> seenStates = computeWeights(initial, weights, splitter, preIm, act);
 				
 				markVisitedStates(partition, touchedBlocks, seenStates);
 				
 				while (!touchedBlocks.isEmpty()) {
+					System.out.println("Splitting touched block");
 					PartitionBlock<S> block = touchedBlocks.pollFirst();
 					performSplitting(partition, splitters, weights, block);
 				}
@@ -85,13 +91,14 @@ public class ContextualLumpability<S extends Comparable<S>> implements Aggregati
 	public LabelledTransitionSystem<Aggregated<S>> aggregateLts(
 			LabelledTransitionSystem<S> initial,
 			Partition<S, PartitionBlock<S>> partition) {
+		System.out.println("Final partition has size: " + partition.size());
 		// TODO: move this as default implementation in the interface.
 		LabelledTransitionSystem<Aggregated<S>> aggrLts = new LtsModel<>();
 		
-		for (PartitionBlock<S> block: partition.getBlocks()) {
-			Aggregated<S> aggrBlock = new Aggregated<>(block);
-			aggrLts.addState(aggrBlock);
-		}
+		//for (PartitionBlock<S> block: partition.getBlocks()) {
+		//	Aggregated<S> aggrBlock = new Aggregated<>(block);
+		//	aggrLts.addState(aggrBlock);
+		//}
 		
 		List<Aggregated<S>> aggrLtsStates = new ArrayList<>(partition.size());
 		HashMap<Aggregated<S>, HashMap<Aggregated<S>, HashMap<Short, Double>>> aggrTrans = new HashMap<>();
@@ -174,6 +181,16 @@ public class ContextualLumpability<S extends Comparable<S>> implements Aggregati
 		Double pmc = PartitioningUtils.pmc(allWeights);
 		//HashMap<S, Double> toPmc = PartitioningUtils.splitMapOnValue(weights, pmc);
 		
+		for (S s: weights.keySet()) {
+			try {
+			markedBlock.setValue(s, weights.get(s));
+			} catch (StateIsMarkedException e) {
+				e.printStackTrace();
+			} catch (StateNotFoundException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		} 
 		PartitionBlock<S> nonPmcBlock = markedBlock.splitBlockOnValue(pmc);
 		Collection<PartitionBlock<S>> subBlocks;
 		
@@ -286,8 +303,11 @@ public class ContextualLumpability<S extends Comparable<S>> implements Aggregati
 			DefaultHashMap<S, DefaultHashMap<Short, HashSet<S>>> preIm) {
 		HashSet<Short> allActions = new HashSet<>();
 		
+		System.out.println("Computing pre images");
 		for (S state: splitter) {
+			System.out.println("state " + state.toString());
 			for (S source: lts.getPreImage(state)) {
+				System.out.println("found pre-image");
 				Set<Short> curActs = lts.getActions(source, state);
 				allActions.addAll(curActs);
 				for (Short act : curActs) {

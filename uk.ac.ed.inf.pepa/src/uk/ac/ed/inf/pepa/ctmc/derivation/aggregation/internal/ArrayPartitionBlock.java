@@ -50,7 +50,7 @@ public class ArrayPartitionBlock<T> implements PartitionBlock<T> {
 	 * @param sts
 	 */
 	private ArrayPartitionBlock(List<T> sts, HashMap<T, Double> map) {
-		states.addAll(sts);
+		states = new ArrayList<T>(sts);
 		// TODO: we might be able to just share the map and avoid
 		// copying it, but we must be sure about this!
 		mapToValues = new HashMap<>();
