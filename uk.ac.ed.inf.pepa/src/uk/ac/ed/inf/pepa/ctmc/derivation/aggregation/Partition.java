@@ -23,10 +23,14 @@ public class Partition<S extends Comparable<S>, P extends PartitionBlock<S>> {
 	}
 
 	public void addBlock(P block) {
+		System.err.println("Adding a block to the partition: " + block.toString() + " empty " + block.isEmpty());
 		// assert !blocks.contains(block);
-		blocks.add(block);
-		for (S state: block) {
-			stateToBlock.put(state, block);
+		if (blocks.add(block)) {
+			for (S state: block) {
+				stateToBlock.put(state, block);
+			}
+		} else {
+			System.err.println("Block already in the partition!");
 		}
 	}
 	
@@ -58,5 +62,10 @@ public class Partition<S extends Comparable<S>, P extends PartitionBlock<S>> {
 	
 	public int size() {
 		return blocks.size();
+	}
+	
+	@Override
+	public String toString() {
+		return "Partition(" + blocks.toString() + ")";
 	}
 }

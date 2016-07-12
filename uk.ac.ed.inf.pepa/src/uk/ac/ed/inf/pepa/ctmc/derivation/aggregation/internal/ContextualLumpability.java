@@ -9,6 +9,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -46,9 +47,11 @@ public class ContextualLumpability<S extends Comparable<S>> implements Aggregati
 		);
 		
 		while (!splitters.isEmpty()) {
-			System.out.println("Splitting!");
+			System.out.println("Splitting! We have " + splitters.size() + " splitters in queue.");
 			PartitionBlock<S> splitter = splitters.pollFirst();
 			splitter.usingAsSplitter();
+			System.err.println("Splitter is: " + splitter.toString());
+			
 			
 			DefaultHashMap<S, DefaultHashMap<Short, HashSet<S>>> preIm =
 					new DefaultHashMap<>(
@@ -62,7 +65,9 @@ public class ContextualLumpability<S extends Comparable<S>> implements Aggregati
 			
 			System.out.println("allActions =" + allActions.toString() + " size " + allActions.size());
 			for (short act: allActions) {
+				System.err.println("Splitting for action" + act);
 				ArrayList<S> seenStates = computeWeights(initial, weights, splitter, preIm, act);
+				System.err.println("states seen: " + seenStates.toString());
 				
 				markVisitedStates(partition, touchedBlocks, seenStates);
 				
@@ -72,6 +77,7 @@ public class ContextualLumpability<S extends Comparable<S>> implements Aggregati
 					performSplitting(partition, splitters, weights, block);
 				}
 				
+				System.err.println("Clearing weights computed.");
 				weights.clear();
 			}
 		}
@@ -175,42 +181,69 @@ public class ContextualLumpability<S extends Comparable<S>> implements Aggregati
 			LinkedList<PartitionBlock<S>> splitters,
 			DefaultHashMap<S, Double> weights,
 			PartitionBlock<S> block) {
+		
+		System.err.println("Initial block" + block.toString());
 		PartitionBlock<S> markedBlock = block.splitMarkedStates();
+		if (block.isEmpty()) {
+			System.err.println("The block got empty.");
+			for (S s: markedBlock) {
+				block.addState(s);
+			}
+			markedBlock = block;
+		}
 		
-		List<Double> allWeights = new ArrayList<>(weights.values());
+		assert !markedBlock.isEmpty();
+		
+		System.err.println("After splitting the marked states becomes: " + block.toString());
+		System.err.println("Marked states: " + markedBlock.toString());
+		
+		List<Double> allWeights = new ArrayList<>(markedBlock.size());
+		for (S s: markedBlock) {
+			allWeights.add(weights.get(s));
+		}
 		Double pmc = PartitioningUtils.pmc(allWeights);
-		//HashMap<S, Double> toPmc = PartitioningUtils.splitMapOnValue(weights, pmc);
+		System.err.println("PMC: " + pmc);
 		
-		for (S s: weights.keySet()) {
+		for (S s: markedBlock) {
 			try {
 			markedBlock.setValue(s, weights.get(s));
 			} catch (StateIsMarkedException e) {
 				e.printStackTrace();
 			} catch (StateNotFoundException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		} 
 		PartitionBlock<S> nonPmcBlock = markedBlock.splitBlockOnValue(pmc);
+		System.err.println("Non pmc block: " + nonPmcBlock.toString());
+		System.err.println("pmc block: " + markedBlock.toString() + " empty: " + markedBlock.isEmpty());
 		Collection<PartitionBlock<S>> subBlocks;
 		
 		if (!nonPmcBlock.isEmpty()) {
 			subBlocks = nonPmcBlock.splitBlock();
+			System.err.println("Splitted into:");
+			for (PartitionBlock<S> b : subBlocks) {
+				System.err.println("BB: " + b.toString());
+			}
 		} else {
 			subBlocks = new ArrayList<>();
 		}
 		
 		ArrayList<PartitionBlock<S>> interestingBlocks = new ArrayList<>(2 + subBlocks.size());
-		if (!block.isEmpty()) {
-			interestingBlocks.add(block);
-		}
-		
-		interestingBlocks.add(markedBlock);
+		if (markedBlock != block) interestingBlocks.add(markedBlock);
 		interestingBlocks.addAll(subBlocks);
 		
 		partition.updateWithSplit(interestingBlocks);
 		
-		if (block.wasUsedAsSplitter()) {
+		/*
+		if (!block.isEmpty()) {
+			System.err.println("will add block");
+			interestingBlocks.add(block);
+		} */
+		
+		
+		System.err.println("partition is: " + partition.toString());
+		
+		if (block.wasUsedAsSplitter() && !interestingBlocks.isEmpty()) {
 			// In this case it is safe to avoid using one
 			// of the subblocks as a splitter.
 			// we then remove the biggest one.
@@ -226,8 +259,12 @@ public class ContextualLumpability<S extends Comparable<S>> implements Aggregati
 					}
 			);
 			
+			System.err.println("Removing a fatBlock from splitters" + fatBlock.toString());
 			interestingBlocks.remove(fatBlock);
+		} else {
+			interestingBlocks.remove(block);
 		}
+		
 		splitters.addAll(interestingBlocks);
 	}
 
@@ -243,11 +280,19 @@ public class ContextualLumpability<S extends Comparable<S>> implements Aggregati
 			LinkedList<PartitionBlock<S>> touchedBlocks,
 			final ArrayList<S> seenStates) {
 		for (S state: seenStates) {
+			System.err.println("seen state: " + state);
 			// FIXME: only if it has a weight != 0.
 			PartitionBlock<S> block = partition.getBlockOf(state);
+			System.err.println("block of: " + block.toString() + " marked: " + block.hasMarkedStates());
 			if (!block.hasMarkedStates()) {
 				touchedBlocks.add(block);
+			} else {
+				Iterator<S> s = block.getMarkedStates();
+				while (s.hasNext()) {
+					System.err.println("marked" + s.next());
+				}
 			}
+			
 			try {
 				block.markState(state);
 			} catch (StateNotFoundException e) {
@@ -277,7 +322,8 @@ public class ContextualLumpability<S extends Comparable<S>> implements Aggregati
 		ArrayList<S> seenStates = new ArrayList<>();
 		for (S state : splitter) {
 			for (S source : preIm.get(state).get(act)) {
-				if (weights.containsKey(source)) {
+				System.err.println("Computing weight for " + source.toString() + " to " + state.toString());
+				if (!weights.containsKey(source)) {
 					seenStates.add(source);
 				}
 				double w = weights.get(source);

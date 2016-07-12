@@ -61,6 +61,7 @@ public class ArrayPartitionBlock<T> implements PartitionBlock<T> {
 	
 	@Override
 	public void addState(T state) {
+		assert !states.contains(state);
 		states.add(state);
 		
 	}
@@ -97,6 +98,7 @@ public class ArrayPartitionBlock<T> implements PartitionBlock<T> {
 	
 	@Override
 	public Iterator<T> getMarkedStates() {
+		System.err.println("getMarkedStates(): markIndex = " + markIndex + " size = " + size());
 		return new Iterator<T>() {
 			private int i=0;
 			
@@ -127,7 +129,11 @@ public class ArrayPartitionBlock<T> implements PartitionBlock<T> {
 			states.set(i-markIndex, states.get(i));
 		}
 		
+		// Remove the moved states from the array.
+		states.subList(states.size()-markIndex, states.size()).clear();
+		
 		states.trimToSize();
+		markIndex = 0;
 		return newBlock;
 	}
 	
@@ -142,6 +148,8 @@ public class ArrayPartitionBlock<T> implements PartitionBlock<T> {
 		for (Map.Entry<T, Double> entry: mappingOfPmc.entrySet()) {
 			pmcBlock.addState(entry.getKey());
 		}
+		
+		assert !pmcBlock.isEmpty();
 		
 		ArrayList<Map.Entry<T, Double>> entries = new ArrayList<>(mappingNotPmc.entrySet());
 		entries.sort(new Comparator<Map.Entry<T, Double>>() {
@@ -170,6 +178,8 @@ public class ArrayPartitionBlock<T> implements PartitionBlock<T> {
 				blocks.put(val, new ArrayPartitionBlock<>());
 			}
 			blocks.get(val).addState(entry.getKey());
+			
+			assert !blocks.get(val).isEmpty();
 		}
 		
 		// TODO: We do not want to allow modifications...
@@ -241,6 +251,13 @@ public class ArrayPartitionBlock<T> implements PartitionBlock<T> {
 	public void usingAsSplitter() {
 		this.used = true;
 	}
+	
+	
+	@Override
+	public String toString() {
+		return "PartitionBlock(" + states.toString() + ")";
+	}
+	
 
 	/**
 	 * Simple parameter checking function.

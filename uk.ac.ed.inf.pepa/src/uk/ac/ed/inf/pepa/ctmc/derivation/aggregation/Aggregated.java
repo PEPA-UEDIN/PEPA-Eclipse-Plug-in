@@ -52,4 +52,24 @@ public class Aggregated<S extends Comparable<S>> implements Iterable<S>, Compara
 		// FIXME: is this correct? 
 		return getRepresentative().compareTo(o.getRepresentative());
 	}
+	
+	@Override
+	public boolean equals(Object o) {
+		if (!(o instanceof Aggregated)) {
+			return false;
+		}
+		
+		Aggregated<S> oo = (Aggregated<S>) o;
+		return internalStates.equals(oo.internalStates);
+	}
+	
+	@Override
+	public int hashCode() {
+		return internalStates.hashCode();
+	}
+	
+	@Override
+	public String toString() {
+		return "Aggregated(" + internalStates.toString() + ")";
+	}
 }

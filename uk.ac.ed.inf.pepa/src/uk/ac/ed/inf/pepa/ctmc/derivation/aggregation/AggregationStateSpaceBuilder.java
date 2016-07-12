@@ -124,9 +124,9 @@ public class AggregationStateSpaceBuilder implements IStateSpaceBuilder {
 	private IStateSpace createStateSpace(ArrayList<State> states,
 			LabelledTransitionSystem<Aggregated<Integer>> aggrLts) {
 		ArrayList<Aggregated<Integer>> newStatesToRepr = new ArrayList<>(aggrLts.size());
-		ArrayList<Integer> reprToNewStates = new ArrayList<>(aggrLts.size());
+		ArrayList<Integer> reprToNewStates = new ArrayList<>(states.size());
 		
-		for (int i=0; i < aggrLts.size(); i++) {
+		for (int i=0; i < states.size(); i++) {
 			reprToNewStates.add(-1);
 		}
 		
