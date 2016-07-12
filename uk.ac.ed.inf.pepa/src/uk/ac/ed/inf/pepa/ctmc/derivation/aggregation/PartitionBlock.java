@@ -183,6 +183,27 @@ public interface PartitionBlock<S> extends Iterable<S> {
 	public void usingAsSplitter();
 	
 	/**
+	 * This is a low level operation needed to make efficient some algorithms.
+	 * 
+	 * After this call the <code>this</code> block and <code>block</block> will
+	 * share the same underlying sets of states. The <code>block</code> should
+	 * initially be empty and should be the value returned.
+	 * 
+	 * This operation is meant to be called as in:
+	 * <code>
+	 * if (block.isEmpty()) {
+	 *     otherBlock = otherBlock.shareIdentity(block)
+	 * }
+	 * </code>
+	 * 
+	 * From that point onwards we have <code>otherBlock == block</code>.
+	 * 
+	 * @param block An empty block from the partition
+	 * @return      The block passed as argument
+	 */
+	public PartitionBlock<S> shareIdentity(PartitionBlock<S> block);
+	
+	/**
 	 * Iterate over all the states in the block.
 	 */
 	@Override

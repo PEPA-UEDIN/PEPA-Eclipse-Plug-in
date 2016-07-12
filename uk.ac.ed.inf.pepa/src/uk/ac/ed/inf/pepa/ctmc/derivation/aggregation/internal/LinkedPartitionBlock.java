@@ -19,28 +19,28 @@ import uk.ac.ed.inf.pepa.model.RateMath;
 
 /**
  * @author Giacomo Alzetta
- * @param <T> The type of the states in the block.
+ * @param <S> The type of the states in the block.
  * @param <B> The type of the values associated with states in the block.
  *
  */
-public class LinkedPartitionBlock<T> implements PartitionBlock<T> {
+public class LinkedPartitionBlock<S> implements PartitionBlock<S> {
 
-	private LinkedList<T> nonMarkedStates;
-	private LinkedList<T> markedStates;
+	private LinkedList<S> nonMarkedStates;
+	private LinkedList<S> markedStates;
 	private boolean used = false;
 	
-	private HashMap<T, Double> mapToValues;
+	private HashMap<S, Double> mapToValues;
 	
 	public LinkedPartitionBlock() {
 		nonMarkedStates = new LinkedList<>();
 	}
 	
-	public LinkedPartitionBlock(LinkedList<T> states) {
+	public LinkedPartitionBlock(LinkedList<S> states) {
 		nonMarkedStates = states;
 	}
 	
 	@Override
-	public void addState(T state) {
+	public void addState(S state) {
 		nonMarkedStates.add(state);
 		
 	}
@@ -51,16 +51,16 @@ public class LinkedPartitionBlock<T> implements PartitionBlock<T> {
 	}
 
 	@Override
-	public Iterator<T> getStates() {
-		Iterator<T> iterator = new Iterator<T>() {
-			private Iterator<T> it1 = nonMarkedStates.iterator();
-			private Iterator<T> it2 = markedStates.iterator();
+	public Iterator<S> getStates() {
+		Iterator<S> iterator = new Iterator<S>() {
+			private Iterator<S> it1 = nonMarkedStates.iterator();
+			private Iterator<S> it2 = markedStates.iterator();
 			
 			public boolean hasNext() {
 				return it1.hasNext() || it2.hasNext();
 			}
 			
-			public T next() {
+			public S next() {
 				if (it1.hasNext()) {
 					return it1.next();
 				} else {
@@ -78,15 +78,15 @@ public class LinkedPartitionBlock<T> implements PartitionBlock<T> {
 	}
 
 	@Override
-	public Iterator<T> getMarkedStates() {
-		return new Iterator<T>() {
-			Iterator<T> it = markedStates.iterator();
+	public Iterator<S> getMarkedStates() {
+		return new Iterator<S>() {
+			Iterator<S> it = markedStates.iterator();
 			
 			public boolean hasNext() {
 				return it.hasNext();
 			}
 			
-			public T next() {
+			public S next() {
 				return it.next();
 			}
 			
@@ -97,29 +97,29 @@ public class LinkedPartitionBlock<T> implements PartitionBlock<T> {
 	}
 
 	@Override
-	public PartitionBlock<T> splitMarkedStates() {
-		PartitionBlock<T> marked = new LinkedPartitionBlock<>(markedStates);
+	public PartitionBlock<S> splitMarkedStates() {
+		PartitionBlock<S> marked = new LinkedPartitionBlock<>(markedStates);
 		this.markedStates = new LinkedList<>();
 		return marked;
 	}
 
 	@Override
-	public Collection<PartitionBlock<T>> splitBlock() {
+	public Collection<PartitionBlock<S>> splitBlock() {
 		ArrayList<Double> values = new ArrayList<>(mapToValues.values());
 		double pmc = PartitioningUtils.pmc(values);
-		HashMap<T, Double> mappingNotPmc = new HashMap<>(mapToValues);
-		HashMap<T, Double> mappingOfPmc = PartitioningUtils.splitMapOnValue(mappingNotPmc, pmc);
+		HashMap<S, Double> mappingNotPmc = new HashMap<>(mapToValues);
+		HashMap<S, Double> mappingOfPmc = PartitioningUtils.splitMapOnValue(mappingNotPmc, pmc);
 		
-		PartitionBlock<T> pmcBlock = new LinkedPartitionBlock<T>();
-		for (Map.Entry<T, Double> entry: mappingOfPmc.entrySet()) {
+		PartitionBlock<S> pmcBlock = new LinkedPartitionBlock<S>();
+		for (Map.Entry<S, Double> entry: mappingOfPmc.entrySet()) {
 			pmcBlock.addState(entry.getKey());
 		}
 		
-		ArrayList<Map.Entry<T, Double>> entries = new ArrayList<>(mappingNotPmc.entrySet());
-		entries.sort(new Comparator<Map.Entry<T, Double>>() {
+		ArrayList<Map.Entry<S, Double>> entries = new ArrayList<>(mappingNotPmc.entrySet());
+		entries.sort(new Comparator<Map.Entry<S, Double>>() {
 			
 			@Override
-			public int compare(Map.Entry<T, Double> e1, Map.Entry<T, Double> e2) {
+			public int compare(Map.Entry<S, Double> e1, Map.Entry<S, Double> e2) {
 				double v1 = e1.getValue();
 				double v2 = e2.getValue();
 				
@@ -133,10 +133,10 @@ public class LinkedPartitionBlock<T> implements PartitionBlock<T> {
 			}
 		});
 		
-		HashMap<Double, PartitionBlock<T>> blocks = new HashMap<>();
+		HashMap<Double, PartitionBlock<S>> blocks = new HashMap<>();
 		blocks.put(pmc, pmcBlock);
 		
-		for (Map.Entry<T, Double> entry : entries) {
+		for (Map.Entry<S, Double> entry : entries) {
 			Double val = entry.getValue();
 			if (!blocks.containsKey(val)) {
 				blocks.put(val, new LinkedPartitionBlock<>());
@@ -149,7 +149,7 @@ public class LinkedPartitionBlock<T> implements PartitionBlock<T> {
 	}
 
 	@Override
-	public void markState(T state) throws StateNotFoundException {
+	public void markState(S state) throws StateNotFoundException {
 		boolean found = false;
 		for (int i=0; i < nonMarkedStates.size(); i++) {
 			if (nonMarkedStates.get(i).equals(state)) {
@@ -167,7 +167,7 @@ public class LinkedPartitionBlock<T> implements PartitionBlock<T> {
 	}
 
 	@Override
-	public void setValue(T state, double value) throws StateNotFoundException, StateIsMarkedException {
+	public void setValue(S state, double value) throws StateNotFoundException, StateIsMarkedException {
 		
 		if (nonMarkedStates.contains(state)) {
 			mapToValues.put(state, value);
@@ -179,7 +179,7 @@ public class LinkedPartitionBlock<T> implements PartitionBlock<T> {
 	}
 
 	@Override
-	public double getValue(T state) throws StateNotFoundException, StateIsMarkedException {
+	public double getValue(S state) throws StateNotFoundException, StateIsMarkedException {
 		Double val = mapToValues.get(state);
 		if (val == null) {
 			if (mapToValues.containsKey(state)) {
@@ -194,14 +194,14 @@ public class LinkedPartitionBlock<T> implements PartitionBlock<T> {
 	}
 
 	@Override
-	public boolean isMarked(T state) throws StateNotFoundException {
-		for (T s: markedStates) {
+	public boolean isMarked(S state) throws StateNotFoundException {
+		for (S s: markedStates) {
 			if (state.equals(s)) {
 				return true;
 			}
 		}
 		
-		for (T s: nonMarkedStates) {
+		for (S s: nonMarkedStates) {
 			if (state.equals(s)) {
 				return false;
 			}
@@ -223,5 +223,22 @@ public class LinkedPartitionBlock<T> implements PartitionBlock<T> {
 	@Override
 	public void usingAsSplitter() {
 		this.used = true;
+	}
+
+	@Override
+	public PartitionBlock<S> shareIdentity(PartitionBlock<S> block) {
+		assert block.isEmpty();
+		assert markedStates.isEmpty();
+		
+		if (block instanceof LinkedPartitionBlock) {
+			LinkedPartitionBlock<S> myBlock = (LinkedPartitionBlock<S>)block;
+			myBlock.nonMarkedStates = nonMarkedStates;
+		} else {
+			for (S s: nonMarkedStates) {
+				block.addState(s);
+			} 
+		}
+		
+		return block;
 	}
 }

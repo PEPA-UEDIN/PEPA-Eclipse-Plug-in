@@ -23,14 +23,12 @@ public class Partition<S extends Comparable<S>, P extends PartitionBlock<S>> {
 	}
 
 	public void addBlock(P block) {
-		System.err.println("Adding a block to the partition: " + block.toString() + " empty " + block.isEmpty());
-		// assert !blocks.contains(block);
+		// this should never be called with a block already in the partition.
+		assert !blocks.contains(block);
 		if (blocks.add(block)) {
 			for (S state: block) {
 				stateToBlock.put(state, block);
 			}
-		} else {
-			System.err.println("Block already in the partition!");
 		}
 	}
 	

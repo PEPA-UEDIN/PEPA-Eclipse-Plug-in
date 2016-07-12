@@ -28,19 +28,19 @@ import uk.ac.ed.inf.pepa.ctmc.derivation.aggregation.StateNotFoundException;
  * @author Giacomo Alzetta
  *
  */
-public class ArrayPartitionBlock<T> implements PartitionBlock<T> {
+public class ArrayPartitionBlock<S> implements PartitionBlock<S> {
 
-	private ArrayList<T> states;
+	private ArrayList<S> states;
 	private int markIndex = 0;
 	private boolean used = false;
 	
-	private HashMap<T, Double> mapToValues;
+	private HashMap<S, Double> mapToValues;
 	
 	/**
 	 * Create an empty partition block.
 	 */
 	public ArrayPartitionBlock() {
-		states = new ArrayList<T>();
+		states = new ArrayList<S>();
 		mapToValues = new HashMap<>();
 	}
 	
@@ -49,18 +49,18 @@ public class ArrayPartitionBlock<T> implements PartitionBlock<T> {
 	 * 
 	 * @param sts
 	 */
-	private ArrayPartitionBlock(List<T> sts, HashMap<T, Double> map) {
-		states = new ArrayList<T>(sts);
+	private ArrayPartitionBlock(List<S> sts, HashMap<S, Double> map) {
+		states = new ArrayList<S>(sts);
 		// TODO: we might be able to just share the map and avoid
 		// copying it, but we must be sure about this!
 		mapToValues = new HashMap<>();
-		for (T state: states) {
+		for (S state: states) {
 			mapToValues.put(state, map.get(state));
 		}
 	}
 	
 	@Override
-	public void addState(T state) {
+	public void addState(S state) {
 		assert !states.contains(state);
 		states.add(state);
 		
@@ -78,15 +78,15 @@ public class ArrayPartitionBlock<T> implements PartitionBlock<T> {
 	 * all marked states are returned before the non-marked states.
 	 */
 	@Override
-	public Iterator<T> getStates() {
-		return new Iterator<T>() {
+	public Iterator<S> getStates() {
+		return new Iterator<S>() {
 			private int i=0;
 			
 			public boolean hasNext() {
 				return i < states.size();
 			}
 			
-			public T next() {
+			public S next() {
 				return states.get(i++);
 			}
 			
@@ -97,16 +97,15 @@ public class ArrayPartitionBlock<T> implements PartitionBlock<T> {
 	}
 	
 	@Override
-	public Iterator<T> getMarkedStates() {
-		System.err.println("getMarkedStates(): markIndex = " + markIndex + " size = " + size());
-		return new Iterator<T>() {
+	public Iterator<S> getMarkedStates() {
+		return new Iterator<S>() {
 			private int i=0;
 			
 			public boolean hasNext() {
 				return i < markIndex;
 			}
 			
-			public T next() {
+			public S next() {
 				return states.get(i++);
 			}
 			
@@ -117,8 +116,8 @@ public class ArrayPartitionBlock<T> implements PartitionBlock<T> {
 	}
 	
 	@Override
-	public PartitionBlock<T> splitMarkedStates() {
-		ArrayPartitionBlock<T> newBlock = new ArrayPartitionBlock<>(
+	public PartitionBlock<S> splitMarkedStates() {
+		ArrayPartitionBlock<S> newBlock = new ArrayPartitionBlock<>(
 				states.subList(0, markIndex), 
 				mapToValues
 		);
@@ -138,24 +137,24 @@ public class ArrayPartitionBlock<T> implements PartitionBlock<T> {
 	}
 	
 	@Override
-	public Collection<PartitionBlock<T>> splitBlock() {
+	public Collection<PartitionBlock<S>> splitBlock() {
 		ArrayList<Double> values = new ArrayList<>(mapToValues.values());
 		double pmc = PartitioningUtils.pmc(values);
-		HashMap<T, Double> mappingNotPmc = new HashMap<>(mapToValues);
-		HashMap<T, Double> mappingOfPmc = PartitioningUtils.splitMapOnValue(mappingNotPmc, pmc);
+		HashMap<S, Double> mappingNotPmc = new HashMap<>(mapToValues);
+		HashMap<S, Double> mappingOfPmc = PartitioningUtils.splitMapOnValue(mappingNotPmc, pmc);
 		
-		PartitionBlock<T> pmcBlock = new ArrayPartitionBlock<>();
-		for (Map.Entry<T, Double> entry: mappingOfPmc.entrySet()) {
+		PartitionBlock<S> pmcBlock = new ArrayPartitionBlock<>();
+		for (Map.Entry<S, Double> entry: mappingOfPmc.entrySet()) {
 			pmcBlock.addState(entry.getKey());
 		}
 		
 		assert !pmcBlock.isEmpty();
 		
-		ArrayList<Map.Entry<T, Double>> entries = new ArrayList<>(mappingNotPmc.entrySet());
-		entries.sort(new Comparator<Map.Entry<T, Double>>() {
+		ArrayList<Map.Entry<S, Double>> entries = new ArrayList<>(mappingNotPmc.entrySet());
+		entries.sort(new Comparator<Map.Entry<S, Double>>() {
 			
 			@Override
-			public int compare(Map.Entry<T, Double> e1, Map.Entry<T, Double> e2) {
+			public int compare(Map.Entry<S, Double> e1, Map.Entry<S, Double> e2) {
 				double v1 = e1.getValue();
 				double v2 = e2.getValue();
 				
@@ -169,10 +168,10 @@ public class ArrayPartitionBlock<T> implements PartitionBlock<T> {
 			}
 		});
 		
-		HashMap<Double, PartitionBlock<T>> blocks = new HashMap<>();
+		HashMap<Double, PartitionBlock<S>> blocks = new HashMap<>();
 		blocks.put(pmc, pmcBlock);
 		
-		for (Map.Entry<T, Double> entry : entries) {
+		for (Map.Entry<S, Double> entry : entries) {
 			Double val = entry.getValue();
 			if (!blocks.containsKey(val)) {
 				blocks.put(val, new ArrayPartitionBlock<>());
@@ -187,7 +186,7 @@ public class ArrayPartitionBlock<T> implements PartitionBlock<T> {
 	}
 	
 	@Override
-	public void markState(T state) throws StateNotFoundException {
+	public void markState(S state) throws StateNotFoundException {
 		int i = states.indexOf(state);
 		if (i < 0) {
 			throw new StateNotFoundException("The state: " + state.toString() + " was not found.");
@@ -195,14 +194,14 @@ public class ArrayPartitionBlock<T> implements PartitionBlock<T> {
 		// We swap the first non-marked state with the state we want to mark,
 		// and increase the markIndex.
 		
-		T firstNonMarkedState = states.get(markIndex);
+		S firstNonMarkedState = states.get(markIndex);
 		states.set(markIndex, state);
 		states.set(i, firstNonMarkedState);
 		++markIndex;
 	}
 	
 	@Override
-	public boolean isMarked(T state) throws StateNotFoundException {
+	public boolean isMarked(S state) throws StateNotFoundException {
 		for (int i=0; i < states.size(); i++) {
 			boolean found = state.equals(states.get(i));
 			if (i < markIndex && found) {
@@ -216,14 +215,14 @@ public class ArrayPartitionBlock<T> implements PartitionBlock<T> {
 	
 	
 	@Override
-	public void setValue(T state, double value) throws StateNotFoundException, StateIsMarkedException {
+	public void setValue(S state, double value) throws StateNotFoundException, StateIsMarkedException {
 		checkStateExistNonMarked(state);
 		
 		mapToValues.put(state, value);
 	}
 	
 	@Override
-	public double getValue(T state) throws StateNotFoundException, StateIsMarkedException {
+	public double getValue(S state) throws StateNotFoundException, StateIsMarkedException {
 		Double value = mapToValues.get(state);
 		if (value == null) {
 			if (mapToValues.containsKey(state)) {
@@ -266,7 +265,7 @@ public class ArrayPartitionBlock<T> implements PartitionBlock<T> {
 	 * @throws StateNotFoundException
 	 * @throws StateIsMarkedException
 	 */
-	private void checkStateExistNonMarked(T state)
+	private void checkStateExistNonMarked(S state)
 			throws StateNotFoundException, StateIsMarkedException {
 		int i = states.indexOf(state);
 		if (i < 0) {
@@ -274,5 +273,25 @@ public class ArrayPartitionBlock<T> implements PartitionBlock<T> {
 		} else if (i < markIndex) {
 			throw new StateIsMarkedException("The state: " + state.toString() + " is marked.");
 		}
+	}
+
+	@Override
+	public PartitionBlock<S> shareIdentity(PartitionBlock<S> block) {
+		assert block.isEmpty();
+		assert markIndex == 0;
+		
+		if (block instanceof ArrayPartitionBlock) {
+			// Efficient implementation that shares the underlying array
+			ArrayPartitionBlock<S> myBlock = (ArrayPartitionBlock<S>)block;
+			myBlock.states = this.states;
+		} else {
+			// we manually copy the states over
+			for (S s: states) {
+				block.addState(s);
+			} 
+		}
+		
+		
+		return block;
 	}
 }
