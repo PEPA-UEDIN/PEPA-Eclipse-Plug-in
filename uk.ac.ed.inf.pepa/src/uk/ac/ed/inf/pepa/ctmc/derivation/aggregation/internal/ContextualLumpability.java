@@ -4,6 +4,7 @@
 package uk.ac.ed.inf.pepa.ctmc.derivation.aggregation.internal;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -47,10 +48,8 @@ public class ContextualLumpability<S extends Comparable<S>> implements Aggregati
 		);
 		
 		while (!splitters.isEmpty()) {
-			System.out.println("Splitting! We have " + splitters.size() + " splitters in queue.");
 			PartitionBlock<S> splitter = splitters.pollFirst();
 			splitter.usingAsSplitter();
-			System.err.println("Splitter is: " + splitter.toString());
 			
 			
 			DefaultHashMap<S, DefaultHashMap<Short, HashSet<S>>> preIm =
@@ -63,21 +62,16 @@ public class ContextualLumpability<S extends Comparable<S>> implements Aggregati
 			//HashMap<S, HashMap<Short, HashSet<S>>> preIm = new HashMap<>();
 			HashSet<Short> allActions = computeAllPreimages(initial, splitter, preIm);
 			
-			System.out.println("allActions =" + allActions.toString() + " size " + allActions.size());
 			for (short act: allActions) {
-				System.err.println("Splitting for action" + act);
 				ArrayList<S> seenStates = computeWeights(initial, weights, splitter, preIm, act);
-				System.err.println("states seen: " + seenStates.toString());
 				
 				markVisitedStates(partition, touchedBlocks, seenStates);
 				
 				while (!touchedBlocks.isEmpty()) {
-					System.out.println("Splitting touched block");
 					PartitionBlock<S> block = touchedBlocks.pollFirst();
 					performSplitting(partition, splitters, weights, block);
 				}
 				
-				System.err.println("Clearing weights computed.");
 				weights.clear();
 			}
 		}
@@ -97,17 +91,12 @@ public class ContextualLumpability<S extends Comparable<S>> implements Aggregati
 	public LabelledTransitionSystem<Aggregated<S>> aggregateLts(
 			LabelledTransitionSystem<S> initial,
 			Partition<S, PartitionBlock<S>> partition) {
-		System.out.println("Final partition has size: " + partition.size());
+		
 		// TODO: move this as default implementation in the interface.
-		LabelledTransitionSystem<Aggregated<S>> aggrLts = new LtsModel<>();
 		
-		//for (PartitionBlock<S> block: partition.getBlocks()) {
-		//	Aggregated<S> aggrBlock = new Aggregated<>(block);
-		//	aggrLts.addState(aggrBlock);
-		//}
-		
+		final int numActions = initial.numberOfActionTypes();
 		List<Aggregated<S>> aggrLtsStates = new ArrayList<>(partition.size());
-		HashMap<Aggregated<S>, HashMap<Aggregated<S>, HashMap<Short, Double>>> aggrTrans = new HashMap<>();
+		HashMap<Aggregated<S>, HashMap<Aggregated<S>, double[]>> aggrTrans = new HashMap<>();
 		HashMap<PartitionBlock<S>, Aggregated<S>> blocksToAggr = new HashMap<>(partition.size());
 		
 		for (PartitionBlock<S> block: partition.getBlocks()) {
@@ -122,27 +111,24 @@ public class ContextualLumpability<S extends Comparable<S>> implements Aggregati
 			Aggregated<S> aggrState = aggrLtsStates.get(i++);
 			
 			for (S state: block) {
-				List<S> image = initial.getImage(state);
 				List<Aggregated<S>> imAggr = new ArrayList<>();
-				for (S target: image) {
+				for (S target: initial.getImage(state)) {
 					imAggr.add(blocksToAggr.get(partition.getBlockOf(target)));
 				}
 				
 				for (Aggregated<S> targetAggr: imAggr) {
-					aggrTrans.get(aggrState).put(targetAggr, new HashMap<>());
+					double[] rates = new double[numActions];
+					//Arrays.fill(rates, 0.0d);
+					aggrTrans.get(aggrState).put(targetAggr, rates);
 					
 					for (S t: targetAggr) {
-						Set<Short> acts = initial.getActions(state, t);
+						Iterator<Short> acts = initial.getActions(state, t);
 					
-						for (short act: acts) {
-							HashMap<Short, Double> m = aggrTrans.get(aggrState).get(targetAggr);
-							if (!m.containsKey(act)) {
-								m.put(act, 0.0d);
-							}
+						while (acts.hasNext()) {
+							short act = acts.next();
+							double[] m = aggrTrans.get(aggrState).get(targetAggr);
 							
-							double w = m.get(act);
-							w += initial.getApparentRate(state, t, act);
-							m.put(act, w);
+							m[act] += initial.getApparentRate(state, t, act);
 						}
 					}
 				}
@@ -150,17 +136,25 @@ public class ContextualLumpability<S extends Comparable<S>> implements Aggregati
 				
 			}
 		}
+
+		 
+		LabelledTransitionSystem<Aggregated<S>> aggrLts = new LtsModel<>(numActions);
+
 		
 		for (Aggregated<S> aggrS: aggrLtsStates) {
 			aggrLts.addState(aggrS);
 		}
 		
 		for (Aggregated<S> source: aggrTrans.keySet()) {
-			HashMap<Aggregated<S>, HashMap<Short, Double>> sourceImage = aggrTrans.get(source);
+			HashMap<Aggregated<S>, double[]> sourceImage = aggrTrans.get(source);
 			for (Aggregated<S> target: sourceImage.keySet()) {
-				HashMap<Short, Double> targetMap = sourceImage.get(target);
-				for (Map.Entry<Short, Double> entry: targetMap.entrySet()) {
-					aggrLts.addTransition(source, target, entry.getValue(), entry.getKey());
+				double[] targetMap = sourceImage.get(target);
+				short act = 0;
+				for (double value: targetMap) {
+					if (value != 0.0d) {
+						aggrLts.addTransition(source, target, value, act);
+					}
+					++act;
 				}
 			}
 		}
@@ -315,10 +309,12 @@ public class ContextualLumpability<S extends Comparable<S>> implements Aggregati
 		
 		for (S state: splitter) {
 			for (S source: lts.getPreImage(state)) {
-				Set<Short> curActs = lts.getActions(source, state);
-				allActions.addAll(curActs);
-				for (Short act : curActs) {
+				Iterator<Short> curActs = lts.getActions(source, state);
+				while (curActs.hasNext()) {
+					Short act = curActs.next();
+					allActions.add(act);
 					preIm.get(state).get(act).add(source);
+
 				}
 			}
 		}

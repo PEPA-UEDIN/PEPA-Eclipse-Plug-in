@@ -1,5 +1,6 @@
 package uk.ac.ed.inf.pepa.ctmc.derivation.aggregation;
 
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -11,8 +12,6 @@ import java.util.Set;
  *
  */
 public interface LabelledTransitionSystem<S> extends Iterable<S> {
-
-	public boolean isValid();
 	
 	public int size();
 	default int numberOfStates() {
@@ -20,11 +19,12 @@ public interface LabelledTransitionSystem<S> extends Iterable<S> {
 	}
 	
 	public int numberOfTransitions();
+	public int numberOfActionTypes();
 	
-	public boolean addState(S state);
-	public boolean addTransition(S source, S target, double rate, short actionId);
+	public void addState(S state);
+	public void addTransition(S source, S target, double rate, short actionId);
 	
-	public Set<Short> getActions(S source, S target);
+	public Iterator<Short> getActions(S source, S target);
 	public double getApparentRate(S source, S target, short actionId);
 	default double getApparentRate(S source, S[] targets, short actionId) {
 		double[] rates = new double[targets.length];
@@ -42,7 +42,7 @@ public interface LabelledTransitionSystem<S> extends Iterable<S> {
 		return result;
 	}
 	
-	public List<S> getImage(S source);
+	public Iterable<S> getImage(S source);
 	
-	public List<S> getPreImage(S target);
+	public Iterable<S> getPreImage(S target);
 }

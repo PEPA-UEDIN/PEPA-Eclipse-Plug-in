@@ -29,28 +29,23 @@ public class ReverseLtsModel<S> implements LabelledTransitionSystem<S> {
 	}
 	
 	@Override
-	public List<S> getImage(S source) {
+	public Iterable<S> getImage(S source) {
 		return lts.getPreImage(source);
 	}
 	
 	@Override
-	public List<S> getPreImage(S target) {
+	public Iterable<S> getPreImage(S target) {
 		return lts.getImage(target);
 	}
 	
 	@Override
-	public Set<Short> getActions(S source, S target) {
+	public Iterator<Short> getActions(S source, S target) {
 		return lts.getActions(target, source);
 	}
 
 	@Override
 	public Iterator<S> iterator() {
 		return lts.iterator();
-	}
-
-	@Override
-	public boolean isValid() {
-		return lts.isValid();
 	}
 
 	@Override
@@ -64,13 +59,18 @@ public class ReverseLtsModel<S> implements LabelledTransitionSystem<S> {
 	}
 
 	@Override
-	public boolean addState(S state) {
-		return lts.addState(state);
+	public void addState(S state) {
+		lts.addState(state);
 	}
 
 	@Override
-	public boolean addTransition(S source, S target, double rate, short actionId) {
-		return lts.addTransition(source, target, rate, actionId);
+	public void addTransition(S source, S target, double rate, short actionId) {
+		lts.addTransition(source, target, rate, actionId);
+	}
+
+	@Override
+	public int numberOfActionTypes() {
+		return lts.numberOfActionTypes();
 	}
 	
 }

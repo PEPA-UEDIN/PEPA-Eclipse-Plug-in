@@ -14,6 +14,7 @@ public class Aggregated<S extends Comparable<S>> implements Iterable<S>, Compara
 
 	private Set<S> internalStates = new HashSet<S>();
 	private S representative = null;
+	private int hash = -1;
 	
 	
 	public Aggregated(Iterable<S> states) {
@@ -32,6 +33,7 @@ public class Aggregated<S extends Comparable<S>> implements Iterable<S>, Compara
 	}
 	
 	public void add(S state) {
+		hash = -1;
 		if (representative == null || state.compareTo(representative) < 0) {
 			representative = state;
 		}
@@ -65,7 +67,10 @@ public class Aggregated<S extends Comparable<S>> implements Iterable<S>, Compara
 	
 	@Override
 	public int hashCode() {
-		return internalStates.hashCode();
+		if (hash == -1) {
+			hash = internalStates.hashCode();
+		}
+		return hash;
 	}
 	
 	@Override

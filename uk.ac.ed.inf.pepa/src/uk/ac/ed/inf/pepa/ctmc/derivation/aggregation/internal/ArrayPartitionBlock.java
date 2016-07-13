@@ -33,6 +33,7 @@ public class ArrayPartitionBlock<S> implements PartitionBlock<S> {
 	private ArrayList<S> states;
 	private int markIndex = 0;
 	private boolean used = false;
+	private int hash = -1;
 	
 	private HashMap<S, Double> mapToValues;
 	
@@ -61,6 +62,7 @@ public class ArrayPartitionBlock<S> implements PartitionBlock<S> {
 	
 	@Override
 	public void addState(S state) {
+		hash = -1;
 		assert !states.contains(state);
 		states.add(state);
 		
@@ -117,6 +119,7 @@ public class ArrayPartitionBlock<S> implements PartitionBlock<S> {
 	
 	@Override
 	public PartitionBlock<S> splitMarkedStates() {
+		hash = -1;
 		ArrayPartitionBlock<S> newBlock = new ArrayPartitionBlock<>(
 				states.subList(0, markIndex), 
 				mapToValues
@@ -138,6 +141,7 @@ public class ArrayPartitionBlock<S> implements PartitionBlock<S> {
 	
 	@Override
 	public Collection<PartitionBlock<S>> splitBlock() {
+		hash = -1;
 		ArrayList<Double> values = new ArrayList<>(mapToValues.values());
 		double pmc = PartitioningUtils.pmc(values);
 		HashMap<S, Double> mappingNotPmc = new HashMap<>(mapToValues);
@@ -216,6 +220,7 @@ public class ArrayPartitionBlock<S> implements PartitionBlock<S> {
 	
 	@Override
 	public void setValue(S state, double value) throws StateNotFoundException, StateIsMarkedException {
+		hash = -1;
 		checkStateExistNonMarked(state);
 		
 		mapToValues.put(state, value);
@@ -277,6 +282,7 @@ public class ArrayPartitionBlock<S> implements PartitionBlock<S> {
 
 	@Override
 	public PartitionBlock<S> shareIdentity(PartitionBlock<S> block) {
+		hash = -1;
 		assert block.isEmpty();
 		assert markIndex == 0;
 		
@@ -284,6 +290,7 @@ public class ArrayPartitionBlock<S> implements PartitionBlock<S> {
 			// Efficient implementation that shares the underlying array
 			ArrayPartitionBlock<S> myBlock = (ArrayPartitionBlock<S>)block;
 			myBlock.states = this.states;
+			myBlock.hash = -1;
 		} else {
 			// we manually copy the states over
 			for (S s: states) {
@@ -293,5 +300,30 @@ public class ArrayPartitionBlock<S> implements PartitionBlock<S> {
 		
 		
 		return block;
+	}
+	
+	
+	@Override
+	public boolean equals(Object other) {
+		if (this == other) {
+			return true;
+		} else if (!(other instanceof ArrayPartitionBlock)) {
+			return false;
+		}
+		
+		ArrayPartitionBlock<S> o = (ArrayPartitionBlock<S>)other;
+		if (!o.states.equals(this.states)) {
+			return false;
+		}
+		return this.mapToValues.equals(o.mapToValues);
+	}
+	
+	@Override
+	public int hashCode() {
+		if (hash == -1) {
+			hash = states.hashCode() + mapToValues.hashCode();
+		}
+		
+		return hash;
 	}
 }

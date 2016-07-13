@@ -1,37 +1,28 @@
 package uk.ac.ed.inf.pepa.ctmc.derivation.aggregation.internal;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import java.util.HashMap;
-import java.util.Iterator;
 
-import uk.ac.ed.inf.pepa.ctmc.derivation.IStateSpace;
 import uk.ac.ed.inf.pepa.ctmc.derivation.aggregation.LabelledTransitionSystem;
-import uk.ac.ed.inf.pepa.model.Action;
-import uk.ac.ed.inf.pepa.model.Activity;
-import uk.ac.ed.inf.pepa.model.Model;
-import uk.ac.ed.inf.pepa.model.NamedAction;
-import uk.ac.ed.inf.pepa.model.NamedRate;
-import uk.ac.ed.inf.pepa.model.internal.ActivityImpl;
-import uk.ac.ed.inf.pepa.model.internal.NamedActionImpl;
-import uk.ac.ed.inf.pepa.model.FiniteRate;
 
 public class LtsModel<S> implements LabelledTransitionSystem<S> {
 
 	private ArrayList<S> states;
-	private HashMap<S, HashMap<S, HashMap<Short, Double>>> transitionMap;
+	private HashMap<S, HashMap<S, double[]>> transitionMap;
 	private HashMap<S, ArrayList<S>> preImageMap;
 	
-	public LtsModel() {
+	private int numActionIds;
+	
+	public LtsModel(int numActionIds) {
+		this.numActionIds = numActionIds;
 		states = new ArrayList<>();
 		preImageMap = new HashMap<>();
 		transitionMap = new HashMap<>();
-	}
-	
-	@Override
-	public boolean isValid() {
-		return false;
 	}
 	
 	@Override
@@ -41,12 +32,12 @@ public class LtsModel<S> implements LabelledTransitionSystem<S> {
 
 	@Override
 	public double getApparentRate(S source, S target, short actionId) {
-		return transitionMap.get(source).get(target).get(actionId);
+		return transitionMap.get(source).get(target)[actionId];
 	}
 
 	@Override
-	public List<S> getImage(S source) {
-		HashMap<S, HashMap<Short, Double>> targetsMap = transitionMap.get(source);
+	public Iterable<S> getImage(S source) {
+		HashMap<S, double[]> targetsMap = transitionMap.get(source);
 		ArrayList<S> targets = new ArrayList<>(targetsMap.size());
 		for (S key: targetsMap.keySet()) {
 			targets.add(key);
@@ -56,38 +47,51 @@ public class LtsModel<S> implements LabelledTransitionSystem<S> {
 	}
 
 	@Override
-	public List<S> getPreImage(S target) {
+	public Iterable<S> getPreImage(S target) {
 		return preImageMap.get(target);
 	}
 	
 	@Override
-	public Set<Short> getActions(S source, S target) {
-		HashMap<Short, Double> map = get(source, target);
-		return map.keySet();
+	public Iterator<Short> getActions(S source, S target) {
+		return new Iterator<Short>(){
+			private final double[] map = get(source, target);
+			private short i=0;
+			
+			public boolean hasNext() {
+				if (i >= map.length) {
+					return false;
+				}
+				for (; i < map.length; ++i) {
+					if (map[i] != 0.0d) {
+						return true;
+					}
+				}
+				return false;
+			}
+			
+			public Short next() {
+				return i++;
+			}
+		};
 	}
 
 	@Override
-	public boolean addState(S state) {
-		boolean wasPresent =  states.add(state);
+	public void addState(S state) {
+		states.add(state);
 		transitionMap.put(state, new HashMap<>());
 		preImageMap.put(state, new ArrayList<>());
-		
-		return wasPresent;
 	}
 
 	@Override
-	public boolean addTransition(S source, S target, double rate, short actionId) {
-		System.out.println("Transition added");
-		HashMap<Short,Double> targetMap = get(source, target);
-		boolean res = targetMap.put(actionId, rate) == null;
+	public void addTransition(S source, S target, double rate, short actionId) {
+		double[] targetMap = get(source, target);
+		targetMap[actionId] = rate;
 		ArrayList<S> preImTarget = preImageMap.get(target);
 		if (preImTarget == null) {
 			preImTarget = new ArrayList<>();
 			preImageMap.put(target, preImTarget);
 		}
 		preImTarget.add(source);
-		
-		return res;
 	}
 	
 	@Override
@@ -96,14 +100,15 @@ public class LtsModel<S> implements LabelledTransitionSystem<S> {
 	}
 	
 	
-	private HashMap<Short, Double> get(S source, S target) {
-		HashMap<S, HashMap<Short,Double>> targetsMap = transitionMap.get(source);
+	private double[] get(S source, S target) {
+		HashMap<S, double[]> targetsMap = transitionMap.get(source);
 		// targetsMap cannot be null. If it is then source is not in the LTS.
 		assert targetsMap != null;
 		
-		HashMap<Short, Double> map = targetsMap.get(target);
+		double[] map = targetsMap.get(target);
 		if (map == null) {
-			map = new HashMap<>();
+			map = new double[numActionIds];
+			//Arrays.fill(map, 0.0d);
 			targetsMap.put(target, map);
 		}
 		
@@ -113,12 +118,21 @@ public class LtsModel<S> implements LabelledTransitionSystem<S> {
 	@Override
 	public int numberOfTransitions() {
 		int total = 0;
-		for (HashMap<S, HashMap<Short, Double>> trans : transitionMap.values()) {
-			for (HashMap<Short, Double> m : trans.values()) {
-				total += m.size();
+		for (HashMap<S, double[]> trans : transitionMap.values()) {
+			for (double[] m : trans.values()) {
+				for (double d: m) {
+					if (d != 0.0d) {
+						total += 1;
+					}
+				}
 			}
 		}
 		
 		return total;
+	}
+	
+	@Override
+	public int numberOfActionTypes() {
+		return numActionIds;
 	}
 }

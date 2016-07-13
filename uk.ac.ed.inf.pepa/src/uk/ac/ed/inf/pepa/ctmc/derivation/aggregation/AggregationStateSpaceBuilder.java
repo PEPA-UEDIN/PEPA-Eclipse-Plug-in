@@ -8,6 +8,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
@@ -97,18 +99,21 @@ public class AggregationStateSpaceBuilder implements IStateSpaceBuilder {
 		
 		LtsModel<Integer> lts = deriveLts(states, row, col, rates, actionIds);
 		
-		System.out.println("Derived an initial LTS with: " + (lts.size()) + " states.");
+		System.out.println("Derived an initial LTS with: " + (lts.size()) + " states and "
+						   + lts.numberOfTransitions() + " transitions.");
 		
 		// Aggregate the LTS here
 		LabelledTransitionSystem<Aggregated<Integer>> aggrLts = algorithm.aggregate(lts);
 		
-		System.out.println("Obtained an aggregated LTS with: " + aggrLts.size() + " states");
+		System.out.println("Obtained an aggregated LTS with: " + aggrLts.size() + " states and "
+						   + aggrLts.numberOfTransitions() + " transitions");
+		/*
 		for (Aggregated<Integer> aggrS: aggrLts) {
 			System.out.println("One aggregated state contains: ");
 			for (Integer x : aggrS) {
 				System.out.println(x.toString());
 			}
-		}
+		} */
 		
 		IStateSpace result = createStateSpace(states, aggrLts);
 		monitor.done();
@@ -149,7 +154,9 @@ public class AggregationStateSpaceBuilder implements IStateSpaceBuilder {
 		
 		for (Aggregated<Integer> s: newStatesToRepr) {
 			for (Aggregated<Integer> target: aggrLts.getImage(s)) {
-				for (short actionId : aggrLts.getActions(s, target)) {
+				Iterator<Short> itActions = aggrLts.getActions(s, target);
+				while (itActions.hasNext()) {
+					short actionId = itActions.next();
 					double rate = aggrLts.getApparentRate(s, target, actionId);
 					newCol.add(reprToNewStates.get(target.getRepresentative()));
 					newCol.add(newActions.size());
@@ -281,7 +288,18 @@ public class AggregationStateSpaceBuilder implements IStateSpaceBuilder {
 			IntegerArray row, IntegerArray col, DoubleArray rates,
 			IntegerArray actionIds) {
 		
-		LtsModel<Integer> lts = new LtsModel<>();
+		int numActIds = 0;
+		{
+			HashSet<Integer> actIds = new HashSet<>();
+			for (int i=0; i < actionIds.size(); ++i) {
+				actIds.add(actionIds.get(i));
+			}
+			
+			numActIds = actIds.size();
+			
+		}
+
+		LtsModel<Integer> lts = new LtsModel<>(numActIds);
 		
 		// Add all states into the LTS.
 		for (State s: states) {
@@ -317,7 +335,6 @@ public class AggregationStateSpaceBuilder implements IStateSpaceBuilder {
 			++i;
 		}
 		
-		System.out.println("Derived an lts with " + lts.numberOfTransitions() + " transitions");
 		return lts;
 	}
 	

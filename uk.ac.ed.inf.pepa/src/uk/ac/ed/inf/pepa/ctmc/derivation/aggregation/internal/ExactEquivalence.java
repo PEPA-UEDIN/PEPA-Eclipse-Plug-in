@@ -6,6 +6,7 @@ package uk.ac.ed.inf.pepa.ctmc.derivation.aggregation.internal;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -43,7 +44,9 @@ public class ExactEquivalence<S extends Comparable<S>> extends ContextualLumpabi
 			for (S target: initial) {
 				// !target.equals(source)?
 				
-				for (short action: initial.getActions(source, target)) {
+				Iterator<Short> acts = initial.getActions(source, target);
+				while (acts.hasNext()) {
+					short action = acts.next();
 					rate += initial.getApparentRate(source, target, action);
 				}
 			}
