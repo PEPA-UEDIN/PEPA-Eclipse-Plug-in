@@ -32,17 +32,14 @@ public class LtsModel<S> implements LabelledTransitionSystem<S> {
 
 	@Override
 	public double getApparentRate(S source, S target, short actionId) {
+		// FIXME: this may throw a NPE if the LTS is built incorrectly...
 		return transitionMap.get(source).get(target)[actionId];
 	}
 
 	@Override
 	public Iterable<S> getImage(S source) {
 		HashMap<S, double[]> targetsMap = transitionMap.get(source);
-		ArrayList<S> targets = new ArrayList<>(targetsMap.size());
-		for (S key: targetsMap.keySet()) {
-			targets.add(key);
-		}
-		return targets;
+		return new ArrayList<S>(targetsMap.keySet());
 		
 	}
 
@@ -53,26 +50,37 @@ public class LtsModel<S> implements LabelledTransitionSystem<S> {
 	
 	@Override
 	public Iterator<Short> getActions(S source, S target) {
-		return new Iterator<Short>(){
-			private final double[] map = get(source, target);
-			private short i=0;
-			
-			public boolean hasNext() {
-				if (i >= map.length) {
+		HashMap<S, double[]> acts = transitionMap.get(source);
+		assert acts != null;
+		
+		double[] actionTypes = acts.get(target);
+		if (actionTypes == null) {
+			return new Iterator<Short>() {
+				public boolean hasNext() { return false; }
+				public Short next() { return 0; }
+		    	};
+		} else {
+			return new Iterator<Short>(){
+				private final double[] map = actionTypes;
+				private short i=0;
+				
+				public boolean hasNext() {
+					if (map == null || i >= map.length) {
+						return false;
+					}
+					for (; i < map.length; ++i) {
+						if (map[i] != 0.0d) {
+							return true;
+						}
+					}
 					return false;
 				}
-				for (; i < map.length; ++i) {
-					if (map[i] != 0.0d) {
-						return true;
-					}
+				
+				public Short next() {
+					return i++;
 				}
-				return false;
-			}
-			
-			public Short next() {
-				return i++;
-			}
-		};
+			};
+		}
 	}
 
 	@Override

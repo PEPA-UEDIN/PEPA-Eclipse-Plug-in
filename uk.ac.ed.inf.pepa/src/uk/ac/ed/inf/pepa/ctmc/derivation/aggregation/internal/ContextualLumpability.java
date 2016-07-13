@@ -109,6 +109,7 @@ public class ContextualLumpability<S extends Comparable<S>> implements Aggregati
 		for (Aggregated<S> aggrState: aggrLtsStates) {
 			S aggrSRepr = aggrState.getRepresentative();
 			for (S state: aggrState) {
+				// FIXME: The LTS has a getApparentRate(source, target, act)!
 				List<Aggregated<S>> imAggr = new ArrayList<>();
 				for (S target: initial.getImage(state)) {
 					imAggr.add(blocksToAggr.get(partition.getBlockOf(target)));
@@ -136,6 +137,7 @@ public class ContextualLumpability<S extends Comparable<S>> implements Aggregati
 			}
 		}
 
+		
 		 
 		LabelledTransitionSystem<Aggregated<S>> aggrLts = new LtsModel<>(numActions);
 
