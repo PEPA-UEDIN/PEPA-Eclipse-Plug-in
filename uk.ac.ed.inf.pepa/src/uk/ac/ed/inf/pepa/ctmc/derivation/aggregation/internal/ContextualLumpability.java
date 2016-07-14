@@ -52,12 +52,7 @@ public class ContextualLumpability<S extends Comparable<S>> implements Aggregati
 			splitter.usingAsSplitter();
 			
 			
-			DefaultHashMap<S, DefaultHashMap<Short, HashSet<S>>> preIm =
-					new DefaultHashMap<>(
-							new CommonDefaulters.DefaultHashMapDefaulter<>(
-									new CommonDefaulters.HashSetDefaulter<>()
-					)
-			);
+			HashMap<S, HashMap<Short, HashSet<S>>> preIm = new HashMap<>();
 			
 			//HashMap<S, HashMap<Short, HashSet<S>>> preIm = new HashMap<>();
 			HashSet<Short> allActions = computeAllPreimages(initial, splitter, preIm);
@@ -75,6 +70,65 @@ public class ContextualLumpability<S extends Comparable<S>> implements Aggregati
 				weights.clear();
 			}
 		}
+		
+		
+		//checkValidPartition(initial, partition);
+		/*
+		
+		Invariant: take two blocks B1 and B2 from the partition,
+		then for every state s1, s2 in B1 and every state t in B2
+		we have that the set of labels of the transactions between s1 and t
+		and s2 and t is equal.*/
+		
+		/*
+		for (PartitionBlock<S> sourceBlock: partition.getBlocks()) {
+			for (PartitionBlock<S> targetBlock: partition.getBlocks()) {
+				ArrayList<ArrayList<Short>> allActs = new ArrayList<>();
+				for (S source: sourceBlock) {
+					for (S source2: sourceBlock) {
+						ArrayList<S> im1 = new ArrayList<>();
+						ArrayList<S> im2 = new ArrayList<>();
+						for (S s: initial.getImage(source)) {
+							im1.add(s);
+						}
+						
+						for (S s : initial.getImage(source2)) {
+							im2.add(s);
+						} 
+						
+						Collections.sort(im1);
+						Collections.sort(im2);
+						
+						assert im1.equals(im2) : "im1: " + im1.toString() + " vs im2: " + im2.toString();
+						
+						for (S target: targetBlock) {
+							ArrayList<Short> acts = new ArrayList<>();
+							ArrayList<Short> acts2 = new ArrayList<>();
+							for (short act: initial.getActions(source, target)) {
+								acts.add(act);
+							}
+							for (short act: initial.getActions(source2, target)) {
+							    acts2.add(act);
+							}
+							Collections.sort(acts);
+							Collections.sort(acts2);
+							
+							allActs.add(acts);
+							
+							assert acts.equals(acts2) : "acts: " + acts.toString() + " vs acts2: " + acts2.toString();
+						}
+					}
+				}
+				
+				ArrayList<Short> x = allActs.get(0);
+				
+				for (ArrayList<Short> y : allActs) {
+					assert x.equals(y);
+				}
+			}
+		}
+		*/
+		
 		return partition;
 	}
 	
@@ -106,39 +160,23 @@ public class ContextualLumpability<S extends Comparable<S>> implements Aggregati
 			blocksToAggr.put(block, aggrState);
 		}
 		
-		for (Aggregated<S> aggrState: aggrLtsStates) {
-			S aggrSRepr = aggrState.getRepresentative();
-			for (S state: aggrState) {
-				// FIXME: The LTS has a getApparentRate(source, target, act)!
-				List<Aggregated<S>> imAggr = new ArrayList<>();
-				for (S target: initial.getImage(state)) {
-					imAggr.add(blocksToAggr.get(partition.getBlockOf(target)));
-				}
-				
-				for (Aggregated<S> targetAggr: imAggr) {
-					S targetSRepr = targetAggr.getRepresentative();
-					double[] rates = new double[numActions];
-					//Arrays.fill(rates, 0.0d);
-					aggrTrans.get(aggrSRepr).put(targetSRepr, rates);
-					
-					for (S t: targetAggr) {
-						Iterator<Short> acts = initial.getActions(state, t);
-					
-						while (acts.hasNext()) {
-							short act = acts.next();
-							double[] m = aggrTrans.get(aggrSRepr).get(targetSRepr);
-							
-							m[act] += initial.getApparentRate(state, t, act);
-						}
-					}
-				}
-				
-				
-			}
-		}
-
-		
+		prepareAggregatedData(initial, partition, numActions, aggrLtsStates, aggrTrans, blocksToAggr);
 		 
+		return makeAggregatedLts(partition, numActions, aggrLtsStates, aggrTrans, blocksToAggr);
+	}
+
+
+	/**
+	 * @param partition
+	 * @param numActions
+	 * @param aggrLtsStates
+	 * @param aggrTrans
+	 * @param blocksToAggr
+	 * @return
+	 */
+	private LabelledTransitionSystem<Aggregated<S>> makeAggregatedLts(Partition<S, PartitionBlock<S>> partition,
+			final int numActions, List<Aggregated<S>> aggrLtsStates, HashMap<S, HashMap<S, double[]>> aggrTrans,
+			HashMap<PartitionBlock<S>, Aggregated<S>> blocksToAggr) {
 		LabelledTransitionSystem<Aggregated<S>> aggrLts = new LtsModel<>(numActions);
 
 		
@@ -163,6 +201,42 @@ public class ContextualLumpability<S extends Comparable<S>> implements Aggregati
 			}
 		}
 		return aggrLts;
+	}
+
+
+	/**
+	 * @param initial
+	 * @param partition
+	 * @param numActions
+	 * @param aggrLtsStates
+	 * @param aggrTrans
+	 * @param blocksToAggr
+	 */
+	private void prepareAggregatedData(LabelledTransitionSystem<S> initial, Partition<S, PartitionBlock<S>> partition,
+			final int numActions, List<Aggregated<S>> aggrLtsStates, HashMap<S, HashMap<S, double[]>> aggrTrans,
+			HashMap<PartitionBlock<S>, Aggregated<S>> blocksToAggr) {
+		for (Aggregated<S> aggrState: aggrLtsStates) {
+			S aggrSRepr = aggrState.getRepresentative();
+
+			for (S state: aggrState) {
+				
+				for (S target: initial.getImage(state)) {
+					PartitionBlock<S> b = partition.getBlockOf(target);
+					Aggregated<S> targetAggr = blocksToAggr.get(b);
+					S targetRepr = targetAggr.getRepresentative();
+					HashMap<S, double[]> trans = aggrTrans.get(aggrSRepr);
+					double[] rates = trans.get(targetRepr);
+					for (short act: initial.getActions(state, target)) {
+						if (rates == null) {
+							rates = new double[numActions];
+							trans.put(targetRepr, rates);
+						}
+						
+						rates[act] += initial.getApparentRate(state, target, act);
+					}
+				}
+			}
+		}
 	}
 
 	/**
@@ -280,11 +354,20 @@ public class ContextualLumpability<S extends Comparable<S>> implements Aggregati
 			final LabelledTransitionSystem<S> initial,
 			DefaultHashMap<S, Double> weights,
 			final PartitionBlock<S> splitter,
-			final DefaultHashMap<S, DefaultHashMap<Short, HashSet<S>>> preIm,
+			final HashMap<S, HashMap<Short, HashSet<S>>> preIm,
 			final short act) {
 		ArrayList<S> seenStates = new ArrayList<>();
 		for (S state : splitter) {
-			for (S source : preIm.get(state).get(act)) {
+			HashMap<Short, HashSet<S>> trans = preIm.get(state);
+			if (trans == null) {
+				continue;
+			} 
+			HashSet<S> tStates = trans.get(act);
+			if (tStates == null) {
+				continue;
+			}
+			
+			for (S source : tStates) {
 				if (!weights.containsKey(source)) {
 					seenStates.add(source);
 				}
@@ -308,17 +391,26 @@ public class ContextualLumpability<S extends Comparable<S>> implements Aggregati
 	private HashSet<Short> computeAllPreimages(
 			final LabelledTransitionSystem<S> lts,
 			final PartitionBlock<S> splitter,
-			DefaultHashMap<S, DefaultHashMap<Short, HashSet<S>>> preIm) {
+			HashMap<S, HashMap<Short, HashSet<S>>> preIm) {
 		HashSet<Short> allActions = new HashSet<>();
 		
 		for (S state: splitter) {
 			for (S source: lts.getPreImage(state)) {
-				Iterator<Short> curActs = lts.getActions(source, state);
-				while (curActs.hasNext()) {
-					Short act = curActs.next();
+				for (short act: lts.getActions(source, state)) {
 					allActions.add(act);
-					preIm.get(state).get(act).add(source);
 
+					HashMap<Short, HashSet<S>> trans = preIm.get(state);
+					if (trans == null) {
+						trans = new HashMap<>();
+						preIm.put(state, trans);
+					}
+					HashSet<S> tStates = trans.get(act);
+					if (tStates == null) {
+						tStates = new HashSet<>();
+						trans.put(act, tStates);
+					}
+					
+					tStates.add(source);
 				}
 			}
 		}
@@ -343,5 +435,4 @@ public class ContextualLumpability<S extends Comparable<S>> implements Aggregati
 		
 		return partition;
 	}
-
 }

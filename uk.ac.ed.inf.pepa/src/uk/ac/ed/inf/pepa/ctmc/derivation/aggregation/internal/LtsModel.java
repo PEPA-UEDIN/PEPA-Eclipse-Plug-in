@@ -33,7 +33,9 @@ public class LtsModel<S> implements LabelledTransitionSystem<S> {
 	@Override
 	public double getApparentRate(S source, S target, short actionId) {
 		// FIXME: this may throw a NPE if the LTS is built incorrectly...
-		return transitionMap.get(source).get(target)[actionId];
+		double[] rates = transitionMap.get(source).get(target);
+		if (rates == null) return 0.0d;
+		return rates[actionId];
 	}
 
 	@Override
@@ -49,38 +51,44 @@ public class LtsModel<S> implements LabelledTransitionSystem<S> {
 	}
 	
 	@Override
-	public Iterator<Short> getActions(S source, S target) {
+	public Iterable<Short> getActions(S source, S target) {
 		HashMap<S, double[]> acts = transitionMap.get(source);
 		assert acts != null;
 		
 		double[] actionTypes = acts.get(target);
+		ArrayList<Short> actTypes = new ArrayList<>();
 		if (actionTypes == null) {
-			return new Iterator<Short>() {
-				public boolean hasNext() { return false; }
-				public Short next() { return 0; }
-		    	};
-		} else {
-			return new Iterator<Short>(){
-				private final double[] map = actionTypes;
-				private short i=0;
-				
-				public boolean hasNext() {
-					if (map == null || i >= map.length) {
-						return false;
-					}
-					for (; i < map.length; ++i) {
-						if (map[i] != 0.0d) {
-							return true;
-						}
-					}
+			assert false :  "found null action types!";
+			return actTypes;
+		}
+		
+		for (short i=0; i < actionTypes.length; ++i) {
+			if (actionTypes[i] != 0.0d) {
+				actTypes.add(i);
+			}
+		}
+		return actTypes;
+		/*
+		return new Iterator<Short>() {
+			private final double[] map = actionTypes;
+			private short i=0;
+			
+			public boolean hasNext() {
+				if (map == null || i >= map.length) {
 					return false;
 				}
-				
-				public Short next() {
-					return i++;
+				for (; i < map.length; ++i) {
+					if (map[i] != 0.0d) {
+						return true;
+					}
 				}
-			};
-		}
+				return false;
+			}
+			
+			public Short next() {
+				return i++;
+			}
+		}; */
 	}
 
 	@Override

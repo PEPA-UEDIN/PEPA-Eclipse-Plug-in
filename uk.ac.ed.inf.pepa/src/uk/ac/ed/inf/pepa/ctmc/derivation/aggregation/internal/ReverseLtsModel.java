@@ -39,7 +39,7 @@ public class ReverseLtsModel<S> implements LabelledTransitionSystem<S> {
 	}
 	
 	@Override
-	public Iterator<Short> getActions(S source, S target) {
+	public Iterable<Short> getActions(S source, S target) {
 		return lts.getActions(target, source);
 	}
 

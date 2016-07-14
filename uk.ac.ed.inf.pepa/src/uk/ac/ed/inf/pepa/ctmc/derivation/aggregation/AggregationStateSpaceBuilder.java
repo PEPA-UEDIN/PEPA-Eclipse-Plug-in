@@ -154,9 +154,7 @@ public class AggregationStateSpaceBuilder implements IStateSpaceBuilder {
 		
 		for (Aggregated<Integer> s: newStatesToRepr) {
 			for (Aggregated<Integer> target: aggrLts.getImage(s)) {
-				Iterator<Short> itActions = aggrLts.getActions(s, target);
-				while (itActions.hasNext()) {
-					short actionId = itActions.next();
+				for(short actionId: aggrLts.getActions(s, target)) {
 					double rate = aggrLts.getApparentRate(s, target, actionId);
 					newCol.add(reprToNewStates.get(target.getRepresentative()));
 					newCol.add(newActions.size());

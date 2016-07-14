@@ -24,7 +24,7 @@ public interface LabelledTransitionSystem<S> extends Iterable<S> {
 	public void addState(S state);
 	public void addTransition(S source, S target, double rate, short actionId);
 	
-	public Iterator<Short> getActions(S source, S target);
+	public Iterable<Short> getActions(S source, S target);
 	public double getApparentRate(S source, S target, short actionId);
 	default double getApparentRate(S source, List<S> targets, short actionId) {
 		double[] rates = new double[targets.size()];

@@ -44,9 +44,7 @@ public class ExactEquivalence<S extends Comparable<S>> extends ContextualLumpabi
 			for (S target: initial) {
 				// !target.equals(source)?
 				
-				Iterator<Short> acts = initial.getActions(source, target);
-				while (acts.hasNext()) {
-					short action = acts.next();
+				for (short action: initial.getActions(source, target)) {
 					rate += initial.getApparentRate(source, target, action);
 				}
 			}

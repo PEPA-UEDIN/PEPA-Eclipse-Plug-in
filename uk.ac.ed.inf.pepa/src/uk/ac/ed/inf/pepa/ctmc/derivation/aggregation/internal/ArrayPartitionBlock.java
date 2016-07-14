@@ -31,6 +31,7 @@ import uk.ac.ed.inf.pepa.ctmc.derivation.aggregation.StateNotFoundException;
 public class ArrayPartitionBlock<S> implements PartitionBlock<S> {
 
 	private ArrayList<S> states;
+	private HashMap<S, Integer> statesToIndex;
 	private int markIndex = 0;
 	private boolean used = false;
 	private int hash = -1;
@@ -42,6 +43,7 @@ public class ArrayPartitionBlock<S> implements PartitionBlock<S> {
 	 */
 	public ArrayPartitionBlock() {
 		states = new ArrayList<S>();
+		statesToIndex = new HashMap<>();
 		mapToValues = new HashMap<>();
 	}
 	
@@ -52,6 +54,12 @@ public class ArrayPartitionBlock<S> implements PartitionBlock<S> {
 	 */
 	private ArrayPartitionBlock(List<S> sts, HashMap<S, Double> map) {
 		states = new ArrayList<S>(sts);
+		statesToIndex = new HashMap<>(sts.size());
+		int i=0;
+		for (S s: sts) {
+			statesToIndex.put(s, i++);
+		}
+		
 		// TODO: we might be able to just share the map and avoid
 		// copying it, but we must be sure about this!
 		mapToValues = new HashMap<>();
@@ -63,8 +71,9 @@ public class ArrayPartitionBlock<S> implements PartitionBlock<S> {
 	@Override
 	public void addState(S state) {
 		hash = -1;
-		assert !states.contains(state);
+		assert !statesToIndex.containsKey(state);
 		states.add(state);
+		statesToIndex.put(state, statesToIndex.size());
 		
 	}
 	
@@ -124,11 +133,15 @@ public class ArrayPartitionBlock<S> implements PartitionBlock<S> {
 				states.subList(0, markIndex), 
 				mapToValues
 		);
+		
+		statesToIndex.clear();
 		// TODO: optimization: if markIndex << size we can just swap
 		//       the last markIndex states at the beginning, instead of moving
 		// 	     all remaining states backwards.
 		for (int i=markIndex; i < states.size(); i++) {
-			states.set(i-markIndex, states.get(i));
+			S state = states.get(i);
+			states.set(i-markIndex, state);
+			statesToIndex.put(state, i-markIndex);
 		}
 		
 		// Remove the moved states from the array.
@@ -191,7 +204,7 @@ public class ArrayPartitionBlock<S> implements PartitionBlock<S> {
 	
 	@Override
 	public void markState(S state) throws StateNotFoundException {
-		int i = states.indexOf(state);
+		int i = statesToIndex.get(state);
 		if (i < 0) {
 			throw new StateNotFoundException("The state: " + state.toString() + " was not found.");
 		}
@@ -201,25 +214,24 @@ public class ArrayPartitionBlock<S> implements PartitionBlock<S> {
 		S firstNonMarkedState = states.get(markIndex);
 		states.set(markIndex, state);
 		states.set(i, firstNonMarkedState);
+		statesToIndex.put(state, markIndex);
+		statesToIndex.put(firstNonMarkedState, i);
 		++markIndex;
 	}
 	
 	@Override
 	public boolean isMarked(S state) throws StateNotFoundException {
-		for (int i=0; i < states.size(); i++) {
-			boolean found = state.equals(states.get(i));
-			if (i < markIndex && found) {
-				return true;
-			} else if (found) {
-				return false;
-			}
-		}
-		throw new StateNotFoundException("The state: " + state.toString() + "could not be found.");
+		Integer i = statesToIndex.get(state);
+		if (i == null)
+			throw new StateNotFoundException("The state: " + state.toString()
+											 + " could not be found.");
+		return i < markIndex;
 	}
 	
 	
 	@Override
-	public void setValue(S state, double value) throws StateNotFoundException, StateIsMarkedException {
+	public void setValue(S state, double value)
+			throws StateNotFoundException, StateIsMarkedException {
 		hash = -1;
 		checkStateExistNonMarked(state);
 		
@@ -227,7 +239,8 @@ public class ArrayPartitionBlock<S> implements PartitionBlock<S> {
 	}
 	
 	@Override
-	public double getValue(S state) throws StateNotFoundException, StateIsMarkedException {
+	public double getValue(S state)
+			throws StateNotFoundException, StateIsMarkedException {
 		Double value = mapToValues.get(state);
 		if (value == null) {
 			if (mapToValues.containsKey(state)) {
@@ -272,8 +285,8 @@ public class ArrayPartitionBlock<S> implements PartitionBlock<S> {
 	 */
 	private void checkStateExistNonMarked(S state)
 			throws StateNotFoundException, StateIsMarkedException {
-		int i = states.indexOf(state);
-		if (i < 0) {
+		Integer i = statesToIndex.get(state);
+		if (i == null) {
 			throw new StateNotFoundException("The state: " + state.toString() + " could not be found.");
 		} else if (i < markIndex) {
 			throw new StateIsMarkedException("The state: " + state.toString() + " is marked.");
@@ -290,6 +303,7 @@ public class ArrayPartitionBlock<S> implements PartitionBlock<S> {
 			// Efficient implementation that shares the underlying array
 			ArrayPartitionBlock<S> myBlock = (ArrayPartitionBlock<S>)block;
 			myBlock.states = this.states;
+			myBlock.statesToIndex = this.statesToIndex;
 			myBlock.hash = -1;
 		} else {
 			// we manually copy the states over
