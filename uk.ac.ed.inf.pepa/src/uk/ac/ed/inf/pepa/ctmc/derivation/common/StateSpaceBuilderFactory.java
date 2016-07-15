@@ -48,7 +48,7 @@ public class StateSpaceBuilderFactory {
 		if (hasAggregation && aggregate) {
 			// Aggregation should automatically provide aggregated
 			// arrays functionality, at least in the end.
-			aggregate = false;
+			// aggregate = false;
 		}
 
 		Model cModel = new Compiler(aggregate, model).getModel();
