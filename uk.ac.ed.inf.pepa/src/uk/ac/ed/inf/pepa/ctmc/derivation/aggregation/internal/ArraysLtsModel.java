@@ -28,19 +28,13 @@ public class ArraysLtsModel implements LabelledTransitionSystem<Integer> {
 	private int numActionTypes;
 
 	
-	public ArraysLtsModel(IntegerArray row, IntegerArray column,
+	public ArraysLtsModel(int numActionTypes, IntegerArray row, IntegerArray column,
 						  IntegerArray actions, DoubleArray rates) {
 		stateRow = row;
 		transitionColumn = column;
 		actionColumn = actions;
-		
 		this.rates = rates;
-		
-		HashSet<Integer> actIds = new HashSet<>();
-		for (int i=0; i < actions.size(); i++) {
-			actIds.add(actions.get(i));
-		}
-		numActionTypes = actIds.size();
+		this.numActionTypes = numActionTypes;
 		
 		computePreImageColumn();
 	}
@@ -105,12 +99,17 @@ public class ArraysLtsModel implements LabelledTransitionSystem<Integer> {
 			//return acts;
 		}
 		
+		// FIXME: maybe we should avoid this?
+		HashSet<Short> actsUnique = new HashSet<>(acts);
+		acts.clear();
+		acts.addAll(actsUnique);
 		return acts;
 		//return new ArrayList<>(0);
 	}
 
 	@Override
 	public double getApparentRate(Integer source, Integer target, short actionId) {
+		// FIXME: we could pre-compute these sums.
 		int aId = actionId;
 		double rate = 0.0d;
 		int startCol = stateRow.get(source);
@@ -166,7 +165,7 @@ public class ArraysLtsModel implements LabelledTransitionSystem<Integer> {
 		
 		for (int source=0; source < stateRow.size(); ++source) {
 			int rangeStart = stateRow.get(source);
-			int rangeEnd = source == stateRow.size() ? transitionColumn.size() : stateRow.get(source+1);
+			int rangeEnd = source == stateRow.size() -1? transitionColumn.size(): stateRow.get(source+1);
 			for (int t=rangeStart; t < rangeEnd; t+= 2) {
 				HashSet<Integer> trans = pre.get(t);
 				if (trans == null) {
@@ -189,9 +188,10 @@ public class ArraysLtsModel implements LabelledTransitionSystem<Integer> {
 		preImageColumn = new IntegerArray(total);
 		
 		int curIndex = 0;
-		for (int target=0; target < preStateRow.size(); ++target) {
+		for (int target=0; target < stateRow.size(); ++target) {
 			HashSet<Integer> sources = pre.get(target);
 			preStateRow.add(curIndex);
+			if (sources == null) continue;
 			for (int source: sources) {
 				preImageColumn.add(source);
 				++curIndex;

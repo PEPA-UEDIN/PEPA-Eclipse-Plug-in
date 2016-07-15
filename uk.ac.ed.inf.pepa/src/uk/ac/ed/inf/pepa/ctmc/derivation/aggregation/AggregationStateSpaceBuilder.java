@@ -20,6 +20,7 @@ import uk.ac.ed.inf.pepa.ctmc.derivation.DerivationException;
 import uk.ac.ed.inf.pepa.ctmc.derivation.IStateSpace;
 import uk.ac.ed.inf.pepa.ctmc.derivation.IStateSpaceBuilder;
 import uk.ac.ed.inf.pepa.ctmc.derivation.MeasurementData;
+import uk.ac.ed.inf.pepa.ctmc.derivation.aggregation.internal.ArraysLtsModel;
 import uk.ac.ed.inf.pepa.ctmc.derivation.aggregation.internal.LtsModel;
 import uk.ac.ed.inf.pepa.ctmc.derivation.common.DoubleArray;
 import uk.ac.ed.inf.pepa.ctmc.derivation.common.IStateExplorer;
@@ -97,7 +98,7 @@ public class AggregationStateSpaceBuilder implements IStateSpaceBuilder {
 		DoubleArray rates = callback.getRates();
 		IntegerArray actionIds = callback.getActions();
 		
-		LtsModel<Integer> lts = deriveLts(states, row, col, rates, actionIds);
+		LabelledTransitionSystem<Integer> lts = deriveLts(states, row, col, rates, actionIds);
 		
 		System.out.println("Derived an initial LTS with: " + (lts.size()) + " states and "
 						   + lts.numberOfTransitions() + " transitions.");
@@ -282,7 +283,7 @@ public class AggregationStateSpaceBuilder implements IStateSpaceBuilder {
 	 * @param actionIds
 	 * @return
 	 */
-	private LtsModel<Integer> deriveLts(ArrayList<State> states,
+	private LabelledTransitionSystem<Integer> deriveLts(ArrayList<State> states,
 			IntegerArray row, IntegerArray col, DoubleArray rates,
 			IntegerArray actionIds) {
 		
@@ -297,6 +298,8 @@ public class AggregationStateSpaceBuilder implements IStateSpaceBuilder {
 			
 		}
 
+		//ArraysLtsModel lts = new ArraysLtsModel(numActIds, row, col, actionIds, rates);
+		
 		LtsModel<Integer> lts = new LtsModel<>(numActIds);
 		
 		// Add all states into the LTS.
@@ -332,7 +335,6 @@ public class AggregationStateSpaceBuilder implements IStateSpaceBuilder {
 			
 			++i;
 		}
-		
 		return lts;
 	}
 	
