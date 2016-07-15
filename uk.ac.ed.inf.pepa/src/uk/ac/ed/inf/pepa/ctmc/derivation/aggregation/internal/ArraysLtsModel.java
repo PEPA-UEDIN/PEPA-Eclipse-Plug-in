@@ -148,7 +148,7 @@ public class ArraysLtsModel implements LabelledTransitionSystem<Integer> {
 	@Override
 	public Iterable<Integer> getPreImage(Integer target) {
 		int rangeStart = preStateRow.get(target);
-		int rangeEnd = target == preStateRow.size()-1 ? preImageColumn.size() : preStateRow.get(target);
+		int rangeEnd = target == preStateRow.size()-1 ? preImageColumn.size() : preStateRow.get(target+1);
 		
 		ArrayList<Integer> preIm = new ArrayList<>(rangeEnd-rangeStart);
 		for (int i=rangeStart; i < rangeEnd; ++i) {
@@ -165,12 +165,13 @@ public class ArraysLtsModel implements LabelledTransitionSystem<Integer> {
 		
 		for (int source=0; source < stateRow.size(); ++source) {
 			int rangeStart = stateRow.get(source);
-			int rangeEnd = source == stateRow.size() -1? transitionColumn.size(): stateRow.get(source+1);
-			for (int t=rangeStart; t < rangeEnd; t+= 2) {
-				HashSet<Integer> trans = pre.get(t);
+			int rangeEnd = source == stateRow.size() - 1? transitionColumn.size(): stateRow.get(source+1);
+			for (int t=rangeStart; t < rangeEnd; t += 2) {
+				int tState = transitionColumn.get(t);
+				HashSet<Integer> trans = pre.get(tState);
 				if (trans == null) {
 					trans = new HashSet<>();
-					pre.put(t, trans);
+					pre.put(tState, trans);
 				}
 				
 				trans.add(source);
@@ -178,9 +179,18 @@ public class ArraysLtsModel implements LabelledTransitionSystem<Integer> {
 		}
 
 		int total = 0;
+		HashSet<Integer> empty = new HashSet<>(0);
+		
 		for (int i=0; i < stateRow.size(); i++) {
 			HashSet<Integer> ts = pre.get(i);
-			int val = ts == null ? 0 : ts.size();
+			int val = 0;
+			if (ts == null) {
+				System.err.println("Happened!");
+				// this shouldn't normally happen
+				pre.put(i, empty);
+			} else {
+				val = ts.size();
+			}
 			total += val;
 		}
 		
@@ -191,7 +201,7 @@ public class ArraysLtsModel implements LabelledTransitionSystem<Integer> {
 		for (int target=0; target < stateRow.size(); ++target) {
 			HashSet<Integer> sources = pre.get(target);
 			preStateRow.add(curIndex);
-			if (sources == null) continue;
+			//if (sources == null) continue;
 			for (int source: sources) {
 				preImageColumn.add(source);
 				++curIndex;

@@ -63,6 +63,8 @@ public class AggregationStateSpaceBuilder implements IStateSpaceBuilder {
 	
 	private final static int REFRESH_MONITOR = 20000;
 	
+	private final boolean useArraysModel = false;
+	
 
 	public AggregationStateSpaceBuilder(
 			IStateExplorer explorer,
@@ -85,20 +87,25 @@ public class AggregationStateSpaceBuilder implements IStateSpaceBuilder {
 		
 		
 		monitor.beginTask(IProgressMonitor.UNKNOWN);
-		// TODO: we should use a custom callback here...
-		MemoryCallback callback = new MemoryCallback();
 		ArrayList<State> states = new ArrayList<>(1000);
+		LabelledTransitionSystem<Integer> lts;
 		
-		if (!exploreStateSpace(monitor, callback, states)) {
-			return null;
+		{
+			// TODO: we should use a custom callback here...
+			MemoryCallback callback = new MemoryCallback();
+			
+			
+			if (!exploreStateSpace(monitor, callback, states)) {
+				return null;
+			}
+
+			IntegerArray row = callback.getRow();
+			IntegerArray col = callback.getColumn();
+			DoubleArray rates = callback.getRates();
+			IntegerArray actionIds = callback.getActions();
+			
+			lts = deriveLts(states, row, col, rates, actionIds);
 		}
-		
-		IntegerArray row = callback.getRow();
-		IntegerArray col = callback.getColumn();
-		DoubleArray rates = callback.getRates();
-		IntegerArray actionIds = callback.getActions();
-		
-		LabelledTransitionSystem<Integer> lts = deriveLts(states, row, col, rates, actionIds);
 		
 		System.out.println("Derived an initial LTS with: " + (lts.size()) + " states and "
 						   + lts.numberOfTransitions() + " transitions.");
@@ -298,43 +305,48 @@ public class AggregationStateSpaceBuilder implements IStateSpaceBuilder {
 			
 		}
 
-		//ArraysLtsModel lts = new ArraysLtsModel(numActIds, row, col, actionIds, rates);
+		LabelledTransitionSystem<Integer> lts;
 		
-		LtsModel<Integer> lts = new LtsModel<>(numActIds);
+		if (useArraysModel) {
+			lts = new ArraysLtsModel(numActIds, row, col, actionIds, rates);
+		} else {
+			lts = new LtsModel<>(numActIds);
 		
-		// Add all states into the LTS.
-		for (State s: states) {
-			lts.addState(s.stateNumber);
-		}
-		
-		int i = 0;
-		for (State s: states) {
-			// The i-th position in row contains the index t inside the
-			// col array that contains the transitions from the state s.
-			int rangeStart = row.get(i);
-			int rangeEnd = (i == row.size()-1 ? col.size() : row.get(i+1));
-			for (int j=rangeStart; j < rangeEnd; j += 2) {
-				// The j-th position inside col contains the state number
-				// of the target node in the transition. The index j+1
-				// contains the starting index in the rates and actionIds
-				// arrays that refer to transitions between state s
-				// and state target.
-				int targetId = col.get(j);
-				int colRangeStart = col.get(j+1);
-				int colRangeEnd  = (j < col.size() - 3 ? col.get(j+3): rates.size());
-				
-				// For each these transitions from state s to target
-				// and for each label, we add these to the Lts.
-				for (int k=colRangeStart; k < colRangeEnd; k++) {
-					double rate = rates.get(k);
-					short actionId = (short)actionIds.get(k);
-					lts.addTransition(s.stateNumber, targetId, rate, actionId);
-				}
+			// Add all states into the LTS.
+			for (State s: states) {
+				lts.addState(s.stateNumber);
 			}
 			
-			
-			++i;
+			int i = 0;
+			for (State s: states) {
+				// The i-th position in row contains the index t inside the
+				// col array that contains the transitions from the state s.
+				int rangeStart = row.get(i);
+				int rangeEnd = (i == row.size()-1 ? col.size() : row.get(i+1));
+				for (int j=rangeStart; j < rangeEnd; j += 2) {
+					// The j-th position inside col contains the state number
+					// of the target node in the transition. The index j+1
+					// contains the starting index in the rates and actionIds
+					// arrays that refer to transitions between state s
+					// and state target.
+					int targetId = col.get(j);
+					int colRangeStart = col.get(j+1);
+					int colRangeEnd  = (j < col.size() - 3 ? col.get(j+3): rates.size());
+					
+					// For each these transitions from state s to target
+					// and for each label, we add these to the Lts.
+					for (int k=colRangeStart; k < colRangeEnd; k++) {
+						double rate = rates.get(k);
+						short actionId = (short)actionIds.get(k);
+						lts.addTransition(s.stateNumber, targetId, rate, actionId);
+					}
+				}
+				
+				
+				++i;
+			}
 		}
+		
 		return lts;
 	}
 	
