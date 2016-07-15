@@ -81,4 +81,7 @@ public class IntegerArray {
 		return size;
 	}
 
+	public void set(int index, int element) {
+		elementData[index] = element;
+	}
 }

@@ -13,6 +13,10 @@ import java.util.Set;
  */
 public interface LabelledTransitionSystem<S> extends Iterable<S> {
 	
+	/**
+	 * The number of states in the transition system.
+	 * @return the number of states in the transition system.
+	 */
 	public int size();
 	default int numberOfStates() {
 		return size();
