@@ -303,7 +303,8 @@ public class StateExplorerBuilder {
 	};
 
 	public StateExplorerBuilder(Model model) {
-		seqProcess = seqAction = 0;
+		seqAction = 0;
+		seqProcess = 0;
 		this.model = model;
 		// creates structure, initialises sequentialComponents, operators,
 		// and adds a number of actions
@@ -343,7 +344,7 @@ public class StateExplorerBuilder {
 		explorer.sequentialComponentInfo = new SequentialComponentData[seqProcess];
 		for (Map.Entry<Short, HashMapSequentialComponentData> entry : sequentialComponentsData.entrySet()) {
 			double[] apparentRates = new double[n];
-			Arrays.fill(apparentRates, 0.0d);
+			//Arrays.fill(apparentRates, 0.0d);
 			HashMapSequentialComponentData value = entry.getValue();
 			for (Map.Entry<Short, Double> apparentRateEntry : value.fApparentRates.entrySet()) {
 				apparentRates[apparentRateEntry.getKey()] = apparentRateEntry.getValue();
@@ -351,7 +352,7 @@ public class StateExplorerBuilder {
 			SequentialComponentData data = new SequentialComponentData();
 			data.fFirstStepDerivative = entry.getValue().fFirstStepDerivative;
 			data.fArrayApparentRates = apparentRates;
-			explorer.sequentialComponentInfo[entry.getKey()]=  data;
+			explorer.sequentialComponentInfo[entry.getKey()] =  data;
 		}
 		explorer.initialVector = initialStateVector;
 		explorer.init();
