@@ -130,6 +130,14 @@ public class Component {
 		double[] copy = new double[original.length];
 		for (int i = 0; i < copy.length; i++) {
 			copy[i] = (!hidingSet.get(i)) ? original[i] : 0.0d;
+			/*
+			if (!hidingSet.get(i)) {
+				copy[i] = original[i];
+			} else {
+				copy[i] = 0.0d;
+				copy[0] += original[i];
+			}
+			*/
 		}
 		return copy;
 	}
