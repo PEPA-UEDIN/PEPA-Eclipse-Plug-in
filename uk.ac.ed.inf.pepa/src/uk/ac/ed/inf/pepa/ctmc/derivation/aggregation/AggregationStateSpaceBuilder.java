@@ -63,7 +63,7 @@ public class AggregationStateSpaceBuilder implements IStateSpaceBuilder {
 	
 	private final static int REFRESH_MONITOR = 20000;
 	
-	private final boolean useArraysModel = false;
+	private final boolean useArraysModel = true;
 	
 
 	public AggregationStateSpaceBuilder(
@@ -115,6 +115,13 @@ public class AggregationStateSpaceBuilder implements IStateSpaceBuilder {
 		
 		System.out.println("Obtained an aggregated LTS with: " + aggrLts.size() + " states and "
 						   + aggrLts.numberOfTransitions() + " transitions");
+		
+		
+		System.out.println("States are: ");
+		for (Aggregated<Integer> s: aggrLts) {
+			System.out.println("State: " + s);
+		}
+		
 		/*
 		for (Aggregated<Integer> aggrS: aggrLts) {
 			System.out.println("One aggregated state contains: ");
@@ -296,13 +303,13 @@ public class AggregationStateSpaceBuilder implements IStateSpaceBuilder {
 		
 		int numActIds = 0;
 		{
-			HashSet<Integer> actIds = new HashSet<>();
+			int max = -1;
 			for (int i=0; i < actionIds.size(); ++i) {
-				actIds.add(actionIds.get(i));
+				int act = actionIds.get(i);
+				if (act > max) max = act;
 			}
 			
-			numActIds = actIds.size();
-			
+			numActIds = max+1;
 		}
 
 		LabelledTransitionSystem<Integer> lts;
