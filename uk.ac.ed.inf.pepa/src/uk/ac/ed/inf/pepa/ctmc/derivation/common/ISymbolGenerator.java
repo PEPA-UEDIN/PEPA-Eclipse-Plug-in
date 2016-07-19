@@ -14,7 +14,7 @@ import uk.ac.ed.inf.pepa.model.Process;
 
 public interface ISymbolGenerator {
 
-	public static final short TAU_ACTION = -1;
+	public static final short TAU_ACTION = 0;
 	
 	public static final short NOT_FOUND = -1;
 	
