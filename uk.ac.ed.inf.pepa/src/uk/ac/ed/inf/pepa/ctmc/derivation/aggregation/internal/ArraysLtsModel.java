@@ -10,6 +10,7 @@ import java.util.Iterator;
 
 import uk.ac.ed.inf.pepa.ctmc.derivation.aggregation.LabelledTransitionSystem;
 import uk.ac.ed.inf.pepa.ctmc.derivation.common.DoubleArray;
+import uk.ac.ed.inf.pepa.ctmc.derivation.common.ISymbolGenerator;
 import uk.ac.ed.inf.pepa.ctmc.derivation.common.IntegerArray;
 
 /**
@@ -109,7 +110,12 @@ public class ArraysLtsModel implements LabelledTransitionSystem<Integer> {
 
 	@Override
 	public double getApparentRate(Integer source, Integer target, short actionId) {
-		// FIXME: we could pre-compute these sums.
+		if (actionId == ISymbolGenerator.TAU_ACTION && source.equals(target)) {
+			System.err.println("found tau action! (self loop!)");
+		}
+		
+		System.err.println("Found action: " + actionId);
+ 		// FIXME: we could pre-compute these sums.
 		int aId = actionId;
 		double rate = 0.0d;
 		int startCol = stateRow.get(source);
