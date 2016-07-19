@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Set;
 
 import uk.ac.ed.inf.pepa.ctmc.derivation.aggregation.LabelledTransitionSystem;
+import uk.ac.ed.inf.pepa.ctmc.derivation.common.ISymbolGenerator;
 
 public class LtsModel<S> implements LabelledTransitionSystem<S> {
 
@@ -20,6 +21,7 @@ public class LtsModel<S> implements LabelledTransitionSystem<S> {
 	
 	public LtsModel(int numActionIds) {
 		this.numActionIds = numActionIds;
+		
 		states = new ArrayList<>();
 		preImageMap = new HashMap<>();
 		transitionMap = new HashMap<>();
@@ -32,6 +34,21 @@ public class LtsModel<S> implements LabelledTransitionSystem<S> {
 
 	@Override
 	public double getApparentRate(S source, S target, short actionId) {
+		if (actionId == ISymbolGenerator.TAU_ACTION && source.equals(target)) {
+			System.err.println("found tau action! (self loop)");
+		}
+		/*
+		if (source.equals(target) && actionId == ISymbolGenerator.TAU_ACTION) {
+			// FIXME: is this needed? Note that actionId = -1 ...
+			double result = 0.0d;
+			for (S t: getImage(source)) {
+				if (source.equals(t)) continue;
+				double[] rates = transitionMap.get(source).get(t);
+				if (rates != null) result += rates[actionId];
+			}
+			return -result;
+		} */
+
 		// FIXME: this may throw a NPE if the LTS is built incorrectly...
 		double[] rates = transitionMap.get(source).get(target);
 		if (rates == null) return 0.0d;
@@ -68,27 +85,6 @@ public class LtsModel<S> implements LabelledTransitionSystem<S> {
 			}
 		}
 		return actTypes;
-		/*
-		return new Iterator<Short>() {
-			private final double[] map = actionTypes;
-			private short i=0;
-			
-			public boolean hasNext() {
-				if (map == null || i >= map.length) {
-					return false;
-				}
-				for (; i < map.length; ++i) {
-					if (map[i] != 0.0d) {
-						return true;
-					}
-				}
-				return false;
-			}
-			
-			public Short next() {
-				return i++;
-			}
-		}; */
 	}
 
 	@Override
