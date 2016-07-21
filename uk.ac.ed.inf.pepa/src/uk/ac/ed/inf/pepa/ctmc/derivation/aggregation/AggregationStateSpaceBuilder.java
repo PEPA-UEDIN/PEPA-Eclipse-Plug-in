@@ -109,6 +109,7 @@ public class AggregationStateSpaceBuilder implements IStateSpaceBuilder {
 		
 		System.out.println("Derived an initial LTS with: " + (lts.size()) + " states and "
 						   + lts.numberOfTransitions() + " transitions.");
+		System.out.println("Initial LTS is:\n" + lts.toString());
 		
 		// Aggregate the LTS here
 		LabelledTransitionSystem<Aggregated<Integer>> aggrLts = algorithm.aggregate(lts);
@@ -129,6 +130,9 @@ public class AggregationStateSpaceBuilder implements IStateSpaceBuilder {
 				System.out.println(x.toString());
 			}
 		} */
+		
+		System.out.println("LTS is: ");
+		System.out.println(aggrLts.toString());
 		
 		IStateSpace result = createStateSpace(states, aggrLts);
 		monitor.done();

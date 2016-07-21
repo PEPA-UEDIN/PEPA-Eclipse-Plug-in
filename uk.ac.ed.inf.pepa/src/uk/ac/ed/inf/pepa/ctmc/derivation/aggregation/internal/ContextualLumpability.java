@@ -49,6 +49,7 @@ public class ContextualLumpability<S extends Comparable<S>> implements Aggregati
 		
 		while (!splitters.isEmpty()) {
 			PartitionBlock<S> splitter = splitters.pollFirst();
+			System.err.println("Using: " + splitter.toString() + " as splitter.");
 			splitter.usingAsSplitter();
 			
 			
@@ -57,9 +58,11 @@ public class ContextualLumpability<S extends Comparable<S>> implements Aggregati
 			//HashMap<S, HashMap<Short, HashSet<S>>> preIm = new HashMap<>();
 			HashSet<Short> allActions = computeAllPreimages(initial, splitter, preIm);
 			
+			System.err.println("preimages computed:\n" + preIm.toString());
 			for (short act: allActions) {
+				System.err.println("Partitioning for action: " + act);
 				ArrayList<S> seenStates = computeWeights(initial, weights, splitter, preIm, act);
-				
+				System.err.println("Weights are: " + weights.toString());
 				markVisitedStates(partition, touchedBlocks, seenStates);
 				
 				while (!touchedBlocks.isEmpty()) {
@@ -70,64 +73,6 @@ public class ContextualLumpability<S extends Comparable<S>> implements Aggregati
 				weights.clear();
 			}
 		}
-		
-		
-		//checkValidPartition(initial, partition);
-		/*
-		
-		Invariant: take two blocks B1 and B2 from the partition,
-		then for every state s1, s2 in B1 and every state t in B2
-		we have that the set of labels of the transactions between s1 and t
-		and s2 and t is equal.*/
-		
-		/*
-		for (PartitionBlock<S> sourceBlock: partition.getBlocks()) {
-			for (PartitionBlock<S> targetBlock: partition.getBlocks()) {
-				ArrayList<ArrayList<Short>> allActs = new ArrayList<>();
-				for (S source: sourceBlock) {
-					for (S source2: sourceBlock) {
-						ArrayList<S> im1 = new ArrayList<>();
-						ArrayList<S> im2 = new ArrayList<>();
-						for (S s: initial.getImage(source)) {
-							im1.add(s);
-						}
-						
-						for (S s : initial.getImage(source2)) {
-							im2.add(s);
-						} 
-						
-						Collections.sort(im1);
-						Collections.sort(im2);
-						
-						assert im1.equals(im2) : "im1: " + im1.toString() + " vs im2: " + im2.toString();
-						
-						for (S target: targetBlock) {
-							ArrayList<Short> acts = new ArrayList<>();
-							ArrayList<Short> acts2 = new ArrayList<>();
-							for (short act: initial.getActions(source, target)) {
-								acts.add(act);
-							}
-							for (short act: initial.getActions(source2, target)) {
-							    acts2.add(act);
-							}
-							Collections.sort(acts);
-							Collections.sort(acts2);
-							
-							allActs.add(acts);
-							
-							assert acts.equals(acts2) : "acts: " + acts.toString() + " vs acts2: " + acts2.toString();
-						}
-					}
-				}
-				
-				ArrayList<Short> x = allActs.get(0);
-				
-				for (ArrayList<Short> y : allActs) {
-					assert x.equals(y);
-				}
-			}
-		}
-		*/
 		
 		return partition;
 	}
@@ -254,7 +199,9 @@ public class ContextualLumpability<S extends Comparable<S>> implements Aggregati
 			DefaultHashMap<S, Double> weights,
 			PartitionBlock<S> block) {
 		
+		System.err.println("splitting block: " + block.toString());
 		PartitionBlock<S> markedBlock = block.splitMarkedStates();
+		System.err.println("marked states: " + markedBlock.toString());
 		if (block.isEmpty()) {
 			markedBlock = markedBlock.shareIdentity(block);
 		}
@@ -269,18 +216,21 @@ public class ContextualLumpability<S extends Comparable<S>> implements Aggregati
 		
 		for (S s: markedBlock) {
 			try {
-			markedBlock.setValue(s, weights.get(s));
+				markedBlock.setValue(s, weights.get(s));
 			} catch (StateIsMarkedException e) {
 				e.printStackTrace();
 			} catch (StateNotFoundException e) {
 				e.printStackTrace();
 			}
-		} 
+		}
+		
 		PartitionBlock<S> nonPmcBlock = markedBlock.splitBlockOnValue(pmc);
+		System.err.println("nonPmcBlock: " + nonPmcBlock.toString());
+		System.err.println("Pmc block:" + markedBlock.toString());
 		Collection<PartitionBlock<S>> subBlocks = nonPmcBlock.isEmpty()
 				? new ArrayList<>()
 				: nonPmcBlock.splitBlock();
-		
+		System.err.println("subBlocks: " + subBlocks.toString());
 		ArrayList<PartitionBlock<S>> interestingBlocks = new ArrayList<>(2 + subBlocks.size());
 		if (markedBlock != block) interestingBlocks.add(markedBlock);
 		interestingBlocks.addAll(subBlocks);
@@ -288,6 +238,7 @@ public class ContextualLumpability<S extends Comparable<S>> implements Aggregati
 		partition.updateWithSplit(interestingBlocks);
 		
 		if (block.wasUsedAsSplitter() && !interestingBlocks.isEmpty()) {
+			System.err.println("Block was used as a splitter (and non empty)");
 			// In this case it is safe to avoid using one
 			// of the subblocks as a splitter.
 			// we then remove the biggest one.
@@ -302,8 +253,10 @@ public class ContextualLumpability<S extends Comparable<S>> implements Aggregati
 						
 					}
 			);
-			interestingBlocks.remove(fatBlock);
+			System.err.println("fatBlock is: " + fatBlock.toString());
+			//interestingBlocks.remove(fatBlock);
 		} else {
+			System.err.println("Removing block");
 			// AFAIK block should never end up in interestingBlocks.
 			boolean res = interestingBlocks.remove(block);
 			assert !res;

@@ -114,13 +114,15 @@ public class Component {
 	private final void applyHidingRule(ArrayList<Transition> firstStepDerivative) {
 		fFirstStepDerivatives.clear();
 		for (Transition t : firstStepDerivative) {
-			Transition newT = buf
-					.getTransition(
+			Transition newT = buf.getTransition(
 							t.fTargetProcess,
 							this.fOffset,
 							this.fLength,
-							fHidingSet.get(t.fActionId) ? ISymbolGenerator.TAU_ACTION
-									: t.fActionId, t.fRate);
+							fHidingSet.get(t.fActionId)
+									? ISymbolGenerator.TAU_ACTION
+									: t.fActionId,
+							t.fRate
+			);
 			fFirstStepDerivatives.add(newT);
 		}
 	}
@@ -129,15 +131,13 @@ public class Component {
 			double[] original, BitSet hidingSet) {
 		double[] copy = new double[original.length];
 		for (int i = 0; i < copy.length; i++) {
-			copy[i] = (!hidingSet.get(i)) ? original[i] : 0.0d;
-			/*
+			// copy[i] = (!hidingSet.get(i)) ? original[i] : 0.0d;
 			if (!hidingSet.get(i)) {
 				copy[i] = original[i];
 			} else {
 				copy[i] = 0.0d;
 				copy[0] += original[i];
 			}
-			*/
 		}
 		return copy;
 	}

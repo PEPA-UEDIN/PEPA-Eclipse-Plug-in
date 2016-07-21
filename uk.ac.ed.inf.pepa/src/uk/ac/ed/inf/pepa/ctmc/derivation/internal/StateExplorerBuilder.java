@@ -166,8 +166,10 @@ public class StateExplorerBuilder {
 		public void visitHiding(Hiding hiding) {
 			hiding.getHiddenProcess().accept(this);
 			/* add the action set to the last visited */
-			hidingSets.put(lastVisited,createActionSetIdentifiers(hiding
-					.getActionSet()));
+			hidingSets.put(
+					lastVisited,
+					createActionSetIdentifiers(hiding.getActionSet())
+			);
 	
 		}
 
@@ -303,7 +305,8 @@ public class StateExplorerBuilder {
 	};
 
 	public StateExplorerBuilder(Model model) {
-		seqAction = 0;
+		// Action id 0 is reserved for the TAU action.
+		seqAction = 1;
 		seqProcess = 0;
 		this.model = model;
 		// creates structure, initialises sequentialComponents, operators,

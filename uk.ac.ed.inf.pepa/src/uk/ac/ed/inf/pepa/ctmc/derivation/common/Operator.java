@@ -120,8 +120,7 @@ public class Operator extends Component {
 		Transition t = buf.getTransition(state, fRight.fOffset, 
 				fRight.fLength, checkAction(leftEntry.fActionId), leftEntry.fRate);
 		for (int i = 0; i < fLeft.fLength; i++) {
-			t.fTargetProcess[fLeft.fOffset + i] = leftEntry.fTargetProcess[fLeft.fOffset
-					+ i];
+			t.fTargetProcess[fLeft.fOffset + i] = leftEntry.fTargetProcess[fLeft.fOffset + i];
 		}
 		/*
 		 * Creates the apparent rate for an unshared variable Here the right
@@ -159,8 +158,7 @@ public class Operator extends Component {
 		Transition t = buf.getTransition(state, fLeft.fOffset, 
 				fLeft.fLength, checkAction(rightEntry.fActionId), rightEntry.fRate);
 		for (int i = 0; i < fRight.fLength; i++) {
-			t.fTargetProcess[fRight.fOffset + i] = rightEntry.fTargetProcess[fRight.fOffset
-					+ i];
+			t.fTargetProcess[fRight.fOffset + i] = rightEntry.fTargetProcess[fRight.fOffset + i];
 		}
 		
 		/*
@@ -216,14 +214,12 @@ public class Operator extends Component {
 		short[] newState = t.fTargetProcess;
 		// populates left child
 		for (int i = 0; i < fLeft.fLength; i++) {
-			newState[fLeft.fOffset + i] = leftEntry.fTargetProcess[fLeft.fOffset
-					+ i];
+			newState[fLeft.fOffset + i] = leftEntry.fTargetProcess[fLeft.fOffset + i];
 		}
 
 		// populates right child
 		for (int i = 0; i < fRight.fLength; i++) {
-			newState[fRight.fOffset + i] = rightEntry.fTargetProcess[fRight.fOffset
-					+ i];
+			newState[fRight.fOffset + i] = rightEntry.fTargetProcess[fRight.fOffset + i];
 		}
 		
 		// update with the apparent rates, which will be used later

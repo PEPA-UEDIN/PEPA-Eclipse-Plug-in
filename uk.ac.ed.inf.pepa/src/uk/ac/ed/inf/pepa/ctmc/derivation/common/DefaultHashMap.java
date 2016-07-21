@@ -105,4 +105,15 @@ public class DefaultHashMap<K, V> implements Map<K, V> {
 	public Set<Map.Entry<K, V>> entrySet() {
 		return map.entrySet();
 	}
+	
+	@Override
+	public String toString() {
+		StringBuilder builder = new StringBuilder();
+		builder.append("DefaultHashMap({");
+		for (Map.Entry<K, V> entry: entrySet()) {
+			builder.append(entry.getKey().toString() + ": " + entry.getValue().toString() +", ");
+		}
+		builder.append("})");
+		return builder.toString();
+	}
 }

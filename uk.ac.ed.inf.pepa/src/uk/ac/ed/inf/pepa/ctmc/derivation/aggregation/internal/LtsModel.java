@@ -147,4 +147,30 @@ public class LtsModel<S> implements LabelledTransitionSystem<S> {
 	public int numberOfActionTypes() {
 		return numActionIds;
 	}
+	
+	
+	@Override
+	public String toString() {
+		StringBuilder builder = new StringBuilder();
+		builder.append("LTS:\n");
+		builder.append("States are:\n");
+		for (S state: this) {
+			builder.append("State: " + state + "\n");
+			
+		}
+		for (S source: this) {
+			builder.append("State: " + source + " to:\n");
+			builder.append("Transitions are:\n");
+			for (S target: getImage(source)) {
+				builder.append("\tTarget " + target + "\n");
+				for (short action: getActions(source, target)) {
+					builder.append("\t\tLabel " + action + " rate "
+								   + getApparentRate(source, target, action) + "\n");
+				}
+		    }
+		}
+		
+		return builder.toString();
+		
+	}
 }

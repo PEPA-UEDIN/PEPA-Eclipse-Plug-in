@@ -114,7 +114,7 @@ public class ArraysLtsModel implements LabelledTransitionSystem<Integer> {
 			System.err.println("found tau action! (self loop!)");
 		}
 		
-		System.err.println("Found action: " + actionId);
+		//System.err.println("Found action: " + actionId);
  		// FIXME: we could pre-compute these sums.
 		int aId = actionId;
 		double rate = 0.0d;
@@ -221,4 +221,33 @@ public class ArraysLtsModel implements LabelledTransitionSystem<Integer> {
 		return rates.size();
 	}
 
+	
+	
+	@Override
+	public String toString() {
+		
+		StringBuilder builder = new StringBuilder();
+		builder.append("LTS:\n");
+		builder.append("States are:\n");
+		for (int state=0; state < stateRow.size(); ++state) {
+			builder.append("State: " + state + "\n");
+		}
+		builder.append("Transitions are:\n");
+		for (int source=0; source < stateRow.size(); ++source) {
+			builder.append("State: " + source + " to:\n");
+			int rangeStart = stateRow.get(source);
+			int rangeEnd = source == stateRow.size()-1 ? transitionColumn.size() : stateRow.get(source+1);
+			for (int t=rangeStart; t < rangeEnd; t+=2) {
+				int target = transitionColumn.get(t);
+				builder.append("\tTarget " + target + "\n");
+				int startCol = transitionColumn.get(t+1);
+				int endCol = t < transitionColumn.size()-3 ? transitionColumn.get(t+3) : rates.size(); 
+				for (int c=startCol; c < endCol; ++c) {
+					builder.append("\t\tLabel " + actionColumn.get(c) + " rate " + rates.get(c) + "\n");
+				}
+			}
+		}
+		
+		return builder.toString();
+	}
 }
