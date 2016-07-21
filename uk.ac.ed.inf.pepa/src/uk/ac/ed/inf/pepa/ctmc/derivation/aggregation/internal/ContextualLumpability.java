@@ -25,6 +25,7 @@ import uk.ac.ed.inf.pepa.ctmc.derivation.aggregation.StateIsMarkedException;
 import uk.ac.ed.inf.pepa.ctmc.derivation.aggregation.StateNotFoundException;
 import uk.ac.ed.inf.pepa.ctmc.derivation.common.CommonDefaulters;
 import uk.ac.ed.inf.pepa.ctmc.derivation.common.DefaultHashMap;
+import uk.ac.ed.inf.pepa.ctmc.derivation.common.ISymbolGenerator;
 
 // TODO: we have to handle TAU specially.
 // we should do so in a protected method so that Exact Equivalence can reimplement it.
@@ -47,6 +48,8 @@ public class ContextualLumpability<S extends Comparable<S>> implements Aggregati
 				new CommonDefaulters.Basic<Double>(0.0d)
 		);
 		
+		LabelledTransitionSystem<S> ltsView = initial.variantView();
+		
 		while (!splitters.isEmpty()) {
 			PartitionBlock<S> splitter = splitters.pollFirst();
 			System.err.println("Using: " + splitter.toString() + " as splitter.");
@@ -56,12 +59,12 @@ public class ContextualLumpability<S extends Comparable<S>> implements Aggregati
 			HashMap<S, HashMap<Short, HashSet<S>>> preIm = new HashMap<>();
 			
 			//HashMap<S, HashMap<Short, HashSet<S>>> preIm = new HashMap<>();
-			HashSet<Short> allActions = computeAllPreimages(initial, splitter, preIm);
+			HashSet<Short> allActions = computeAllPreimages(ltsView, splitter, preIm);
 			
 			System.err.println("preimages computed:\n" + preIm.toString());
 			for (short act: allActions) {
 				System.err.println("Partitioning for action: " + act);
-				ArrayList<S> seenStates = computeWeights(initial, weights, splitter, preIm, act);
+				ArrayList<S> seenStates = computeWeights(ltsView, weights, splitter, preIm, act);
 				System.err.println("Weights are: " + weights.toString());
 				markVisitedStates(partition, touchedBlocks, seenStates);
 				
