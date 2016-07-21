@@ -211,6 +211,7 @@ public class LtsModel<S> implements LabelledTransitionSystem<S> {
 
 	@Override
 	public LabelledTransitionSystem<S> variantView() {
-		return new LtsModel<S>(this);
+		return new VariantView<>(this);
 	}
+	
 }
