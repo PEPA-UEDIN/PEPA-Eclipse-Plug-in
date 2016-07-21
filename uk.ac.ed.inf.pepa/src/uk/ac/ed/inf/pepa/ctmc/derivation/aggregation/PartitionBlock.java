@@ -183,6 +183,12 @@ public interface PartitionBlock<S> extends Iterable<S> {
 	public void usingAsSplitter();
 	
 	/**
+	 * After calling this method the calls to <code>wasUsedAsSplitter</code>
+	 * should return <code>false</code>.
+	 */
+	public void toBeUsedAsSplitter();
+	
+	/**
 	 * This is a low level operation needed to make efficient some algorithms.
 	 * 
 	 * After this call the <code>this</code> block and <code>block</block> will

@@ -14,8 +14,6 @@ import java.util.Map;
 import uk.ac.ed.inf.pepa.ctmc.derivation.aggregation.PartitionBlock;
 import uk.ac.ed.inf.pepa.ctmc.derivation.aggregation.StateIsMarkedException;
 import uk.ac.ed.inf.pepa.ctmc.derivation.aggregation.StateNotFoundException;
-import uk.ac.ed.inf.pepa.model.Rate;
-import uk.ac.ed.inf.pepa.model.RateMath;
 
 /**
  * @author Giacomo Alzetta
@@ -240,5 +238,10 @@ public class LinkedPartitionBlock<S> implements PartitionBlock<S> {
 		}
 		
 		return block;
+	}
+
+	@Override
+	public void toBeUsedAsSplitter() {
+		this.used = false;
 	}
 }

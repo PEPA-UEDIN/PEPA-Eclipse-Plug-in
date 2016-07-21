@@ -236,16 +236,25 @@ public class ContextualLumpability<S extends Comparable<S>> implements Aggregati
 				: nonPmcBlock.splitBlock();
 		System.err.println("subBlocks: " + subBlocks.toString());
 		ArrayList<PartitionBlock<S>> interestingBlocks = new ArrayList<>(2 + subBlocks.size());
-		if (markedBlock != block) interestingBlocks.add(markedBlock);
+		
 		interestingBlocks.addAll(subBlocks);
+		if (block == markedBlock) {
+			partition.updateWithSplit(interestingBlocks);
+			interestingBlocks.add(markedBlock);
+		} else {
+			interestingBlocks.add(markedBlock);
+			partition.updateWithSplit(interestingBlocks);
+		}
 		
-		partition.updateWithSplit(interestingBlocks);
-		
-		if (block.wasUsedAsSplitter() && !interestingBlocks.isEmpty()) {
-			System.err.println("Block was used as a splitter (and non empty)");
+		if (block.wasUsedAsSplitter()) {
+			System.err.println("Block was used as a splitter");
 			// In this case it is safe to avoid using one
 			// of the subblocks as a splitter.
 			// we then remove the biggest one.
+			if (block != markedBlock) {
+				interestingBlocks.add(block);
+			}
+
 			PartitionBlock<S> fatBlock = Collections.max(
 					interestingBlocks,
 					new Comparator<PartitionBlock<S>>() {
@@ -258,14 +267,15 @@ public class ContextualLumpability<S extends Comparable<S>> implements Aggregati
 					}
 			);
 			System.err.println("fatBlock is: " + fatBlock.toString());
-			//interestingBlocks.remove(fatBlock);
-		} else {
+			interestingBlocks.remove(fatBlock);
+		} else if (markedBlock == block) {
 			System.err.println("Removing block");
-			// AFAIK block should never end up in interestingBlocks.
-			boolean res = interestingBlocks.remove(block);
-			assert !res;
+			interestingBlocks.remove(block);
 		}
 		
+		for (PartitionBlock<S> b: interestingBlocks) {
+			b.toBeUsedAsSplitter();
+		}
 		splitters.addAll(interestingBlocks);
 	}
 

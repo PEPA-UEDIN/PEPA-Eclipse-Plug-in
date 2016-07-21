@@ -154,7 +154,7 @@ public class ArrayPartitionBlock<S> implements PartitionBlock<S> {
 	
 	@Override
 	public Collection<PartitionBlock<S>> splitBlock() {
-		hash = -1;
+		//hash = -1;
 		ArrayList<Double> values = new ArrayList<>(mapToValues.values());
 		double pmc = PartitioningUtils.pmc(values);
 		HashMap<S, Double> mappingNotPmc = new HashMap<>(mapToValues);
@@ -339,5 +339,10 @@ public class ArrayPartitionBlock<S> implements PartitionBlock<S> {
 		}
 		
 		return hash;
+	}
+
+	@Override
+	public void toBeUsedAsSplitter() {
+		this.used = false;
 	}
 }
