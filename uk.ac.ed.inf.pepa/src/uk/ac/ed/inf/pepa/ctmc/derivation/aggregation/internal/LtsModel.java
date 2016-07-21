@@ -9,10 +9,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import uk.ac.ed.inf.pepa.ctmc.derivation.aggregation.LabelledTransitionSystem;
+import uk.ac.ed.inf.pepa.ctmc.derivation.aggregation.LTS;
+import uk.ac.ed.inf.pepa.ctmc.derivation.aggregation.LTSBuilder;
 import uk.ac.ed.inf.pepa.ctmc.derivation.common.ISymbolGenerator;
 
-public class LtsModel<S> implements LabelledTransitionSystem<S> {
+public class LtsModel<S> implements LTS<S>, LTSBuilder<S> {
 
 	private ArrayList<S> states;
 	private HashMap<S, HashMap<S, double[]>> transitionMap;
@@ -210,8 +211,14 @@ public class LtsModel<S> implements LabelledTransitionSystem<S> {
 	}
 
 	@Override
-	public LabelledTransitionSystem<S> variantView() {
+	public LTS<S> variantView() {
 		return new VariantView<>(this);
+	}
+
+	@Override
+	public LTS<S> getLts() {
+		// TODO Auto-generated method stub
+		return this;
 	}
 	
 }

@@ -11,7 +11,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import uk.ac.ed.inf.pepa.ctmc.derivation.aggregation.Aggregated;
-import uk.ac.ed.inf.pepa.ctmc.derivation.aggregation.LabelledTransitionSystem;
+import uk.ac.ed.inf.pepa.ctmc.derivation.aggregation.LTS;
 import uk.ac.ed.inf.pepa.ctmc.derivation.aggregation.Partition;
 import uk.ac.ed.inf.pepa.ctmc.derivation.aggregation.PartitionBlock;
 
@@ -24,8 +24,8 @@ import uk.ac.ed.inf.pepa.ctmc.derivation.aggregation.PartitionBlock;
 public class ExactEquivalence<S extends Comparable<S>> extends ContextualLumpability<S> {
 
 	@Override
-	public LabelledTransitionSystem<Aggregated<S>> aggregate(LabelledTransitionSystem<S> initial) {
-		LabelledTransitionSystem<S> lts = new ReverseLtsModel<>(initial);
+	public LTS<Aggregated<S>> aggregate(LTS<S> initial) {
+		LTS<S> lts = new ReverseLtsModel<>(initial);
 		Partition<S, PartitionBlock<S>> partition = super.findPartition(initial);
 		// I believe that this should just work.
 		return super.aggregateLts(lts, partition);
@@ -37,7 +37,7 @@ public class ExactEquivalence<S extends Comparable<S>> extends ContextualLumpabi
 	 * every action type.
 	 */
 	@Override
-	public Partition<S, PartitionBlock<S>> initialPartition(LabelledTransitionSystem<S> initial) {
+	public Partition<S, PartitionBlock<S>> initialPartition(LTS<S> initial) {
 		HashMap<S, Double> apparentRates = new HashMap<>(initial.size());
 		for (S source: initial) {
 			double rate = 0.0d;

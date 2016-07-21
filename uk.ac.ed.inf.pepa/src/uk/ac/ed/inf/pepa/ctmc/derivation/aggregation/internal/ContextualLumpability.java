@@ -18,7 +18,8 @@ import java.util.Set;
 
 import uk.ac.ed.inf.pepa.ctmc.derivation.aggregation.Aggregated;
 import uk.ac.ed.inf.pepa.ctmc.derivation.aggregation.AggregationAlgorithm;
-import uk.ac.ed.inf.pepa.ctmc.derivation.aggregation.LabelledTransitionSystem;
+import uk.ac.ed.inf.pepa.ctmc.derivation.aggregation.LTS;
+import uk.ac.ed.inf.pepa.ctmc.derivation.aggregation.LTSBuilder;
 import uk.ac.ed.inf.pepa.ctmc.derivation.aggregation.Partition;
 import uk.ac.ed.inf.pepa.ctmc.derivation.aggregation.PartitionBlock;
 import uk.ac.ed.inf.pepa.ctmc.derivation.aggregation.StateIsMarkedException;
@@ -40,7 +41,7 @@ public class ContextualLumpability<S extends Comparable<S>> implements Aggregati
 	 * @return
 	 */
 	@Override
-	public Partition<S, PartitionBlock<S>> findPartition(LabelledTransitionSystem<S> initial) {
+	public Partition<S, PartitionBlock<S>> findPartition(LTS<S> initial) {
 		Partition<S, PartitionBlock<S>> partition = initialPartition(initial);
 		LinkedList<PartitionBlock<S>> splitters = new LinkedList<>(partition.getBlocks());
 		LinkedList<PartitionBlock<S>> touchedBlocks = new LinkedList<>();
@@ -48,7 +49,7 @@ public class ContextualLumpability<S extends Comparable<S>> implements Aggregati
 				new CommonDefaulters.Basic<Double>(0.0d)
 		);
 		
-		LabelledTransitionSystem<S> ltsView = initial.variantView();
+		LTS<S> ltsView = initial.variantView();
 		
 		while (!splitters.isEmpty()) {
 			PartitionBlock<S> splitter = splitters.pollFirst();
@@ -90,8 +91,8 @@ public class ContextualLumpability<S extends Comparable<S>> implements Aggregati
 	 * @return
 	 */
 	@Override
-	public LabelledTransitionSystem<Aggregated<S>> aggregateLts(
-			LabelledTransitionSystem<S> initial,
+	public LTS<Aggregated<S>> aggregateLts(
+			LTS<S> initial,
 			Partition<S, PartitionBlock<S>> partition) {
 		
 		// TODO: move this as default implementation in the interface.
@@ -122,10 +123,10 @@ public class ContextualLumpability<S extends Comparable<S>> implements Aggregati
 	 * @param blocksToAggr
 	 * @return
 	 */
-	private LabelledTransitionSystem<Aggregated<S>> makeAggregatedLts(Partition<S, PartitionBlock<S>> partition,
+	private LTS<Aggregated<S>> makeAggregatedLts(Partition<S, PartitionBlock<S>> partition,
 			final int numActions, List<Aggregated<S>> aggrLtsStates, HashMap<S, HashMap<S, double[]>> aggrTrans,
 			HashMap<PartitionBlock<S>, Aggregated<S>> blocksToAggr) {
-		LabelledTransitionSystem<Aggregated<S>> aggrLts = new LtsModel<>(numActions);
+		LTSBuilder<Aggregated<S>> aggrLts = new LtsModel<>(numActions);
 
 		
 		for (Aggregated<S> aggrS: aggrLtsStates) {
@@ -148,7 +149,7 @@ public class ContextualLumpability<S extends Comparable<S>> implements Aggregati
 				}
 			}
 		}
-		return aggrLts;
+		return aggrLts.getLts();
 	}
 
 
@@ -160,7 +161,7 @@ public class ContextualLumpability<S extends Comparable<S>> implements Aggregati
 	 * @param aggrTrans
 	 * @param blocksToAggr
 	 */
-	private void prepareAggregatedData(LabelledTransitionSystem<S> initial, Partition<S, PartitionBlock<S>> partition,
+	private void prepareAggregatedData(LTS<S> initial, Partition<S, PartitionBlock<S>> partition,
 			final int numActions, List<Aggregated<S>> aggrLtsStates, HashMap<S, HashMap<S, double[]>> aggrTrans,
 			HashMap<PartitionBlock<S>, Aggregated<S>> blocksToAggr) {
 		for (Aggregated<S> aggrState: aggrLtsStates) {
@@ -307,7 +308,7 @@ public class ContextualLumpability<S extends Comparable<S>> implements Aggregati
 	 * @return The states that have transitions with action act to the splitter.
 	 */
 	private ArrayList<S> computeWeights(
-			final LabelledTransitionSystem<S> initial,
+			final LTS<S> initial,
 			DefaultHashMap<S, Double> weights,
 			final PartitionBlock<S> splitter,
 			final HashMap<S, HashMap<Short, HashSet<S>>> preIm,
@@ -345,7 +346,7 @@ public class ContextualLumpability<S extends Comparable<S>> implements Aggregati
 	 * @return The set of actions such that have transitions to the splitter.
 	 */
 	private HashSet<Short> computeAllPreimages(
-			final LabelledTransitionSystem<S> lts,
+			final LTS<S> lts,
 			final PartitionBlock<S> splitter,
 			HashMap<S, HashMap<Short, HashSet<S>>> preIm) {
 		HashSet<Short> allActions = new HashSet<>();
@@ -380,7 +381,7 @@ public class ContextualLumpability<S extends Comparable<S>> implements Aggregati
 	 * @param initial The LTS to aggregate.
 	 * @return A singleton partition containing all states.
 	 */
-	public Partition<S, PartitionBlock<S>> initialPartition(LabelledTransitionSystem<S> initial) {
+	public Partition<S, PartitionBlock<S>> initialPartition(LTS<S> initial) {
 		PartitionBlock<S> p = new ArrayPartitionBlock<>();
 		Partition<S, PartitionBlock<S>> partition = new Partition<>();
 		

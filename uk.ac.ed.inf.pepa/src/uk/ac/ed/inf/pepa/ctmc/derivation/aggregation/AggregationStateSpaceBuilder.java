@@ -88,7 +88,7 @@ public class AggregationStateSpaceBuilder implements IStateSpaceBuilder {
 		
 		monitor.beginTask(IProgressMonitor.UNKNOWN);
 		ArrayList<State> states = new ArrayList<>(1000);
-		LabelledTransitionSystem<Integer> lts;
+		LTS<Integer> lts;
 		
 		{
 			// TODO: we should use a custom callback here...
@@ -112,7 +112,7 @@ public class AggregationStateSpaceBuilder implements IStateSpaceBuilder {
 		System.out.println("Initial LTS is:\n" + lts.toString());
 		
 		// Aggregate the LTS here
-		LabelledTransitionSystem<Aggregated<Integer>> aggrLts = algorithm.aggregate(lts);
+		LTS<Aggregated<Integer>> aggrLts = algorithm.aggregate(lts);
 		
 		System.out.println("Obtained an aggregated LTS with: " + aggrLts.size() + " states and "
 						   + aggrLts.numberOfTransitions() + " transitions");
@@ -146,7 +146,7 @@ public class AggregationStateSpaceBuilder implements IStateSpaceBuilder {
 	 * @return
 	 */
 	private IStateSpace createStateSpace(ArrayList<State> states,
-			LabelledTransitionSystem<Aggregated<Integer>> aggrLts) {
+			LTS<Aggregated<Integer>> aggrLts) {
 		ArrayList<Aggregated<Integer>> newStatesToRepr = new ArrayList<>(aggrLts.size());
 		ArrayList<Integer> reprToNewStates = new ArrayList<>(states.size());
 		
@@ -301,7 +301,7 @@ public class AggregationStateSpaceBuilder implements IStateSpaceBuilder {
 	 * @param actionIds
 	 * @return
 	 */
-	private LabelledTransitionSystem<Integer> deriveLts(ArrayList<State> states,
+	private LTS<Integer> deriveLts(ArrayList<State> states,
 			IntegerArray row, IntegerArray col, DoubleArray rates,
 			IntegerArray actionIds) {
 		
@@ -316,16 +316,16 @@ public class AggregationStateSpaceBuilder implements IStateSpaceBuilder {
 			numActIds = max+1;
 		}
 
-		LabelledTransitionSystem<Integer> lts;
+		LTS<Integer> lts;
 		
 		if (useArraysModel) {
 			lts = new ArraysLtsModel(numActIds, row, col, actionIds, rates);
 		} else {
-			lts = new LtsModel<>(numActIds);
+			LTSBuilder<Integer> ltsBuilder = new LtsModel<>(numActIds);
 		
 			// Add all states into the LTS.
 			for (State s: states) {
-				lts.addState(s.stateNumber);
+				ltsBuilder.addState(s.stateNumber);
 			}
 			
 			int i = 0;
@@ -349,13 +349,15 @@ public class AggregationStateSpaceBuilder implements IStateSpaceBuilder {
 					for (int k=colRangeStart; k < colRangeEnd; k++) {
 						double rate = rates.get(k);
 						short actionId = (short)actionIds.get(k);
-						lts.addTransition(s.stateNumber, targetId, rate, actionId);
+						ltsBuilder.addTransition(s.stateNumber, targetId, rate, actionId);
 					}
 				}
 				
 				
 				++i;
 			}
+			
+			lts = ltsBuilder.getLts();
 		}
 		
 		return lts;

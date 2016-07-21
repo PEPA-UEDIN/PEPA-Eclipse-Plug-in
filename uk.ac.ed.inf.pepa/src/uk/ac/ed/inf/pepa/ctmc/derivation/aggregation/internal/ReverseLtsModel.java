@@ -8,19 +8,19 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 
-import uk.ac.ed.inf.pepa.ctmc.derivation.aggregation.LabelledTransitionSystem;
+import uk.ac.ed.inf.pepa.ctmc.derivation.aggregation.LTS;
 import uk.ac.ed.inf.pepa.ctmc.derivation.common.ISymbolGenerator;
 
 /**
  * @author Giacomo Alzetta
  *
  */
-public class ReverseLtsModel<S> implements LabelledTransitionSystem<S> {
+public class ReverseLtsModel<S> implements LTS<S> {
 
 	
-	LabelledTransitionSystem<S> lts;
+	LTS<S> lts;
 	
-	public ReverseLtsModel(LabelledTransitionSystem<S> lts) {
+	public ReverseLtsModel(LTS<S> lts) {
 		this.lts = lts;
 	}
 	
@@ -61,22 +61,12 @@ public class ReverseLtsModel<S> implements LabelledTransitionSystem<S> {
 	}
 
 	@Override
-	public void addState(S state) {
-		lts.addState(state);
-	}
-
-	@Override
-	public void addTransition(S source, S target, double rate, short actionId) {
-		lts.addTransition(source, target, rate, actionId);
-	}
-
-	@Override
 	public int numberOfActionTypes() {
 		return lts.numberOfActionTypes();
 	}
 
 	@Override
-	public LabelledTransitionSystem<S> variantView() {
+	public LTS<S> variantView() {
 		return new VariantView<>(this);
 	}
 }

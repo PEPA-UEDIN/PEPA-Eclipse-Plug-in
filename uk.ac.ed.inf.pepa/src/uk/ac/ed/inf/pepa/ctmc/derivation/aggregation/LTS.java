@@ -11,7 +11,7 @@ import java.util.Set;
  * @author Giacomo Alzetta
  *
  */
-public interface LabelledTransitionSystem<S> extends Iterable<S> {
+public interface LTS<S> extends Iterable<S> {
 	
 	/**
 	 * The number of states in the transition system.
@@ -33,23 +33,6 @@ public interface LabelledTransitionSystem<S> extends Iterable<S> {
 	 * @return the number of action types that appear in LTS transitions.
 	 */
 	public int numberOfActionTypes();
-	
-	/**
-	 * Adds a state to the LTS model.
-	 * 
-	 * @param state The state to be added.
-	 */
-	public void addState(S state);
-	
-	/**
-	 * Add a transition to the LTS model.
-	 * 
-	 * @param source 	The starting state
-	 * @param target 	The ending state
-	 * @param rate   	The rate of the transition
-	 * @param actionId 	The action type of the transition
-	 */
-	public void addTransition(S source, S target, double rate, short actionId);
 	
 	/**
 	 * Return all the action types that appear in transitions from source
@@ -115,5 +98,5 @@ public interface LabelledTransitionSystem<S> extends Iterable<S> {
 	 * 
 	 * @return The variant view of this LTS.
 	 */
-	public LabelledTransitionSystem<S> variantView();
+	public LTS<S> variantView();
 }

@@ -8,7 +8,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 
-import uk.ac.ed.inf.pepa.ctmc.derivation.aggregation.LabelledTransitionSystem;
+import uk.ac.ed.inf.pepa.ctmc.derivation.aggregation.LTS;
 import uk.ac.ed.inf.pepa.ctmc.derivation.common.ISymbolGenerator;
 
 /**
@@ -17,12 +17,12 @@ import uk.ac.ed.inf.pepa.ctmc.derivation.common.ISymbolGenerator;
  * @author Giacomo Alzetta
  *
  */
-public class VariantView<S> implements LabelledTransitionSystem<S> {
+public class VariantView<S> implements LTS<S> {
 	
 	/**
 	 * The underlying LTS.
 	 */
-	LabelledTransitionSystem<S> model;
+	LTS<S> model;
 	
 	/**
 	 * The tau self-loop rates. The value at index i corresponds to the rate
@@ -30,7 +30,7 @@ public class VariantView<S> implements LabelledTransitionSystem<S> {
 	 */
 	HashMap<S, Double> selfLoops;
 	
-	public VariantView(LabelledTransitionSystem<S> model) {
+	public VariantView(LTS<S> model) {
 		this.model = model;
 		
 		// We compute all self loops now.
@@ -89,22 +89,6 @@ public class VariantView<S> implements LabelledTransitionSystem<S> {
 	@Override
 	public int numberOfActionTypes() {
 		return model.numberOfActionTypes();
-	}
-
-	/**
-	 * Adds a state to the underlying LTS.
-	 */
-	@Override
-	public void addState(S state) {
-		model.addState(state);
-	}
-
-	/**
-	 * Add a transition to the underlying LTS.
-	 */
-	@Override
-	public void addTransition(S source, S target, double rate, short actionId) {
-		model.addTransition(source, target, rate, actionId);
 	}
 
 	/**
@@ -189,7 +173,7 @@ public class VariantView<S> implements LabelledTransitionSystem<S> {
 	 * Returns itself.
 	 */
 	@Override
-	public LabelledTransitionSystem<S> variantView() {
+	public LTS<S> variantView() {
 		return this;
 	}
 }

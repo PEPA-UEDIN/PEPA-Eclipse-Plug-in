@@ -16,7 +16,7 @@ public interface AggregationAlgorithm<S extends Comparable<S>> {
 	 * @return
 	 */
 	public Partition<S, PartitionBlock<S>> findPartition(
-			LabelledTransitionSystem<S> initial);
+			LTS<S> initial);
 	
 	/**
 	 * Given an LTS and a partition obtain an aggregated LTS.
@@ -25,8 +25,8 @@ public interface AggregationAlgorithm<S extends Comparable<S>> {
 	 * @param partition
 	 * @return
 	 */
-	public LabelledTransitionSystem<Aggregated<S>> aggregateLts(
-			LabelledTransitionSystem<S> initial,
+	public LTS<Aggregated<S>> aggregateLts(
+			LTS<S> initial,
 			Partition<S, PartitionBlock<S>> partition);
 
 	/**
@@ -35,8 +35,8 @@ public interface AggregationAlgorithm<S extends Comparable<S>> {
 	 * @param initial
 	 * @return
 	 */
-	default LabelledTransitionSystem<Aggregated<S>> aggregate(
-			LabelledTransitionSystem<S> initial) {
+	default LTS<Aggregated<S>> aggregate(
+			LTS<S> initial) {
 		return aggregateLts(initial, findPartition(initial));
 	}
 }

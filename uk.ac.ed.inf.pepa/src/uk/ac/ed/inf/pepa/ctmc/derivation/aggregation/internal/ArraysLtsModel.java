@@ -8,7 +8,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 
-import uk.ac.ed.inf.pepa.ctmc.derivation.aggregation.LabelledTransitionSystem;
+import uk.ac.ed.inf.pepa.ctmc.derivation.aggregation.LTS;
 import uk.ac.ed.inf.pepa.ctmc.derivation.common.DoubleArray;
 import uk.ac.ed.inf.pepa.ctmc.derivation.common.ISymbolGenerator;
 import uk.ac.ed.inf.pepa.ctmc.derivation.common.IntegerArray;
@@ -17,7 +17,7 @@ import uk.ac.ed.inf.pepa.ctmc.derivation.common.IntegerArray;
  * @author Giacomo Alzetta
  *
  */
-public class ArraysLtsModel implements LabelledTransitionSystem<Integer> {
+public class ArraysLtsModel implements LTS<Integer> {
 	
 	
 	private IntegerArray stateRow;
@@ -64,18 +64,6 @@ public class ArraysLtsModel implements LabelledTransitionSystem<Integer> {
 	@Override
 	public int numberOfActionTypes() {
 		return numActionTypes;
-	}
-
-	@Override
-	public void addState(Integer state) {
-		// TODO Auto-generated method stub
-		System.err.println("This is a static LTS");
-	}
-
-	@Override
-	public void addTransition(Integer source, Integer target, double rate, short actionId) {
-		// TODO Auto-generated method stub
-		System.err.println("This is a static LTS 2");
 	}
 
 	@Override
@@ -253,7 +241,7 @@ public class ArraysLtsModel implements LabelledTransitionSystem<Integer> {
 
 
 	@Override
-	public LabelledTransitionSystem<Integer> variantView() {
+	public LTS<Integer> variantView() {
 		return new View(this);
 	}
 	
@@ -265,7 +253,7 @@ public class ArraysLtsModel implements LabelledTransitionSystem<Integer> {
 	 * @author Giacomo Alzetta
 	 *
 	 */
-	private class View implements LabelledTransitionSystem<Integer> {
+	private class View implements LTS<Integer> {
 		
 		/**
 		 * The underlying LTS.
@@ -337,22 +325,6 @@ public class ArraysLtsModel implements LabelledTransitionSystem<Integer> {
 		@Override
 		public int numberOfActionTypes() {
 			return model.numberOfActionTypes();
-		}
-
-		/**
-		 * Adds a state to the underlying LTS.
-		 */
-		@Override
-		public void addState(Integer state) {
-			model.addState(state);
-		}
-
-		/**
-		 * Add a transition to the underlying LTS.
-		 */
-		@Override
-		public void addTransition(Integer source, Integer target, double rate, short actionId) {
-			model.addTransition(source, target, rate, actionId);
 		}
 
 		/**
@@ -437,7 +409,7 @@ public class ArraysLtsModel implements LabelledTransitionSystem<Integer> {
 		 * Returns itself.
 		 */
 		@Override
-		public LabelledTransitionSystem<Integer> variantView() {
+		public LTS<Integer> variantView() {
 			return this;
 		}
 	}
