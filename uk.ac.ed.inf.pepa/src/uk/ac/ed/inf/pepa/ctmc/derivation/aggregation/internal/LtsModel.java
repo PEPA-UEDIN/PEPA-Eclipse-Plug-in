@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import uk.ac.ed.inf.pepa.ctmc.derivation.aggregation.LabelledTransitionSystem;
@@ -25,6 +26,40 @@ public class LtsModel<S> implements LabelledTransitionSystem<S> {
 		states = new ArrayList<>();
 		preImageMap = new HashMap<>();
 		transitionMap = new HashMap<>();
+	}
+	
+	private LtsModel(LtsModel<S> lts) {
+		this.numActionIds = lts.numActionIds;
+		
+		this.states = lts.states;
+		
+		preImageMap = new HashMap<>();
+		transitionMap = new HashMap<>();
+		
+		for (Map.Entry<S, ArrayList<S>> entry: lts.preImageMap.entrySet()) {
+			S state = entry.getKey();
+			ArrayList<S> val = new ArrayList<S>(entry.getValue());
+			if (!val.contains(state)) val.add(state);
+			preImageMap.put(state, val);
+		}
+		
+		for (S state: states) {
+			HashMap<S, double[]> map = new HashMap<>(lts.transitionMap.get(state));
+			double rate = 0.0d;
+			for (S t: map.keySet()) {
+				if (!t.equals(state)) {
+					rate += map.get(t)[0];
+				}
+			}
+			
+			double[] rates = map.get(state);
+			if (rates == null) {
+				rates = new double[numActionIds];
+				map.put(state, rates);
+			}
+			rates[0] = -rate;
+			transitionMap.put(state, map);
+		}
 	}
 	
 	@Override
@@ -172,5 +207,10 @@ public class LtsModel<S> implements LabelledTransitionSystem<S> {
 		
 		return builder.toString();
 		
+	}
+
+	@Override
+	public LabelledTransitionSystem<S> variantView() {
+		return new LtsModel<S>(this);
 	}
 }

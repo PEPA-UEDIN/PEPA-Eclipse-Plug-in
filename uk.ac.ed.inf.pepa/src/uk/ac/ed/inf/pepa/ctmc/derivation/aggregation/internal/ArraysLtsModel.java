@@ -250,4 +250,195 @@ public class ArraysLtsModel implements LabelledTransitionSystem<Integer> {
 		
 		return builder.toString();
 	}
+
+
+	@Override
+	public LabelledTransitionSystem<Integer> variantView() {
+		return new View(this);
+	}
+	
+	
+	
+	/**
+	 * Lightweight variant view of the LTS.
+	 * 
+	 * @author Giacomo Alzetta
+	 *
+	 */
+	private class View implements LabelledTransitionSystem<Integer> {
+		
+		/**
+		 * The underlying LTS.
+		 */
+		ArraysLtsModel model;
+		
+		/**
+		 * The tau self-loop rates. The value at index i corresponds to the rate
+		 * of the self-loop for state i.
+		 */
+		DoubleArray selfLoops;
+		
+		public View(ArraysLtsModel model) {
+			this.model = model;
+			
+			// We compute all self loops now.
+			selfLoops = new DoubleArray(model.numberOfStates());
+			for (int i=0; i < model.numberOfStates(); ++i) {
+				selfLoops.add(computeSelfLoopRate(i));
+			}
+		}
+		
+		/**
+		 * Get the rate of the tau self loop for state i.
+		 * 
+		 * @param i
+		 * @return
+		 */
+		private double computeSelfLoopRate(int i) {
+			double rate = 0.0d;
+			for (int j=0; j < model.stateRow.size(); ++j) {
+				if (i != j) {
+					rate += model.getApparentRate(i, j, ISymbolGenerator.TAU_ACTION);
+				}
+			}
+			
+			return -rate;
+		}
+
+		/**
+		 * Iterate over all the states of the underlying LTS.
+		 * @return
+		 */
+		@Override
+		public Iterator<Integer> iterator() {
+			return model.iterator();
+		}
+
+		/**
+		 * The number of states of the underlying LTS.
+		 */
+		@Override
+		public int size() {
+			return model.size();
+		}
+
+		/**
+		 * The number of transitions in the underlying LTS.
+		 */
+		@Override
+		public int numberOfTransitions() {
+			// FIXME: add self loops? 
+			return model.numberOfTransitions();
+		}
+
+		/**
+		 * The number of action types in the underlying LTS.
+		 */
+		@Override
+		public int numberOfActionTypes() {
+			return model.numberOfActionTypes();
+		}
+
+		/**
+		 * Adds a state to the underlying LTS.
+		 */
+		@Override
+		public void addState(Integer state) {
+			model.addState(state);
+		}
+
+		/**
+		 * Add a transition to the underlying LTS.
+		 */
+		@Override
+		public void addTransition(Integer source, Integer target, double rate, short actionId) {
+			model.addTransition(source, target, rate, actionId);
+		}
+
+		/**
+		 * Get the actions that label transitions between <code>source</code>
+		 * and <code>target</code>.
+		 * 
+		 * Note that if <code>source.equals(target)</code> then tau is always
+		 * included.
+		 * 
+		 * @param source
+		 * @param target
+		 * @return
+		 */
+		@Override
+		public Iterable<Short> getActions(Integer source, Integer target) {
+			ArrayList<Short> acts = (ArrayList<Short>) model.getActions(source, target);
+			
+			if (source.equals(target) && !acts.contains(ISymbolGenerator.TAU_ACTION)) {
+				acts.add(ISymbolGenerator.TAU_ACTION);
+			}
+			return acts;
+		}
+
+		/**
+		 * Get the apparent rate of the transitions from source to target
+		 * with the given actionId in the underlying LTS.
+		 * 
+		 * If <code>source.equals(target)</code> and the <code>actionId</code>
+		 * refers to the tau transition then the self-loop rate is returned.
+		 * 
+		 * @param source
+		 * @param target
+		 * @param actionId
+		 * @return
+		 */
+		@Override
+		public double getApparentRate(Integer source, Integer target, short actionId) {
+			if (actionId == ISymbolGenerator.TAU_ACTION && source.equals(target)) {
+				return selfLoops.get(source);
+			}
+			
+			return model.getApparentRate(source, target, actionId);
+		}
+
+		/**
+		 * Get the states that are reachable via transitions from <code>source</code>.
+		 * 
+		 * Note that <code>source</code> itself is always included since
+		 * it has a tau self-loop.
+		 * 
+		 * @param source
+		 * @return
+		 */
+		@Override
+		public Iterable<Integer> getImage(Integer source) {
+			HashSet<Integer> targets = (HashSet<Integer>) model.getImage(source);
+			targets.add(source);
+			
+			return targets;
+		}
+
+		/**
+		 * Get the states that can reach via transitions the given
+		 * state <code>target</code>.
+		 * 
+		 * Note that <code>target</code> itself is always included since
+		 * it has a tau self-loop.
+		 * 
+		 * @param target
+		 * @return
+		 */
+		@Override
+		public Iterable<Integer> getPreImage(Integer target) {
+			ArrayList<Integer> sources = (ArrayList<Integer>) model.getPreImage(target);
+			
+			if (!sources.contains(target)) sources.add(target);
+			
+			return sources;
+		}
+
+		/**
+		 * Returns itself.
+		 */
+		@Override
+		public LabelledTransitionSystem<Integer> variantView() {
+			return this;
+		}
+	}
 }

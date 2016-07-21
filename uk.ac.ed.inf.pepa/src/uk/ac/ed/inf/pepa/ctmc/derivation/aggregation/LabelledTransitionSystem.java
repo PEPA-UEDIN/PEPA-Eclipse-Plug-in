@@ -101,4 +101,19 @@ public interface LabelledTransitionSystem<S> extends Iterable<S> {
 	 * @return
 	 */
 	public Iterable<S> getPreImage(S target);
+	
+	
+	/**
+	 * Obtain a variant view of the PEPA LTS.
+	 * 
+	 * The variant view should be exactly the same LTS, the only change
+	 * is that it introduces self-loops for every state with label tau.
+	 * The rate of such self-loops is equal to *minus* the sum of all outgoing
+	 * tau transitions from the state.
+	 * 
+	 * Changes to the view may reflect on the original LTS.
+	 * 
+	 * @return The variant view of this LTS.
+	 */
+	public LabelledTransitionSystem<S> variantView();
 }
