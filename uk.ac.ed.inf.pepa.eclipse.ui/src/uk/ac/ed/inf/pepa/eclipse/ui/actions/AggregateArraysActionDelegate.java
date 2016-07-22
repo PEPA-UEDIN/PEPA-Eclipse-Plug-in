@@ -11,7 +11,7 @@ import org.eclipse.jface.action.IAction;
 
 import uk.ac.ed.inf.pepa.ctmc.solution.OptionMap;
 
-public class AggregateActionDelegate extends BasicProcessAlgebraModelActionDelegate {
+public class AggregateArraysActionDelegate extends BasicProcessAlgebraModelActionDelegate {
 
 	@Override
 	public void run(IAction action) {
