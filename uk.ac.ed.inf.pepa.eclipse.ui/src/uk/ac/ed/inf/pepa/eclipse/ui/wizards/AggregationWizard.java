@@ -139,7 +139,7 @@ public class AggregationWizard extends Wizard {
 			String[] items = {
 					AGGREGATION_NONE,
 					AGGREGATION_CONTEXTUAL_LUMPABILITY,
-					AGGREGATION_EXACT_EQUIVALENCE,
+					AGGREGATION_EXACT_EQUIVALENCE
 			};
 			aggregationAlgorithm.setItems(items);
 			aggregationAlgorithm.addSelectionListener(new SelectionAdapter() {
