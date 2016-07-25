@@ -9,6 +9,7 @@ package uk.ac.ed.inf.pepa.eclipse.core;
 
 import java.util.HashMap;
 
+// import org.eclipse.core.internal.content.Activator;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
@@ -38,10 +39,18 @@ public final class PepaManager extends ProcessAlgebraManager {
 	 */
 	private HashMap<IResource, IPepaModel> map = new HashMap<IResource, IPepaModel>();
 	
+	private String errorMsg = "";
+	
+	public String getErrorMsg() {
+		return errorMsg;
+	}
+	
 	public boolean isValidPepaFile(IResource resource) {
 		
-		if (resource == null)
+		if (resource == null) {
+			System.err.println("Resource is null!");
 			return false;
+		}
 		
 		boolean result = (resource.getType() == IResource.FILE)
 				&& PepaCore.SUPPORTED_EXTENSIONS.contains(resource
@@ -58,13 +67,28 @@ public final class PepaManager extends ProcessAlgebraManager {
 	 * @return the model or null if no association is found
 	 */
 	public IPepaModel getModel(IResource resource) {
-		if (map.containsKey(resource))
+		//ILog log = Activator.getDefault().getLog();
+		//log.log(new Status(Status.INFO, "PEPA", Status.OK, "Getting model", null));
+		errorMsg += "Getting model";
+		System.err.println("Getting model");
+		if (map.containsKey(resource)) {
+			//log.log(new Status(Status.INFO, "PEPA", Status.OK, "found in map", null));
+			errorMsg += "\nfound in map";
+			System.err.println("found in map.");
 			return map.get(resource);
+		}
 		else if (isValidPepaFile(resource)) {
+			//log.log(new Status(Status.INFO, "PEPA", Status.OK, "Valid file, lazy creation", null));
+			System.err.println("Valid file, lazy creation.");
+			errorMsg += "\nValid file, lazy creation";
 			/* create model on the fly (lazy) */
 			return lazyCreateModel(resource);
-		} else
+		} else {
+			errorMsg += "\nReturning null!";
+			//log.log(new Status(Status.ERROR, "PEPA", Status.CANCEL, "returning null", null));
+			System.err.println("Returning null!");
 			return null;
+		}
 	}
 
 	/**

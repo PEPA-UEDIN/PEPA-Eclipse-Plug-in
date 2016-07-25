@@ -300,8 +300,8 @@ public class LatexifierWizard extends Wizard {
 		protected PreviewPage(String pageName) {
 			super(pageName);
 			this.setTitle("Preview");
-			this
-					.setDescription("You can copy and paste this snippet into your LaTeX source file");
+			this.setDescription("You can copy and paste this snippet into "
+								+ "your LaTeX source file");
 		}
 
 		public void createControl(Composite parent) {
