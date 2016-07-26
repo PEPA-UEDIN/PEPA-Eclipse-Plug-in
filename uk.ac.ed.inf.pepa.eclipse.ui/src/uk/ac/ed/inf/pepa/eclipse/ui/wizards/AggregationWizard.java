@@ -35,15 +35,9 @@ public class AggregationWizard extends Wizard {
 	private IOptionHandler handler;
 	
 	public AggregationWizard(IOptionHandler handler) {
-		//super();
+		super();
 		this.options = handler.getOptionMap();
 		this.handler = handler;
-	}
-	
-	@Override
-	public void createPageControls(Composite parent) {
-		// this ought to be useless...
-		super.createPageControls(parent);
 	}
 	
 	/* (non-Javadoc)

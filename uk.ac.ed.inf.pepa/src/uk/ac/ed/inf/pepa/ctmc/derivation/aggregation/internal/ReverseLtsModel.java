@@ -51,8 +51,8 @@ public class ReverseLtsModel<S> implements LTS<S> {
 	}
 
 	@Override
-	public int size() {
-		return lts.size();
+	public int numberOfStates() {
+		return lts.numberOfStates();
 	}
 
 	@Override

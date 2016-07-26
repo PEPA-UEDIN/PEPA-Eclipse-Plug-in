@@ -35,8 +35,5 @@ public interface AggregationAlgorithm<S extends Comparable<S>> {
 	 * @param initial
 	 * @return
 	 */
-	default LTS<Aggregated<S>> aggregate(
-			LTS<S> initial) {
-		return aggregateLts(initial, findPartition(initial));
-	}
+	public LTS<Aggregated<S>> aggregate(LTS<S> initial);
 }

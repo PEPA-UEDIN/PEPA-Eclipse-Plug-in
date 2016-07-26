@@ -11,7 +11,8 @@ import org.eclipse.ui.IEditorActionDelegate;
  *
  */
 public class AggregationActionDelegate
-	extends BasicProcessAlgebraModelActionDelegate {
+	extends BasicProcessAlgebraModelActionDelegate
+	implements IEditorActionDelegate {
 
 	/* (non-Javadoc)
 	 * @see uk.ac.ed.inf.pepa.eclipse.ui.actions.BasicProcessAlgebraModelActionDelegate#run(org.eclipse.jface.action.IAction)
@@ -27,8 +28,7 @@ public class AggregationActionDelegate
 	@Override
 	protected void checkStatus() {
 		if (this.action != null) {
-			// This is just a setting page, so it can be always enabled.
-			action.setEnabled(true);
+			action.setEnabled(model.isDerivable());
 		}
 	}
 

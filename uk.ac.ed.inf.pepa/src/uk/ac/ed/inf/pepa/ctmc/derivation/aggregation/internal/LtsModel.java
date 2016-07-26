@@ -29,6 +29,7 @@ public class LtsModel<S> implements LTS<S>, LTSBuilder<S> {
 		transitionMap = new HashMap<>();
 	}
 	
+	@Deprecated
 	private LtsModel(LtsModel<S> lts) {
 		this.numActionIds = lts.numActionIds;
 		
@@ -64,7 +65,7 @@ public class LtsModel<S> implements LTS<S>, LTSBuilder<S> {
 	}
 	
 	@Override
-	public int size() {
+	public int numberOfStates() {
 		return states.size();
 	}
 
@@ -126,8 +127,8 @@ public class LtsModel<S> implements LTS<S>, LTSBuilder<S> {
 	@Override
 	public void addState(S state) {
 		states.add(state);
-		transitionMap.put(state, new HashMap<>());
-		preImageMap.put(state, new ArrayList<>());
+		transitionMap.put(state, new HashMap<S, double[]>());
+		preImageMap.put(state, new ArrayList<S>());
 	}
 
 	@Override

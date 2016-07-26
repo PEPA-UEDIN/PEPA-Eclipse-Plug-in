@@ -107,14 +107,14 @@ public class AggregationStateSpaceBuilder implements IStateSpaceBuilder {
 			lts = deriveLts(states, row, col, rates, actionIds);
 		}
 		
-		System.out.println("Derived an initial LTS with: " + (lts.size()) + " states and "
+		System.out.println("Derived an initial LTS with: " + (lts.numberOfStates()) + " states and "
 						   + lts.numberOfTransitions() + " transitions.");
 		System.out.println("Initial LTS is:\n" + lts.toString());
 		
 		// Aggregate the LTS here
 		LTS<Aggregated<Integer>> aggrLts = algorithm.aggregate(lts);
 		
-		System.out.println("Obtained an aggregated LTS with: " + aggrLts.size() + " states and "
+		System.out.println("Obtained an aggregated LTS with: " + aggrLts.numberOfStates() + " states and "
 						   + aggrLts.numberOfTransitions() + " transitions");
 		
 		
@@ -147,7 +147,7 @@ public class AggregationStateSpaceBuilder implements IStateSpaceBuilder {
 	 */
 	private IStateSpace createStateSpace(ArrayList<State> states,
 			LTS<Aggregated<Integer>> aggrLts) {
-		ArrayList<Aggregated<Integer>> newStatesToRepr = new ArrayList<>(aggrLts.size());
+		ArrayList<Aggregated<Integer>> newStatesToRepr = new ArrayList<>(aggrLts.numberOfStates());
 		ArrayList<Integer> reprToNewStates = new ArrayList<>(states.size());
 		
 		for (int i=0; i < states.size(); i++) {
@@ -184,7 +184,7 @@ public class AggregationStateSpaceBuilder implements IStateSpaceBuilder {
 		}
 		
 
-		ArrayList<State> newStates = new ArrayList<>(aggrLts.size());
+		ArrayList<State> newStates = new ArrayList<>(aggrLts.numberOfStates());
 		
 		// FIXME: this is checked only on representatives.
 		// it may be enough, but we have to check that.

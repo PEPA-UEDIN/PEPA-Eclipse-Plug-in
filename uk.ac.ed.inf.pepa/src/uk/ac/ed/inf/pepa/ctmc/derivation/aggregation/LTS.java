@@ -17,10 +17,7 @@ public interface LTS<S> extends Iterable<S> {
 	 * The number of states in the transition system.
 	 * @return the number of states in the transition system.
 	 */
-	public int size();
-	default int numberOfStates() {
-		return size();
-	}
+	public int numberOfStates();
 	
 	/**
 	 * A transition is a triplet: <source-state, target-state, label>
@@ -54,6 +51,7 @@ public interface LTS<S> extends Iterable<S> {
 	 * @return
 	 */
 	public double getApparentRate(S source, S target, short actionId);
+	/*
 	default double getApparentRate(S source, List<S> targets, short actionId) {
 		double[] rates = new double[targets.size()];
 		int i = 0;
@@ -69,6 +67,7 @@ public interface LTS<S> extends Iterable<S> {
 		
 		return result;
 	}
+	*/
 	
 	/**
 	 * Get all the states reachable by transitions from source.

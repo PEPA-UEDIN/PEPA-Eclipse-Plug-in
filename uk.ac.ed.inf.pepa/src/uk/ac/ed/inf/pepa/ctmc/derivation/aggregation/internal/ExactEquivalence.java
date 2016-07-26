@@ -38,13 +38,13 @@ public class ExactEquivalence<S extends Comparable<S>> extends ContextualLumpabi
 	 */
 	@Override
 	public Partition<S, PartitionBlock<S>> initialPartition(LTS<S> initial) {
-		HashMap<S, Double> apparentRates = new HashMap<>(initial.size());
+		HashMap<S, Double> apparentRates = new HashMap<>(initial.numberOfStates());
 		for (S source: initial) {
 			double rate = 0.0d;
 			for (S target: initial) {
 				// !target.equals(source)?
 				
-				for (short action: initial.getActions(source, target)) {
+				for (Short action: initial.getActions(source, target)) {
 					rate += initial.getApparentRate(source, target, action);
 				}
 			}

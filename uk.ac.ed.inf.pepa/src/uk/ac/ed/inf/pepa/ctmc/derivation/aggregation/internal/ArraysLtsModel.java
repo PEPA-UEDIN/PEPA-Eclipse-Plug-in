@@ -57,7 +57,7 @@ public class ArraysLtsModel implements LTS<Integer> {
 	}
 
 	@Override
-	public int size() {
+	public int numberOfStates() {
 		return stateRow.size();
 	}
 
@@ -306,8 +306,8 @@ public class ArraysLtsModel implements LTS<Integer> {
 		 * The number of states of the underlying LTS.
 		 */
 		@Override
-		public int size() {
-			return model.size();
+		public int numberOfStates() {
+			return model.numberOfStates();
 		}
 
 		/**

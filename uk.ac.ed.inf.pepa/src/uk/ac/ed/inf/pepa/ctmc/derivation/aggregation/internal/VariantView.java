@@ -70,8 +70,8 @@ public class VariantView<S> implements LTS<S> {
 	 * The number of states of the underlying LTS.
 	 */
 	@Override
-	public int size() {
-		return model.size();
+	public int numberOfStates() {
+		return model.numberOfStates();
 	}
 
 	/**

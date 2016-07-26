@@ -69,6 +69,33 @@ public class ArrayPartitionBlock<S> implements PartitionBlock<S> {
 	}
 	
 	@Override
+	public PartitionBlock<S> splitBlockOnValue(double value) {
+		// We must first copy the states because marking a state actually
+		// disrupts iteration.
+		ArrayList<S> states = new ArrayList<S>(size());
+		Iterator<S> statesIter = getStates();
+		
+		while (statesIter.hasNext()) {
+			states.add(statesIter.next());
+		}
+		
+		
+		for (S state: states) {
+			try {
+				if (getValue(state) != value) {
+					markState(state);
+				}
+			} catch (StateIsMarkedException e) {
+				e.printStackTrace();
+			} catch (StateNotFoundException e) {
+				e.printStackTrace();
+			}
+		}
+		return splitMarkedStates();
+	}
+	
+	
+	@Override
 	public void addState(S state) {
 		hash = -1;
 		assert !statesToIndex.containsKey(state);
@@ -191,7 +218,7 @@ public class ArrayPartitionBlock<S> implements PartitionBlock<S> {
 		for (Map.Entry<S, Double> entry : entries) {
 			Double val = entry.getValue();
 			if (!blocks.containsKey(val)) {
-				blocks.put(val, new ArrayPartitionBlock<>());
+				blocks.put(val, new ArrayPartitionBlock<S>());
 			}
 			blocks.get(val).addState(entry.getKey());
 			
@@ -344,5 +371,15 @@ public class ArrayPartitionBlock<S> implements PartitionBlock<S> {
 	@Override
 	public void toBeUsedAsSplitter() {
 		this.used = false;
+	}
+
+	@Override
+	public Iterator<S> iterator() {
+		return getStates();
+	}
+
+	@Override
+	public boolean hasMarkedStates() {
+		return markIndex > 0;
 	}
 }

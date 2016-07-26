@@ -53,9 +53,7 @@ public interface PartitionBlock<S> extends Iterable<S> {
 	 * 
 	 * @return
 	 */
-	default boolean hasMarkedStates() {
-		return getMarkedStates().hasNext();
-	}
+	public boolean hasMarkedStates();
 	
 	/**
 	 * Iterate over all the states contained in this block of the partition.
@@ -105,30 +103,7 @@ public interface PartitionBlock<S> extends Iterable<S> {
 	 * @param value
 	 * @return The sub-block whose states have a value *different* from <code>value</code>.
 	 */
-	default PartitionBlock<S> splitBlockOnValue(double value) {
-		// We must first copy the states because marking a state actually
-		// disrupts iteration.
-		ArrayList<S> states = new ArrayList<S>(size());
-		Iterator<S> statesIter = getStates();
-		
-		while (statesIter.hasNext()) {
-			states.add(statesIter.next());
-		}
-		
-		
-		for (S state: states) {
-			try {
-				if (getValue(state) != value) {
-					markState(state);
-				}
-			} catch (StateIsMarkedException e) {
-				e.printStackTrace();
-			} catch (StateNotFoundException e) {
-				e.printStackTrace();
-			}
-		}
-		return splitMarkedStates();
-	}
+	public PartitionBlock<S> splitBlockOnValue(double value);
 	
 	/**
 	 * Marks the given state in the block.
@@ -208,12 +183,4 @@ public interface PartitionBlock<S> extends Iterable<S> {
 	 * @return      The block passed as argument
 	 */
 	public PartitionBlock<S> shareIdentity(PartitionBlock<S> block);
-	
-	/**
-	 * Iterate over all the states in the block.
-	 */
-	@Override
-	default Iterator<S> iterator() {
-		return getStates();
-	}
 }

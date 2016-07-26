@@ -8,15 +8,12 @@
 package uk.ac.ed.inf.pepa.eclipse.ui.editor;
 
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.runtime.ILog;
-import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.ui.*;
 import org.eclipse.ui.editors.text.TextEditor;
 
 import uk.ac.ed.inf.pepa.eclipse.core.IPepaModel;
 import uk.ac.ed.inf.pepa.eclipse.core.PepaCore;
-import uk.ac.ed.inf.pepa.eclipse.core.PepaManager;
 import uk.ac.ed.inf.pepa.eclipse.ui.Activator;
 import uk.ac.ed.inf.pepa.eclipse.ui.PerspectiveFactory;
 
@@ -24,7 +21,7 @@ public class PEPAEditor extends TextEditor implements IProcessAlgebraEditor {
 
 	private IPepaModel fModel;
 
-	private ColorManager fColorManager;
+	private uk.ac.ed.inf.pepa.eclipse.ui.editor.ColorManager fColorManager;
 
 	public PEPAEditor() {
 		super();
@@ -102,16 +99,7 @@ public class PEPAEditor extends TextEditor implements IProcessAlgebraEditor {
 
 	private IPepaModel getIResource(IEditorInput input) {
 		IResource resource = (IResource) input.getAdapter(IResource.class);
-		ILog log = Activator.getDefault().getLog();
-		if (resource == null) {
-			log.log(new Status(Status.ERROR, "PEPA", Status.CANCEL, "No adapter found", null));
-			System.err.println("no adapter found");
-		}
-		
-		PepaManager man = PepaCore.getDefault().getPepaManager();
-		IPepaModel model = man.getModel(resource);
-		log.log(new Status(Status.INFO, "PEPA", Status.OK, man.getErrorMsg(), null));
-		return model;
+		return PepaCore.getDefault().getPepaManager().getModel(resource);
 	}
 
 }

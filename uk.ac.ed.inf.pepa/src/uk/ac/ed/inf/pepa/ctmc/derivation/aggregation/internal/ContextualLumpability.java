@@ -28,8 +28,7 @@ import uk.ac.ed.inf.pepa.ctmc.derivation.common.CommonDefaulters;
 import uk.ac.ed.inf.pepa.ctmc.derivation.common.DefaultHashMap;
 import uk.ac.ed.inf.pepa.ctmc.derivation.common.ISymbolGenerator;
 
-// TODO: we have to handle TAU specially.
-// we should do so in a protected method so that Exact Equivalence can reimplement it.
+
 /**
  * @author Giacomo Alzetta
  *
@@ -99,13 +98,13 @@ public class ContextualLumpability<S extends Comparable<S>> implements Aggregati
 		
 		final int numActions = initial.numberOfActionTypes();
 		List<Aggregated<S>> aggrLtsStates = new ArrayList<>(partition.size());
-		HashMap<S, HashMap<S, double[]>> aggrTrans = new HashMap<>();
-		HashMap<PartitionBlock<S>, Aggregated<S>> blocksToAggr = new HashMap<>(partition.size());
+		HashMap<S, HashMap<S, double[]>> aggrTrans = new HashMap<S, HashMap<S, double[]>>();
+		HashMap<PartitionBlock<S>, Aggregated<S>> blocksToAggr = new HashMap<PartitionBlock<S>, Aggregated<S>>(partition.size());
 		
 		for (PartitionBlock<S> block: partition.getBlocks()) {
 			Aggregated<S> aggrState = new Aggregated<>(block);
 			aggrLtsStates.add(aggrState);
-			aggrTrans.put(aggrState.getRepresentative(), new HashMap<>());
+			aggrTrans.put(aggrState.getRepresentative(), new HashMap<S, double[]>());
 			blocksToAggr.put(block, aggrState);
 		}
 		
@@ -114,6 +113,10 @@ public class ContextualLumpability<S extends Comparable<S>> implements Aggregati
 		return makeAggregatedLts(partition, numActions, aggrLtsStates, aggrTrans, blocksToAggr);
 	}
 
+	@Override
+	public LTS<Aggregated<S>> aggregate(LTS<S> initial) {
+		return aggregateLts(initial, findPartition(initial));
+	}
 
 	/**
 	 * @param partition
@@ -232,10 +235,10 @@ public class ContextualLumpability<S extends Comparable<S>> implements Aggregati
 		System.err.println("nonPmcBlock: " + nonPmcBlock.toString());
 		System.err.println("Pmc block:" + markedBlock.toString());
 		Collection<PartitionBlock<S>> subBlocks = nonPmcBlock.isEmpty()
-				? new ArrayList<>()
+				? new ArrayList<PartitionBlock<S>>()
 				: nonPmcBlock.splitBlock();
 		System.err.println("subBlocks: " + subBlocks.toString());
-		ArrayList<PartitionBlock<S>> interestingBlocks = new ArrayList<>(2 + subBlocks.size());
+		ArrayList<PartitionBlock<S>> interestingBlocks = new ArrayList<PartitionBlock<S>>(2 + subBlocks.size());
 		
 		interestingBlocks.addAll(subBlocks);
 		if (block == markedBlock) {
