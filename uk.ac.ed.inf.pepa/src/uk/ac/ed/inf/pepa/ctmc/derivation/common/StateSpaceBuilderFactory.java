@@ -43,13 +43,7 @@ public class StateSpaceBuilderFactory {
 
 		boolean aggregate = (Boolean) map.get(OptionMap.AGGREGATE_ARRAYS);
 		int aggregationAlgorithm = (Integer) map.get(OptionMap.AGGREGATION);
-		boolean hasAggregation = aggregationAlgorithm > OptionMap.AGGREGATION_NONE;
-		
-		if (hasAggregation && aggregate) {
-			// Aggregation should automatically provide aggregated
-			// arrays functionality, at least in the end.
-			// aggregate = false;
-		}
+		boolean hasAggregation = (boolean)map.get(OptionMap.AGGREGATION_ENABLED);
 
 		Model cModel = new Compiler(aggregate, model).getModel();
 
@@ -72,7 +66,7 @@ public class StateSpaceBuilderFactory {
 		}
 		
 		// delegates storage to implementors
-		if (hasAggregation) {
+		if (hasAggregation && aggregationAlgorithm != OptionMap.AGGREGATION_NONE) {
 			System.out.println("Creating aggregating sequential tool");
 			AggregationAlgorithm<Integer> alg;
 			if (aggregationAlgorithm == OptionMap.AGGREGATION_CONTEXTUAL_LUMPABILITY) {

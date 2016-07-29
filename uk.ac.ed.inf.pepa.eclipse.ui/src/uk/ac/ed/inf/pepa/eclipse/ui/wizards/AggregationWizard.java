@@ -3,7 +3,6 @@
  */
 package uk.ac.ed.inf.pepa.eclipse.ui.wizards;
 
-import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
@@ -15,12 +14,10 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Event;
-import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
 
 import uk.ac.ed.inf.pepa.ctmc.solution.OptionMap;
 import uk.ac.ed.inf.pepa.eclipse.core.IOptionHandler;
-import uk.ac.ed.inf.pepa.eclipse.ui.Activator;
 
 /**
  * @author Giacomo Alzetta
@@ -29,6 +26,8 @@ import uk.ac.ed.inf.pepa.eclipse.ui.Activator;
 public class AggregationWizard extends Wizard {
 
 	private final static String SETTINGS_PAGE_NAME = "settings_page!";
+	
+	SettingsPage setPage = null;
 
 
 	private OptionMap options;
@@ -45,9 +44,8 @@ public class AggregationWizard extends Wizard {
 	 */
 	@Override
 	public boolean performFinish() {
-		SettingsPage page = (SettingsPage) getPage(SETTINGS_PAGE_NAME);
-		if (page.isPageComplete()) {
-			page.applySettings();
+		if (setPage.isPageComplete()) {
+			setPage.applySettings();
 		}
 		
 		handler.setOptionMap(options);
@@ -57,8 +55,8 @@ public class AggregationWizard extends Wizard {
 	
 	@Override
 	public void addPages() {
-		SettingsPage page = new SettingsPage(SETTINGS_PAGE_NAME);
-		addPage(page);
+		setPage = new SettingsPage(SETTINGS_PAGE_NAME);
+		addPage(setPage);
 	}
 
 	/**
@@ -67,27 +65,25 @@ public class AggregationWizard extends Wizard {
 	 */
     private class SettingsPage extends WizardPage {
     	
-    	private static final String SECTION_NAME = "aggregation.settings";
+    	// private static final String SECTION_NAME = "aggregation.settings";
     	
     	private Button aggregationEnabled;
     	
-    	private static final String AGGREGATION_ENABLED_BUTTON = "aggregation.settings.enabled";
+    	// private static final String AGGREGATION_ENABLED_BUTTON = "aggregation.settings.enabled";
     	
     	private Button aggregateArrays;
     	
-    	private static final String AGGREGATE_ARRAYS = "aggregation.settings.aggregate_arrays";
+    	// private static final String AGGREGATE_ARRAYS = "aggregation.settings.aggregate_arrays";
     	
     	private Combo aggregationAlgorithm;
     	
-    	private static final String AGGREGATION_ALGORITHM = "aggregation.settings.algorithm";
+    	// private static final String AGGREGATION_ALGORITHM = "aggregation.settings.algorithm";
     	
     	private static final String AGGREGATION_NONE = "No aggregation";
     	private static final String AGGREGATION_CONTEXTUAL_LUMPABILITY = "Contextual Lumpability";
     	private static final String AGGREGATION_EXACT_EQUIVALENCE = "Exact Equivalence";
     	
     	private int aggregationChosen = OptionMap.AGGREGATION_NONE;
-    	
-    	private IDialogSettings settings;
 
     	protected SettingsPage(String pageName) {
 			super(pageName);
@@ -99,9 +95,9 @@ public class AggregationWizard extends Wizard {
 		 * @see org.eclipse.jface.dialogs.IDialogPage#createControl(org.eclipse.swt.widgets.Composite)
 		 */
 		@Override
-		public void createControl(Composite parent) {
+		public void createControl(Composite parent) {			
 			Composite composite = new Composite(parent, SWT.NONE);
-			composite.setLayout(new GridLayout(2, false));
+			composite.setLayout(new GridLayout(1, true));
 			setControl(composite);
 			
 			aggregationEnabled = new Button(composite, SWT.CHECK);
@@ -110,15 +106,12 @@ public class AggregationWizard extends Wizard {
 			aggregationEnabled.addListener(SWT.Selection,
 					new Listener() {
 						public void handleEvent(Event event) {
-							boolean enabled = aggregationEnabled.isEnabled();
+							boolean enabled = aggregationEnabled.getSelection();
 							aggregateArrays.setEnabled(enabled);
 							aggregationAlgorithm.setEnabled(enabled);
 							validate();
 						}
 			});
-			
-			// Empty cell
-			new Label(composite, SWT.NONE);
 			
 			aggregateArrays = new Button(composite, SWT.CHECK);
 			aggregateArrays.setText("Use aggregate arrays");
@@ -129,9 +122,6 @@ public class AggregationWizard extends Wizard {
 							validate();
 						}
 			});
-			
-			// Empty cell
-			new Label(composite, SWT.NONE);
 			
 			aggregationAlgorithm = new Combo(composite, SWT.READ_ONLY);
 			aggregationAlgorithm.setLayoutData(createDefaultGridData());
@@ -145,7 +135,7 @@ public class AggregationWizard extends Wizard {
 			aggregationAlgorithm.addSelectionListener(new SelectionAdapter() {
 				public void widgetSelected(SelectionEvent e) {
 					String text = aggregationAlgorithm.getText();
-					if (text.equals(AGGREGATION_NONE)) {
+					if (text == null || text.equals(AGGREGATION_NONE)) {
 						aggregationChosen = OptionMap.AGGREGATION_NONE;
 					} else if (text.equals(AGGREGATION_CONTEXTUAL_LUMPABILITY)) {
 						aggregationChosen = OptionMap.AGGREGATION_CONTEXTUAL_LUMPABILITY;
@@ -155,67 +145,38 @@ public class AggregationWizard extends Wizard {
 				}
 			});
 			
-			// Empty cell
-			new Label(composite, SWT.NONE);
-			
-			// Empty cell
-			new Label(composite, SWT.NONE);
-			
-			Button apply = new Button(composite, SWT.PUSH);
-			apply.setText("Apply");
-			apply.addListener(SWT.Selection, 
-					new Listener() {
-						public void handleEvent(Event e) {
-							applySettings();
-						}
-			});
-			
 			initContents();
 			validate();
 		}
 		
 		private void initContents() {
 			/* Should init from default settings */
-			IDialogSettings uiSettings = Activator.getDefault().getDialogSettings();
-			settings = uiSettings.getSection(SECTION_NAME);
-			if (settings == null)
-				settings = uiSettings.addNewSection(SECTION_NAME);
 
-			aggregationEnabled.setSelection(
-					settings.getBoolean(AGGREGATION_ENABLED_BUTTON));
-			aggregateArrays.setSelection(
-					settings.getBoolean(AGGREGATE_ARRAYS));
+			boolean enabled = (boolean)options.get(OptionMap.AGGREGATION_ENABLED);
+			aggregationEnabled.setSelection(enabled);
 			
-			String text = settings.get(AGGREGATION_ALGORITHM);
-			int algIndex = 0;
-			if (text.equals(AGGREGATION_NONE)) {
-				algIndex = 0;
-			} else if (text.equals(AGGREGATION_CONTEXTUAL_LUMPABILITY)) {
-				algIndex = 1;
-			} else if (text.equals(AGGREGATION_EXACT_EQUIVALENCE)) {
-				algIndex = 2;
-			} else {
-				algIndex = -1;
-			}
+			aggregateArrays.setSelection(
+					(boolean)options.get(OptionMap.AGGREGATE_ARRAYS));
+			aggregateArrays.setEnabled(enabled);
+			
+			int algIndex = (int)options.get(OptionMap.AGGREGATION);
 			aggregationAlgorithm.select(algIndex);
+			aggregationAlgorithm.setEnabled(enabled);
 		}
 		
 		private boolean isAggregationEnabled() {
-			return aggregationEnabled.isEnabled();
+			return aggregationEnabled.getSelection();
 		}
 		
 		private boolean areAggregateArraysEnabled() {
-			return aggregateArrays.isEnabled();
+			return aggregateArrays.getSelection();
 		}
 		
 		protected void applySettings() {
-			if (isAggregationEnabled()) {
-				options.put(OptionMap.AGGREGATION, aggregationChosen);
-				options.put(OptionMap.AGGREGATE_ARRAYS, areAggregateArraysEnabled());
-			} else {
-				options.put(OptionMap.AGGREGATION, AGGREGATION_NONE);
-				options.put(OptionMap.AGGREGATE_ARRAYS, false);
-			}
+			
+			options.put(OptionMap.AGGREGATION_ENABLED, isAggregationEnabled());
+			options.put(OptionMap.AGGREGATION, aggregationChosen);
+			options.put(OptionMap.AGGREGATE_ARRAYS, areAggregateArraysEnabled());
 		}
 		
 		private GridData createDefaultGridData() {

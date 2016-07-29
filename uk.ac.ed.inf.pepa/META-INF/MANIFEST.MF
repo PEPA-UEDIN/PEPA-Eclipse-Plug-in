@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: PEPAto Library
 Bundle-SymbolicName: uk.ac.ed.inf.pepa
-Bundle-Version: 0.0.24
+Bundle-Version: 0.0.26
 Bundle-Localization: plugin
 Export-Package: uk.ac.ed.inf.pepa,
  uk.ac.ed.inf.pepa.analysis;uses:="uk.ac.ed.inf.pepa.model,uk.ac.ed.inf.pepa.parsing",
