@@ -32,6 +32,7 @@ import uk.ac.ed.inf.pepa.ctmc.derivation.common.State;
 import uk.ac.ed.inf.pepa.ctmc.derivation.common.Transition;
 import uk.ac.ed.inf.pepa.ctmc.derivation.internal.hbf.MemoryStateSpace;
 import uk.ac.ed.inf.pepa.ctmc.derivation.common.OptimisedHashMap.InsertionResult;
+import uk.ac.ed.inf.pepa.ctmc.derivation.common.ShortArray;
 import uk.ac.ed.inf.pepa.model.NamedRate;
 import uk.ac.ed.inf.pepa.model.RateMath;
 import uk.ac.ed.inf.pepa.model.internal.NamedRateImpl;
@@ -102,7 +103,7 @@ public class AggregationStateSpaceBuilder implements IStateSpaceBuilder {
 			IntegerArray row = callback.getRow();
 			IntegerArray col = callback.getColumn();
 			DoubleArray rates = callback.getRates();
-			IntegerArray actionIds = callback.getActions();
+			ShortArray actionIds = callback.getActions();
 			
 			lts = deriveLts(states, row, col, rates, actionIds);
 		}
@@ -164,7 +165,7 @@ public class AggregationStateSpaceBuilder implements IStateSpaceBuilder {
 		
 		IntegerArray newRow = new IntegerArray(aggrLts.numberOfStates());
 		IntegerArray newCol = new IntegerArray(2*aggrLts.numberOfTransitions());
-		IntegerArray newActions = new IntegerArray(aggrLts.numberOfTransitions());
+		ShortArray newActions = new ShortArray(aggrLts.numberOfTransitions());
 		DoubleArray newRates = new DoubleArray(aggrLts.numberOfTransitions());
 		
 		int maxSize = 0;
@@ -303,7 +304,7 @@ public class AggregationStateSpaceBuilder implements IStateSpaceBuilder {
 	 */
 	private LTS<Integer> deriveLts(ArrayList<State> states,
 			IntegerArray row, IntegerArray col, DoubleArray rates,
-			IntegerArray actionIds) {
+			ShortArray actionIds) {
 		
 		int numActIds = 0;
 		{

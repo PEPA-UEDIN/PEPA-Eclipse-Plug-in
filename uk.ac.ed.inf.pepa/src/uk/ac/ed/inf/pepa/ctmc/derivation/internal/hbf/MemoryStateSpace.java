@@ -19,6 +19,7 @@ import uk.ac.ed.inf.pepa.ctmc.ThroughputResult;
 import uk.ac.ed.inf.pepa.ctmc.derivation.common.DoubleArray;
 import uk.ac.ed.inf.pepa.ctmc.derivation.common.ISymbolGenerator;
 import uk.ac.ed.inf.pepa.ctmc.derivation.common.IntegerArray;
+import uk.ac.ed.inf.pepa.ctmc.derivation.common.ShortArray;
 import uk.ac.ed.inf.pepa.ctmc.derivation.common.State;
 import uk.ac.ed.inf.pepa.ctmc.solution.internal.simple.Generator;
 
@@ -34,10 +35,11 @@ public class MemoryStateSpace extends AbstractStateSpace {
 
 	private DoubleArray value;
 
-	private IntegerArray action;
+	private ShortArray action;
 
 	public MemoryStateSpace(ISymbolGenerator symbolGenerator,
-			ArrayList<State> states, IntegerArray row, IntegerArray column, IntegerArray action, DoubleArray value,
+			ArrayList<State> states, IntegerArray row, IntegerArray column,
+			ShortArray action, DoubleArray value,
 			boolean hasVariableLengthStates, int maximumLength) {
 		super(symbolGenerator, states,hasVariableLengthStates, maximumLength);
 		assert row != null;
@@ -168,7 +170,7 @@ public class MemoryStateSpace extends AbstractStateSpace {
 			int valueEnd = (i == size - 1) ? valueSize : column.get(row
 					.get(i + 1) + 1);
 			for (int k = valueStart; k < valueEnd; k++) {
-				short actionId = (short) action.get(k);
+				short actionId = action.get(k);
 				Double d = thMap.get(actionId);
 				if (d == null) {
 					d = 0.0d;
@@ -211,8 +213,7 @@ public class MemoryStateSpace extends AbstractStateSpace {
 				int stop = (i + 3 <= column.size() - 1) ? column.get(i + 3)
 						: action.size();
 				for (int j = start; j < stop; j++) {
-					labels.add(symbolGenerator.getActionLabel((short) action
-							.get(j)));
+					labels.add(symbolGenerator.getActionLabel(action.get(j)));
 				}
 			}
 			if (found)

@@ -12,6 +12,7 @@ import uk.ac.ed.inf.pepa.ctmc.derivation.aggregation.LTS;
 import uk.ac.ed.inf.pepa.ctmc.derivation.common.DoubleArray;
 import uk.ac.ed.inf.pepa.ctmc.derivation.common.ISymbolGenerator;
 import uk.ac.ed.inf.pepa.ctmc.derivation.common.IntegerArray;
+import uk.ac.ed.inf.pepa.ctmc.derivation.common.ShortArray;
 
 /**
  * @author Giacomo Alzetta
@@ -22,7 +23,7 @@ public class ArraysLtsModel implements LTS<Integer> {
 	
 	private IntegerArray stateRow;
 	private IntegerArray transitionColumn;
-	private IntegerArray actionColumn;
+	private ShortArray actionColumn;
 	private IntegerArray preStateRow = null;
 	private IntegerArray preImageColumn = null;
 	private DoubleArray rates;
@@ -30,7 +31,7 @@ public class ArraysLtsModel implements LTS<Integer> {
 
 	
 	public ArraysLtsModel(int numActionTypes, IntegerArray row, IntegerArray column,
-						  IntegerArray actions, DoubleArray rates) {
+						  ShortArray actions, DoubleArray rates) {
 		stateRow = row;
 		transitionColumn = column;
 		actionColumn = actions;
@@ -82,7 +83,7 @@ public class ArraysLtsModel implements LTS<Integer> {
 			int endTrans = i < transitionColumn.size() -3 ? transitionColumn.get(i+3) : actionColumn.size();
 			//ArrayList<Short> acts = new ArrayList<>(endTrans - startTrans);
 			for (int j=startTrans; j < endTrans; ++j) {
-				acts.add((short) actionColumn.get(j));
+				acts.add(actionColumn.get(j));
 			}
 			
 			//return acts;

@@ -25,7 +25,7 @@ public class MemoryCallback implements ICallbackListener {
 
 	private DoubleArray value;
 
-	private IntegerArray action;
+	private ShortArray action;
 
 	private int t;
 
@@ -47,7 +47,7 @@ public class MemoryCallback implements ICallbackListener {
 		row = new IntegerArray(INITIAL_CAPACITY);
 		column = new IntegerArray(INITIAL_CAPACITY);
 		value = new DoubleArray(INITIAL_CAPACITY * 2);
-		action = new IntegerArray(INITIAL_CAPACITY * 2);
+		action = new ShortArray(INITIAL_CAPACITY * 2);
 	}
 
 	public IStateSpace done(ISymbolGenerator generator, ArrayList<State> states)
@@ -80,7 +80,7 @@ public class MemoryCallback implements ICallbackListener {
 		return value;
 	}
 	
-	public IntegerArray getActions() throws RuntimeException {
+	public ShortArray getActions() throws RuntimeException {
 		if (!isDone)
 			throw new RuntimeException("Cannot retrieve actions before completion!");
 		return action;
