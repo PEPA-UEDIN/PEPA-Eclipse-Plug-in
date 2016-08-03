@@ -86,11 +86,13 @@ public class AggregationStateSpaceBuilder implements IStateSpaceBuilder {
 		if (monitor == null) 
 			monitor = new DoNothingMonitor();
 		
-		
+		long startTime = System.nanoTime();
+		long endTime = 0;
+		double commonDeriveTimeMillis = -1;
+		double obtainLtsTimeMillis = -1;
 		monitor.beginTask(IProgressMonitor.UNKNOWN);
 		ArrayList<State> states = new ArrayList<>(1000);
 		LTS<Integer> lts;
-		
 		{
 			// TODO: we should use a custom callback here...
 			MemoryCallback callback = new MemoryCallback();
@@ -105,24 +107,33 @@ public class AggregationStateSpaceBuilder implements IStateSpaceBuilder {
 			DoubleArray rates = callback.getRates();
 			ShortArray actionIds = callback.getActions();
 			
+			endTime = System.nanoTime();
+			commonDeriveTimeMillis = (endTime - startTime)/1000000;
+			
+			startTime = System.nanoTime();
 			lts = deriveLts(states, row, col, rates, actionIds);
+			endTime = System.nanoTime();
+			obtainLtsTimeMillis = (endTime-startTime)/1000000;
 		}
 		
 		System.out.println("Derived an initial LTS with: " + (lts.numberOfStates()) + " states and "
 						   + lts.numberOfTransitions() + " transitions.");
-		System.out.println("Initial LTS is:\n" + lts.toString());
 		
+		startTime = System.nanoTime();
 		// Aggregate the LTS here
 		LTS<Aggregated<Integer>> aggrLts = algorithm.aggregate(lts);
+		endTime = System.nanoTime();
+		double aggregationLtsTimeMillis = (endTime-startTime)/1000000;
 		
 		System.out.println("Obtained an aggregated LTS with: " + aggrLts.numberOfStates() + " states and "
 						   + aggrLts.numberOfTransitions() + " transitions");
 		
-		
+		/*
 		System.out.println("States are: ");
 		for (Aggregated<Integer> s: aggrLts) {
 			System.out.println("State: " + s);
 		}
+		*/
 		
 		/*
 		for (Aggregated<Integer> aggrS: aggrLts) {
@@ -131,12 +142,25 @@ public class AggregationStateSpaceBuilder implements IStateSpaceBuilder {
 				System.out.println(x.toString());
 			}
 		} */
-		
+		/*
 		System.out.println("LTS is: ");
 		System.out.println(aggrLts.toString());
+		*/
 		
+		startTime = System.nanoTime();
 		IStateSpace result = createStateSpace(states, aggrLts);
 		monitor.done();
+		endTime = System.nanoTime();
+		double aggrLtsToSSTimeMillis = (endTime-startTime)/1000000;
+		
+		String msg = "Time to explore state space: %1$.3f ms\n"
+				+ "Time to derive the LTS: %2$.3f ms\n"
+				+ "Time to aggregate the LTS: %3$.3f ms\n"
+				+ "Time to derive the final state space: %4$.3f ms\n";
+		System.out.println(
+				String.format(msg, commonDeriveTimeMillis, obtainLtsTimeMillis,
+						aggregationLtsTimeMillis, aggrLtsToSSTimeMillis)
+		);
 		
 		return result;
 	}
@@ -171,10 +195,12 @@ public class AggregationStateSpaceBuilder implements IStateSpaceBuilder {
 		int maxSize = 0;
 		boolean hasVariableSize = false;
 		
-		
+		int colIndex=0;
 		for (Aggregated<Integer> s: newStatesToRepr) {
+			newRow.add(colIndex);
 			for (Aggregated<Integer> target: aggrLts.getImage(s)) {
 				for(short actionId: aggrLts.getActions(s, target)) {
+					colIndex += 2;
 					double rate = aggrLts.getApparentRate(s, target, actionId);
 					newCol.add(reprToNewStates.get(target.getRepresentative()));
 					newCol.add(newActions.size());
@@ -183,7 +209,7 @@ public class AggregationStateSpaceBuilder implements IStateSpaceBuilder {
 				}
 			}
 		}
-		
+		assert newRow.size() == aggrLts.numberOfStates();
 
 		ArrayList<State> newStates = new ArrayList<>(aggrLts.numberOfStates());
 		
@@ -191,7 +217,9 @@ public class AggregationStateSpaceBuilder implements IStateSpaceBuilder {
 		// it may be enough, but we have to check that.
 		
 		for (Aggregated<Integer> state: newStatesToRepr) {
-			State s = states.get(state.getRepresentative());
+			int repr = state.getRepresentative();
+			State s = states.get(repr);
+			s.stateNumber = reprToNewStates.get(repr);
 			newStates.add(s);
 			if (s.fState.length > maxSize) {
 				int oldMaxSize = maxSize;
@@ -201,6 +229,13 @@ public class AggregationStateSpaceBuilder implements IStateSpaceBuilder {
 				}
 			}
 		}
+		
+		/*
+		System.err.println("Row:" + newRow);
+		System.err.println("Col:" + newCol);
+		System.err.println("Rates:" + newRates);
+		System.err.println("Actions" + newActions);
+		*/
 		
 		// Derive the CTMC here
 		IStateSpace result = new MemoryStateSpace(
@@ -349,7 +384,7 @@ public class AggregationStateSpaceBuilder implements IStateSpaceBuilder {
 					// and for each label, we add these to the Lts.
 					for (int k=colRangeStart; k < colRangeEnd; k++) {
 						double rate = rates.get(k);
-						short actionId = (short)actionIds.get(k);
+						short actionId = actionIds.get(k);
 						ltsBuilder.addTransition(s.stateNumber, targetId, rate, actionId);
 					}
 				}

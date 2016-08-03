@@ -4,17 +4,13 @@
 package uk.ac.ed.inf.pepa.ctmc.derivation.aggregation.internal;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 import uk.ac.ed.inf.pepa.ctmc.derivation.aggregation.Aggregated;
 import uk.ac.ed.inf.pepa.ctmc.derivation.aggregation.AggregationAlgorithm;
@@ -26,7 +22,6 @@ import uk.ac.ed.inf.pepa.ctmc.derivation.aggregation.StateIsMarkedException;
 import uk.ac.ed.inf.pepa.ctmc.derivation.aggregation.StateNotFoundException;
 import uk.ac.ed.inf.pepa.ctmc.derivation.common.CommonDefaulters;
 import uk.ac.ed.inf.pepa.ctmc.derivation.common.DefaultHashMap;
-import uk.ac.ed.inf.pepa.ctmc.derivation.common.ISymbolGenerator;
 
 
 /**
@@ -52,7 +47,6 @@ public class ContextualLumpability<S extends Comparable<S>> implements Aggregati
 		
 		while (!splitters.isEmpty()) {
 			PartitionBlock<S> splitter = splitters.pollFirst();
-			System.err.println("Using: " + splitter.toString() + " as splitter.");
 			splitter.usingAsSplitter();
 			
 			
@@ -61,11 +55,8 @@ public class ContextualLumpability<S extends Comparable<S>> implements Aggregati
 			//HashMap<S, HashMap<Short, HashSet<S>>> preIm = new HashMap<>();
 			HashSet<Short> allActions = computeAllPreimages(ltsView, splitter, preIm);
 			
-			System.err.println("preimages computed:\n" + preIm.toString());
 			for (short act: allActions) {
-				System.err.println("Partitioning for action: " + act);
 				ArrayList<S> seenStates = computeWeights(ltsView, weights, splitter, preIm, act);
-				System.err.println("Weights are: " + weights.toString());
 				markVisitedStates(partition, touchedBlocks, seenStates);
 				
 				while (!touchedBlocks.isEmpty()) {
@@ -206,9 +197,7 @@ public class ContextualLumpability<S extends Comparable<S>> implements Aggregati
 			DefaultHashMap<S, Double> weights,
 			PartitionBlock<S> block) {
 		
-		System.err.println("splitting block: " + block.toString());
 		PartitionBlock<S> markedBlock = block.splitMarkedStates();
-		System.err.println("marked states: " + markedBlock.toString());
 		if (block.isEmpty()) {
 			markedBlock = markedBlock.shareIdentity(block);
 		}
@@ -219,7 +208,6 @@ public class ContextualLumpability<S extends Comparable<S>> implements Aggregati
 		for (S s: markedBlock) {
 			allWeights.add(weights.get(s));
 		}
-		Double pmc = PartitioningUtils.pmc(allWeights);
 		
 		for (S s: markedBlock) {
 			try {
@@ -231,13 +219,20 @@ public class ContextualLumpability<S extends Comparable<S>> implements Aggregati
 			}
 		}
 		
+		Double pmc = PartitioningUtils.pmc(allWeights);
 		PartitionBlock<S> nonPmcBlock = markedBlock.splitBlockOnValue(pmc);
-		System.err.println("nonPmcBlock: " + nonPmcBlock.toString());
-		System.err.println("Pmc block:" + markedBlock.toString());
 		Collection<PartitionBlock<S>> subBlocks = nonPmcBlock.isEmpty()
 				? new ArrayList<PartitionBlock<S>>()
 				: nonPmcBlock.splitBlock();
-		System.err.println("subBlocks: " + subBlocks.toString());
+		/*
+		 * This line can replace the previous three statements and remove the pmc
+		 * optimization:
+		 *
+		 * Collection<PartitionBlock<S>> subBlocks = markedBlock.splitBlock();
+		 * 
+		 * The algorithm is still correct but should take more time,
+		 * as in O(nlog^2 n) vs O(nlog n).
+		 */
 		ArrayList<PartitionBlock<S>> interestingBlocks = new ArrayList<PartitionBlock<S>>(2 + subBlocks.size());
 		
 		interestingBlocks.addAll(subBlocks);
@@ -250,7 +245,6 @@ public class ContextualLumpability<S extends Comparable<S>> implements Aggregati
 		}
 		
 		if (block.wasUsedAsSplitter()) {
-			System.err.println("Block was used as a splitter");
 			// In this case it is safe to avoid using one
 			// of the subblocks as a splitter.
 			// we then remove the biggest one.
@@ -269,10 +263,9 @@ public class ContextualLumpability<S extends Comparable<S>> implements Aggregati
 						
 					}
 			);
-			System.err.println("fatBlock is: " + fatBlock.toString());
 			interestingBlocks.remove(fatBlock);
 		} else if (markedBlock == block) {
-			System.err.println("Removing block");
+			// Avoid inserting the same block multiple times in the splitting queue.
 			interestingBlocks.remove(block);
 		}
 		
@@ -294,7 +287,7 @@ public class ContextualLumpability<S extends Comparable<S>> implements Aggregati
 			LinkedList<PartitionBlock<S>> touchedBlocks,
 			final ArrayList<S> seenStates) {
 		for (S state: seenStates) {
-			// FIXME: only if it has a weight != 0.
+			// FIXME: only if it has a weight != 0...
 			PartitionBlock<S> block = partition.getBlockOf(state);
 			if (!block.hasMarkedStates()) {
 				touchedBlocks.add(block);

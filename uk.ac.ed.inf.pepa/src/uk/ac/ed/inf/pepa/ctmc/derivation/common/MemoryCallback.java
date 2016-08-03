@@ -57,6 +57,12 @@ public class MemoryCallback implements ICallbackListener {
 		value.trimToSize();
 		action.trimToSize();
 		isDone = true;
+		/*
+		System.err.println("Row: " + row);
+		System.err.println("Col: " + column);
+		System.err.println("Rates: " + value);
+		System.err.println("Actions: " + action);
+		*/
 		return new MemoryStateSpace(generator, states, row, column, action,
 				value, hasVariableLength, maximumLength);
 	}

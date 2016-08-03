@@ -191,4 +191,16 @@ public class ShortArray {
 	public int size() {
 		return size;
 	}
+	
+	
+	public String toString() {
+		StringBuilder builder = new StringBuilder();
+		builder.append("ShortArray([");
+		for (short el: elementData) {
+			builder.append("" + el + ", ");
+		}
+		builder.append("]");
+		
+		return builder.toString();
+	}
 }

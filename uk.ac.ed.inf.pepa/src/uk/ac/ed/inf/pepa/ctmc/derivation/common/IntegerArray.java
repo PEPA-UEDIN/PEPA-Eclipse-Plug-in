@@ -84,4 +84,15 @@ public class IntegerArray {
 	public void set(int index, int element) {
 		elementData[index] = element;
 	}
+	
+	public String toString() {
+		StringBuilder builder = new StringBuilder();
+		builder.append("IntegerArray([");
+		for (int el: elementData) {
+			builder.append("" + el + ", ");
+		}
+		builder.append("]");
+		
+		return builder.toString();
+	}
 }

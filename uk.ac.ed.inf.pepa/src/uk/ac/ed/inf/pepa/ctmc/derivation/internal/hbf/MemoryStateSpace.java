@@ -55,36 +55,39 @@ public class MemoryStateSpace extends AbstractStateSpace {
 	
 	protected FlexCompRowMatrix createGeneratorMatrix() {
 		FlexCompRowMatrix genMatrix = null;
-		try {
-		 genMatrix = new FlexCompRowMatrix(row.size(), row
-				.size());
 		int rowSize = row.size();
-		for (int i = 0; i < rowSize; i++) {
-			int rangeStart = getColumnRangeStart(i);// row.get(i);
-			int rangeEnd = getColumnRangeEnd(i);// (i < rowSize - 1) ? row.get(i
-			// + 1) : column.size();
-			// System.err.println("Range start " + rangeStart);
-			// System.err.println("Range end " + rangeEnd);
-			for (int j = rangeStart; j < rangeEnd; j = j + 2) {
-				// each j represents the index of column
-				// System.err.println("J: " + j);
-				int colVal = column.get(j);
-				// System.err.println("Colval " + colVal);
-				int colRangeStart = column.get(j + 1);
-				// System.err.println("Colrangestart " + colRangeStart);
-				int colRangeEnd = (j < column.size() - 3) ? column.get(j + 3)
-						: value.size();
-				double sum = 0;
-				for (int k = colRangeStart; k < colRangeEnd; k++) {
-					sum += value.get(k);
-				}
-				if (sum != 0) {
-					genMatrix.set(i, colVal, sum);
-					// System.out.println("Prepared " + i + "," + colVal + "->"
-					// + sum);
+		//System.err.println("Row size of the matrix: " + rowSize);
+		//System.err.println("col size of the matrix: " + column.size());
+		try {
+			genMatrix = new FlexCompRowMatrix(rowSize, rowSize);
+			for (int i = 0; i < rowSize; i++) {
+				//System.err.println("i: " + i);
+				int rangeStart = getColumnRangeStart(i);// row.get(i);
+				int rangeEnd = getColumnRangeEnd(i);// (i < rowSize - 1) ? row.get(i
+				// + 1) : column.size();
+				//System.err.println("Range start " + rangeStart);
+				//System.err.println("Range end " + rangeEnd);
+				for (int j = rangeStart; j < rangeEnd; j = j + 2) {
+					// each j represents the index of column
+					//System.err.println("J: " + j);
+					int colVal = column.get(j);
+					//System.err.println("Colval " + colVal);
+					int colRangeStart = column.get(j + 1);
+					//System.err.println("Colrangestart " + colRangeStart);
+					int colRangeEnd = (j < column.size() - 3) ? column.get(j + 3)
+							: value.size();
+					//System.err.println("Colrangeend " + colRangeEnd);
+					double sum = 0;
+					for (int k = colRangeStart; k < colRangeEnd; k++) {
+						sum += value.get(k);
+					}
+					if (sum != 0) {
+						genMatrix.set(i, colVal, sum);
+						// System.out.println("Prepared " + i + "," + colVal + "->"
+						// + sum);
+					}
 				}
 			}
-		}
 		} catch (Throwable t ) {
 			t.printStackTrace();
 			
@@ -138,8 +141,7 @@ public class MemoryStateSpace extends AbstractStateSpace {
 	}
 
 	private int getColumnRangeEnd(int row) {
-		return (row < this.row.size() - 1) ? this.row.get(row + 1) : column
-				.size();
+		return (row < this.row.size() - 1) ? this.row.get(row + 1) : column.size();
 	}
 
 	private int getValueRangeEnd(int j) {
