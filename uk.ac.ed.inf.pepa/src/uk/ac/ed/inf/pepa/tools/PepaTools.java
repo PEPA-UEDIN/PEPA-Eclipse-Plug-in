@@ -124,8 +124,7 @@ public class PepaTools {
 			throw new NullPointerException("Model is null.");
 		if (map == null)
 			map = new OptionMap();
-		return StateSpaceBuilderFactory.createStateSpaceBuilder(model, map,
-				manager);
+		return StateSpaceBuilderFactory.createStateSpaceBuilder(model, map, manager);
 	}
 
 	/**
