@@ -43,7 +43,7 @@ public class ContextualLumpability<S extends Comparable<S>> implements Aggregati
 				new CommonDefaulters.Basic<Double>(0.0d)
 		);
 		
-		LTS<S> ltsView = initial.variantView();
+		LTS<S> ltsView = getLTSView(initial);
 		
 		while (!splitters.isEmpty()) {
 			PartitionBlock<S> splitter = splitters.pollFirst();
@@ -59,6 +59,10 @@ public class ContextualLumpability<S extends Comparable<S>> implements Aggregati
 				ArrayList<S> seenStates = computeWeights(ltsView, weights, splitter, preIm, act);
 				markVisitedStates(partition, touchedBlocks, seenStates);
 				
+				for (PartitionBlock<S> b: touchedBlocks) {
+					assert !b.isEmpty();
+				}
+				
 				while (!touchedBlocks.isEmpty()) {
 					PartitionBlock<S> block = touchedBlocks.pollFirst();
 					performSplitting(partition, splitters, weights, block);
@@ -69,6 +73,15 @@ public class ContextualLumpability<S extends Comparable<S>> implements Aggregati
 		}
 		
 		return partition;
+	}
+
+
+	/**
+	 * @param initial
+	 * @return
+	 */
+	protected LTS<S> getLTSView(LTS<S> initial) {
+		return initial.variantView();
 	}
 	
 
@@ -197,6 +210,7 @@ public class ContextualLumpability<S extends Comparable<S>> implements Aggregati
 			DefaultHashMap<S, Double> weights,
 			PartitionBlock<S> block) {
 		
+		if (block.isEmpty()) System.err.println("Empty block damnit!");
 		PartitionBlock<S> markedBlock = block.splitMarkedStates();
 		if (block.isEmpty()) {
 			markedBlock = markedBlock.shareIdentity(block);

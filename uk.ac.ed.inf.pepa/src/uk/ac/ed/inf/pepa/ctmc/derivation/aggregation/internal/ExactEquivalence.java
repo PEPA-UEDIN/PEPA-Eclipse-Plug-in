@@ -6,7 +6,6 @@ package uk.ac.ed.inf.pepa.ctmc.derivation.aggregation.internal;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -92,4 +91,9 @@ public class ExactEquivalence<S extends Comparable<S>> extends ContextualLumpabi
 		}
 		return partition;
 	}
-}
+	
+	@Override
+	protected LTS<S> getLTSView(LTS<S> initial) {
+		return initial;
+	}
+ }
