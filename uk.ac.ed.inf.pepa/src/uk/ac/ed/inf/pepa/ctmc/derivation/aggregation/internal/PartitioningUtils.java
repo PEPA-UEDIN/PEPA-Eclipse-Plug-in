@@ -41,6 +41,9 @@ public final class PartitioningUtils {
 				count = 1;
 			}
 		}
+		if (current==null) {
+			System.err.println("pmc called on empty list: null result!");
+		}
 		
 		return current;
 	}

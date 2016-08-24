@@ -115,18 +115,19 @@ public class AggregationStateSpaceBuilder implements IStateSpaceBuilder {
 			endTime = System.nanoTime();
 			obtainLtsTimeMillis = (endTime-startTime)/1000000;
 		}
-		
+		/*
 		System.out.println("Derived an initial LTS with: " + (lts.numberOfStates()) + " states and "
-						   + lts.numberOfTransitions() + " transitions.");
-		
+						   + lts.numberOfTransitions() + " transitions.");*/
+		System.out.println(String.format("#states %1$d transitions %2$d", lts.numberOfStates(), lts.numberOfTransitions()));
 		startTime = System.nanoTime();
 		// Aggregate the LTS here
 		LTS<Aggregated<Integer>> aggrLts = algorithm.aggregate(lts);
 		endTime = System.nanoTime();
 		double aggregationLtsTimeMillis = (endTime-startTime)/1000000;
-		
+		System.out.println(String.format("#states %1$d transitions %2$d", aggrLts.numberOfStates(), aggrLts.numberOfTransitions()));
+		/*
 		System.out.println("Obtained an aggregated LTS with: " + aggrLts.numberOfStates() + " states and "
-						   + aggrLts.numberOfTransitions() + " transitions");
+						   + aggrLts.numberOfTransitions() + " transitions");*/
 		
 		/*
 		System.out.println("States are: ");
@@ -153,6 +154,12 @@ public class AggregationStateSpaceBuilder implements IStateSpaceBuilder {
 		endTime = System.nanoTime();
 		double aggrLtsToSSTimeMillis = (endTime-startTime)/1000000;
 		
+		String msg = "#time explore %1$.3f derive %2$.3f aggregate %3$.3f derive %4$.3f (ms)";
+		
+		System.out.println(
+				String.format(msg, commonDeriveTimeMillis, obtainLtsTimeMillis,
+						aggregationLtsTimeMillis,aggrLtsToSSTimeMillis));
+		/*
 		String msg = "Time to explore state space: %1$.3f ms\n"
 				+ "Time to derive the LTS: %2$.3f ms\n"
 				+ "Time to aggregate the LTS: %3$.3f ms\n"
@@ -160,7 +167,7 @@ public class AggregationStateSpaceBuilder implements IStateSpaceBuilder {
 		System.out.println(
 				String.format(msg, commonDeriveTimeMillis, obtainLtsTimeMillis,
 						aggregationLtsTimeMillis, aggrLtsToSSTimeMillis)
-		);
+		);*/
 		
 		return result;
 	}

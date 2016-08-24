@@ -31,10 +31,17 @@ public class LinkedPartitionBlock<S> implements PartitionBlock<S> {
 	
 	public LinkedPartitionBlock() {
 		nonMarkedStates = new LinkedList<>();
+		markedStates = new LinkedList<>();
+		mapToValues = new HashMap<>();
 	}
 	
-	public LinkedPartitionBlock(LinkedList<S> states) {
+	public LinkedPartitionBlock(LinkedList<S> states, HashMap<S, Double> values) {
+		markedStates = new LinkedList<S>();
 		nonMarkedStates = states;
+		mapToValues = new HashMap<>();
+		for (S s: states) {
+			mapToValues.put(s, values.get(s));
+		}
 	}
 	
 	@Override
@@ -122,15 +129,19 @@ public class LinkedPartitionBlock<S> implements PartitionBlock<S> {
 
 	@Override
 	public PartitionBlock<S> splitMarkedStates() {
-		PartitionBlock<S> marked = new LinkedPartitionBlock<>(markedStates);
+		PartitionBlock<S> marked = new LinkedPartitionBlock<>(markedStates, mapToValues);
 		this.markedStates = new LinkedList<>();
+		this.mapToValues.clear();
 		return marked;
 	}
 
 	@Override
-	public Collection<PartitionBlock<S>> splitBlock() {
+	public Collection<PartitionBlock<S>> splitBlock() {		
 		ArrayList<Double> values = new ArrayList<>(mapToValues.values());
+		
 		double pmc = PartitioningUtils.pmc(values);
+		
+		
 		HashMap<S, Double> mappingNotPmc = new HashMap<>(mapToValues);
 		HashMap<S, Double> mappingOfPmc = PartitioningUtils.splitMapOnValue(mappingNotPmc, pmc);
 		
@@ -191,8 +202,8 @@ public class LinkedPartitionBlock<S> implements PartitionBlock<S> {
 	}
 
 	@Override
-	public void setValue(S state, double value) throws StateNotFoundException, StateIsMarkedException {
-		
+	public void setValue(S state, double value)
+			throws StateNotFoundException, StateIsMarkedException {
 		if (nonMarkedStates.contains(state)) {
 			mapToValues.put(state, value);
 		} else if (markedStates.contains(state)) {
@@ -203,7 +214,8 @@ public class LinkedPartitionBlock<S> implements PartitionBlock<S> {
 	}
 
 	@Override
-	public double getValue(S state) throws StateNotFoundException, StateIsMarkedException {
+	public double getValue(S state)
+			throws StateNotFoundException, StateIsMarkedException {
 		Double val = mapToValues.get(state);
 		if (val == null) {
 			if (mapToValues.containsKey(state)) {
@@ -251,18 +263,20 @@ public class LinkedPartitionBlock<S> implements PartitionBlock<S> {
 
 	@Override
 	public PartitionBlock<S> shareIdentity(PartitionBlock<S> block) {
-		assert block.isEmpty();
-		assert markedStates.isEmpty();
+		assert block.isEmpty() && !isEmpty();
+		//assert markedStates.isEmpty();
 		
 		if (block instanceof LinkedPartitionBlock) {
 			LinkedPartitionBlock<S> myBlock = (LinkedPartitionBlock<S>)block;
 			myBlock.nonMarkedStates = nonMarkedStates;
+			myBlock.markedStates = markedStates;
 		} else {
 			for (S s: nonMarkedStates) {
 				block.addState(s);
 			} 
 		}
 		
+		assert !block.isEmpty();
 		return block;
 	}
 

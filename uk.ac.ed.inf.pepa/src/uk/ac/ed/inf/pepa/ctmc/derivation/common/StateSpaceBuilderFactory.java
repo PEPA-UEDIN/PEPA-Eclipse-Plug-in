@@ -67,11 +67,14 @@ public class StateSpaceBuilderFactory {
 		
 		// delegates storage to implementors
 		if (hasAggregation && aggregationAlgorithm != OptionMap.AGGREGATION_NONE) {
+			System.out.println("#aggregation");
 			System.out.println("Creating aggregating sequential tool");
 			AggregationAlgorithm<Integer> alg;
 			if (aggregationAlgorithm == OptionMap.AGGREGATION_CONTEXTUAL_LUMPABILITY) {
+				System.out.println("#contextual-lumpability");
 				alg = new ContextualLumpability<>();
 			} else if (aggregationAlgorithm == OptionMap.AGGREGATION_EXACT_EQUIVALENCE){
+				System.out.println("#exact-equivalence");
 				alg = new ExactEquivalence<>();
 			} else {
 				System.err.println("Invalid aggregation algorithm");
@@ -80,6 +83,7 @@ public class StateSpaceBuilderFactory {
 			
 			return new AggregationStateSpaceBuilder(explorers[0], sg, alg);
 		} else if (kind == OptionMap.DERIVATION_SEQUENTIAL) {
+			System.out.println("#sequential");
 			System.out.println("Creating sequential tool");
 			return new
 			 SequentialBuilder(explorers[0], sg, storage, manager);

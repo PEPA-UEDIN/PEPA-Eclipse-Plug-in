@@ -210,7 +210,6 @@ public class ContextualLumpability<S extends Comparable<S>> implements Aggregati
 			DefaultHashMap<S, Double> weights,
 			PartitionBlock<S> block) {
 		
-		if (block.isEmpty()) System.err.println("Empty block damnit!");
 		PartitionBlock<S> markedBlock = block.splitMarkedStates();
 		if (block.isEmpty()) {
 			markedBlock = markedBlock.shareIdentity(block);
