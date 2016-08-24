@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import uk.ac.ed.inf.pepa.ctmc.derivation.aggregation.Aggregated;
+import uk.ac.ed.inf.pepa.ctmc.derivation.aggregation.AggregationAlgorithm;
 import uk.ac.ed.inf.pepa.ctmc.derivation.aggregation.LTS;
 import uk.ac.ed.inf.pepa.ctmc.derivation.aggregation.Partition;
 import uk.ac.ed.inf.pepa.ctmc.derivation.aggregation.PartitionBlock;
@@ -20,7 +21,12 @@ import uk.ac.ed.inf.pepa.ctmc.derivation.aggregation.PartitionBlock;
  * @author Giacomo Alzetta
  *
  */
-public class ExactEquivalence<S extends Comparable<S>> extends ContextualLumpability<S> {
+public class ExactEquivalence<S extends Comparable<S>>
+	extends ContextualLumpability<S> {
+	
+	public ExactEquivalence(AggregationAlgorithm.Options options) {
+		super(options);
+	}
 
 	@Override
 	public LTS<Aggregated<S>> aggregate(LTS<S> initial) {
@@ -74,14 +80,22 @@ public class ExactEquivalence<S extends Comparable<S>> extends ContextualLumpabi
 			Double val = entry.getValue();
 			if (curVal == null) {
 				curVal = val;
-				curBlock = new ArrayPartitionBlock<>();
+				if (options.useArrayBlocks) {
+					curBlock = new ArrayPartitionBlock<>();
+				} else {
+					curBlock = new LinkedPartitionBlock<>();
+				}
 				curBlock.addState(state);
 			} else if (curVal.equals(val)){
 				curBlock.addState(state);
 			} else {
 				partition.addBlock(curBlock);
 				curVal = val;
-				curBlock = new ArrayPartitionBlock<>();
+				if (options.useArrayBlocks) {
+					curBlock = new ArrayPartitionBlock<>();
+				} else {
+					curBlock = new LinkedPartitionBlock<>();
+				}
 				curBlock.addState(state);
 			}
 		}

@@ -70,12 +70,13 @@ public class StateSpaceBuilderFactory {
 			System.out.println("#aggregation");
 			System.out.println("Creating aggregating sequential tool");
 			AggregationAlgorithm<Integer> alg;
+			AggregationAlgorithm.Options algOptions = new AggregationAlgorithm.Options();
 			if (aggregationAlgorithm == OptionMap.AGGREGATION_CONTEXTUAL_LUMPABILITY) {
 				System.out.println("#contextual-lumpability");
-				alg = new ContextualLumpability<>();
+				alg = new ContextualLumpability<>(algOptions);
 			} else if (aggregationAlgorithm == OptionMap.AGGREGATION_EXACT_EQUIVALENCE){
 				System.out.println("#exact-equivalence");
-				alg = new ExactEquivalence<>();
+				alg = new ExactEquivalence<>(algOptions);
 			} else {
 				System.err.println("Invalid aggregation algorithm");
 				throw new IllegalArgumentException();

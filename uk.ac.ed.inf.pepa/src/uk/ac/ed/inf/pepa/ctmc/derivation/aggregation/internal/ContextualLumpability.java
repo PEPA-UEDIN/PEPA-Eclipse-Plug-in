@@ -28,7 +28,14 @@ import uk.ac.ed.inf.pepa.ctmc.derivation.common.DefaultHashMap;
  * @author Giacomo Alzetta
  *
  */
-public class ContextualLumpability<S extends Comparable<S>> implements AggregationAlgorithm<S> {
+public class ContextualLumpability<S extends Comparable<S>>
+	implements AggregationAlgorithm<S> {
+	
+	protected AggregationAlgorithm.Options options;
+	
+	public ContextualLumpability(AggregationAlgorithm.Options options) {
+		this.options = options;
+	}
 
 	/**
 	 * @param initial
@@ -401,7 +408,13 @@ public class ContextualLumpability<S extends Comparable<S>> implements Aggregati
 	 * @return A singleton partition containing all states.
 	 */
 	public Partition<S, PartitionBlock<S>> initialPartition(LTS<S> initial) {
-		PartitionBlock<S> p = new ArrayPartitionBlock<>();
+		PartitionBlock<S> p;
+		if (options.useArrayBlocks) {
+			p = new ArrayPartitionBlock<>();
+		} else {
+			p = new LinkedPartitionBlock<>();
+		}
+		
 		Partition<S, PartitionBlock<S>> partition = new Partition<>();
 		
 		for (S state: initial) {
