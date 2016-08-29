@@ -64,26 +64,22 @@ public class AggregationWizard extends Wizard {
 	 *
 	 */
     private class SettingsPage extends WizardPage {
-    	
-    	// private static final String SECTION_NAME = "aggregation.settings";
-    	
+    	    	
     	private Button aggregationEnabled;
-    	
-    	// private static final String AGGREGATION_ENABLED_BUTTON = "aggregation.settings.enabled";
     	
     	private Button aggregateArrays;
     	
-    	// private static final String AGGREGATE_ARRAYS = "aggregation.settings.aggregate_arrays";
-    	
     	private Combo aggregationAlgorithm;
     	
-    	// private static final String AGGREGATION_ALGORITHM = "aggregation.settings.algorithm";
+    	private Button useLinkedPartition;
+    	
     	
     	private static final String AGGREGATION_NONE = "No aggregation";
     	private static final String AGGREGATION_CONTEXTUAL_LUMPABILITY = "Contextual Lumpability";
     	private static final String AGGREGATION_EXACT_EQUIVALENCE = "Exact Equivalence";
     	
     	private int aggregationChosen = OptionMap.AGGREGATION_NONE;
+    	private int partitionType = OptionMap.USE_ARRAY_PARTITION;
 
     	protected SettingsPage(String pageName) {
 			super(pageName);
@@ -137,12 +133,25 @@ public class AggregationWizard extends Wizard {
 					String text = aggregationAlgorithm.getText();
 					if (text == null || text.equals(AGGREGATION_NONE)) {
 						aggregationChosen = OptionMap.AGGREGATION_NONE;
+						useLinkedPartition.setVisible(false);
 					} else if (text.equals(AGGREGATION_CONTEXTUAL_LUMPABILITY)) {
 						aggregationChosen = OptionMap.AGGREGATION_CONTEXTUAL_LUMPABILITY;
+						useLinkedPartition.setVisible(true);
 					} else if (text.equals(AGGREGATION_EXACT_EQUIVALENCE)) {
 						aggregationChosen = OptionMap.AGGREGATION_EXACT_EQUIVALENCE;
+						useLinkedPartition.setVisible(true);
 					}
 				}
+			});
+			
+			useLinkedPartition = new Button(composite, SWT.CHECK);
+			useLinkedPartition.setText("Use linked-list based partition refinement data structure.");
+			useLinkedPartition.setLayoutData(createDefaultGridData());
+			useLinkedPartition.addListener(SWT.Selection,
+					new Listener() {
+						public void handleEvent(Event event) {
+							validate();
+						}
 			});
 			
 			initContents();
@@ -162,6 +171,15 @@ public class AggregationWizard extends Wizard {
 			int algIndex = (int)options.get(OptionMap.AGGREGATION);
 			aggregationAlgorithm.select(algIndex);
 			aggregationAlgorithm.setEnabled(enabled);
+			
+			if (algIndex != OptionMap.AGGREGATION_NONE) {
+				useLinkedPartition.setVisible(true);
+			} else {
+				useLinkedPartition.setVisible(false);
+			}
+			useLinkedPartition.setSelection(
+					((Integer)options.get(OptionMap.PARTITION_TYPE)).equals(
+							(Integer)OptionMap.USE_LINKED_PARTITION));
 		}
 		
 		private boolean isAggregationEnabled() {
@@ -177,6 +195,10 @@ public class AggregationWizard extends Wizard {
 			options.put(OptionMap.AGGREGATION_ENABLED, isAggregationEnabled());
 			options.put(OptionMap.AGGREGATION, aggregationChosen);
 			options.put(OptionMap.AGGREGATE_ARRAYS, areAggregateArraysEnabled());
+			int parType = useLinkedPartition.getSelection()
+					? OptionMap.USE_LINKED_PARTITION
+					: OptionMap.USE_ARRAY_PARTITION;
+			options.put(OptionMap.PARTITION_TYPE, parType);
 		}
 		
 		private GridData createDefaultGridData() {
