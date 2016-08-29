@@ -129,6 +129,12 @@ public class OptionMap {
 	
 	public static final int AGGREGATION_EXACT_EQUIVALENCE = 2;
 	
+	public static final String PARTITION_TYPE = "ctmc.derivation.aggregation_partition";
+	
+	public static final int USE_ARRAY_PARTITION = 1;
+	
+	public static final int USE_LINKED_PARTITION = 2;
+	
 	/* Solvers */
 	/**
 	 * Key for specifying a solver
@@ -457,6 +463,7 @@ public class OptionMap {
 		DEFAULT.put(AGGREGATION_ENABLED, false);
 		DEFAULT.put(AGGREGATE_ARRAYS, true);
 		DEFAULT.put(AGGREGATION, AGGREGATION_NONE);
+		DEFAULT.put(PARTITION_TYPE, USE_ARRAY_PARTITION);
 		DEFAULT.put(DERIVATION_STORAGE, DERIVATION_MEMORY_STORAGE);
 		DEFAULT.put(DERIVATION_PARALLEL_NUM_WORKERS, 2);
 		DEFAULT.put(DERIVATION_KIND, DERIVATION_SEQUENTIAL);

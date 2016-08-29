@@ -71,6 +71,11 @@ public class StateSpaceBuilderFactory {
 			System.out.println("Creating aggregating sequential tool");
 			AggregationAlgorithm<Integer> alg;
 			AggregationAlgorithm.Options algOptions = new AggregationAlgorithm.Options();
+			int partitionType = (Integer) map.get(OptionMap.PARTITION_TYPE);
+			if (partitionType == OptionMap.USE_LINKED_PARTITION) {
+				algOptions.useArrayBlocks = false;
+			}
+			
 			if (aggregationAlgorithm == OptionMap.AGGREGATION_CONTEXTUAL_LUMPABILITY) {
 				System.out.println("#contextual-lumpability");
 				alg = new ContextualLumpability<>(algOptions);
