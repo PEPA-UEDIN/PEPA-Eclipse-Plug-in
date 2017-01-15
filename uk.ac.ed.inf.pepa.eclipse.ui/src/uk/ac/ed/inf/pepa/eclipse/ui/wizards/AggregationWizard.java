@@ -77,6 +77,7 @@ public class AggregationWizard extends Wizard {
     	private static final String AGGREGATION_NONE = "No aggregation";
     	private static final String AGGREGATION_CONTEXTUAL_LUMPABILITY = "Contextual Lumpability";
     	private static final String AGGREGATION_EXACT_EQUIVALENCE = "Exact Equivalence";
+    	private static final String AGGREGATION_STRONG_EQUIVALENCE = "Strong Equivalence";
     	
     	private int aggregationChosen = OptionMap.AGGREGATION_NONE;
     	private int partitionType = OptionMap.USE_ARRAY_PARTITION;
@@ -125,7 +126,8 @@ public class AggregationWizard extends Wizard {
 			String[] items = {
 					AGGREGATION_NONE,
 					AGGREGATION_CONTEXTUAL_LUMPABILITY,
-					AGGREGATION_EXACT_EQUIVALENCE
+					AGGREGATION_EXACT_EQUIVALENCE,
+					AGGREGATION_STRONG_EQUIVALENCE,
 			};
 			aggregationAlgorithm.setItems(items);
 			aggregationAlgorithm.addSelectionListener(new SelectionAdapter() {
@@ -134,11 +136,14 @@ public class AggregationWizard extends Wizard {
 					if (text == null || text.equals(AGGREGATION_NONE)) {
 						aggregationChosen = OptionMap.AGGREGATION_NONE;
 						useLinkedPartition.setVisible(false);
-					} else if (text.equals(AGGREGATION_CONTEXTUAL_LUMPABILITY)) {
-						aggregationChosen = OptionMap.AGGREGATION_CONTEXTUAL_LUMPABILITY;
-						useLinkedPartition.setVisible(true);
-					} else if (text.equals(AGGREGATION_EXACT_EQUIVALENCE)) {
-						aggregationChosen = OptionMap.AGGREGATION_EXACT_EQUIVALENCE;
+					} else { 
+						if (text.equals(AGGREGATION_CONTEXTUAL_LUMPABILITY)) {
+							aggregationChosen = OptionMap.AGGREGATION_CONTEXTUAL_LUMPABILITY;
+						} else if (text.equals(AGGREGATION_EXACT_EQUIVALENCE)) {
+							aggregationChosen = OptionMap.AGGREGATION_EXACT_EQUIVALENCE;
+						} else if (text.equals(AGGREGATION_STRONG_EQUIVALENCE)) {
+							aggregationChosen = OptionMap.AGGREGATION_STRONG_EQUIVALENCE;
+						}
 						useLinkedPartition.setVisible(true);
 					}
 				}

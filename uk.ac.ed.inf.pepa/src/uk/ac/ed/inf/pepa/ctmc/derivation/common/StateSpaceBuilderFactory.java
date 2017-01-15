@@ -13,6 +13,7 @@ import uk.ac.ed.inf.pepa.ctmc.derivation.aggregation.AggregationAlgorithm;
 import uk.ac.ed.inf.pepa.ctmc.derivation.aggregation.AggregationStateSpaceBuilder;
 import uk.ac.ed.inf.pepa.ctmc.derivation.aggregation.internal.ContextualLumpability;
 import uk.ac.ed.inf.pepa.ctmc.derivation.aggregation.internal.ExactEquivalence;
+import uk.ac.ed.inf.pepa.ctmc.derivation.aggregation.internal.StrongEquivalence;
 import uk.ac.ed.inf.pepa.ctmc.derivation.internal.StateExplorerBuilder;
 import uk.ac.ed.inf.pepa.ctmc.derivation.internal.hbf.NewParallelBuilder;
 import uk.ac.ed.inf.pepa.ctmc.derivation.internal.hbf.SequentialBuilder;
@@ -82,6 +83,9 @@ public class StateSpaceBuilderFactory {
 			} else if (aggregationAlgorithm == OptionMap.AGGREGATION_EXACT_EQUIVALENCE){
 				System.out.println("#exact-equivalence");
 				alg = new ExactEquivalence<>(algOptions);
+			} else if (aggregationAlgorithm == OptionMap.AGGREGATION_STRONG_EQUIVALENCE){
+				System.out.println("#strong-equivalence");
+				alg = new StrongEquivalence<>(algOptions);
 			} else {
 				System.err.println("Invalid aggregation algorithm");
 				throw new IllegalArgumentException();

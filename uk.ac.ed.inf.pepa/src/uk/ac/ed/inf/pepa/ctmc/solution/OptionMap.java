@@ -129,6 +129,8 @@ public class OptionMap {
 	
 	public static final int AGGREGATION_EXACT_EQUIVALENCE = 2;
 	
+	public static final int AGGREGATION_STRONG_EQUIVALENCE = 3;
+	
 	public static final String PARTITION_TYPE = "ctmc.derivation.aggregation_partition";
 	
 	public static final int USE_ARRAY_PARTITION = 1;
