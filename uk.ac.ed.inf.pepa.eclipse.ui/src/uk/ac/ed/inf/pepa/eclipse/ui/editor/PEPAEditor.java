@@ -19,9 +19,11 @@ import uk.ac.ed.inf.pepa.eclipse.ui.PerspectiveFactory;
 
 public class PEPAEditor extends TextEditor implements IProcessAlgebraEditor {
 
+	public static final String ID = "uk.ac.ed.inf.pepa.eclipse.ui.editor.PEPAEditor";
+	
 	private IPepaModel fModel;
 
-	private uk.ac.ed.inf.pepa.eclipse.ui.editor.ColorManager fColorManager;
+	private ColorManager fColorManager;
 
 	public PEPAEditor() {
 		super();
@@ -39,6 +41,7 @@ public class PEPAEditor extends TextEditor implements IProcessAlgebraEditor {
 	/**
 	 * Cache the edited PEPA model and register listener for enabling actions.
 	 */
+	@Override
 	public void init(IEditorSite site, IEditorInput input)
 			throws PartInitException {
 		super.init(site, input);

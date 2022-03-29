@@ -38,7 +38,15 @@ public abstract class BasicProcessAlgebraModelActionDelegate implements IEditorA
 			model.removeModelChangedListener(this);
 		if (action == null || targetEditor == null)
 			return;
-		model = ((IProcessAlgebraEditor) targetEditor).getProcessAlgebraModel();
+		
+		try {
+			model = ((IProcessAlgebraEditor) targetEditor).getProcessAlgebraModel();
+		} catch (ClassCastException e) {
+			// This may happen if there is an error and Eclipse calls this method
+			// with targetEditor an instance of ErrorEditorPart
+			return;
+		}
+
 		model.addModelChangedListener(this);
 		this.action = action;
 		// FIXME Check against null

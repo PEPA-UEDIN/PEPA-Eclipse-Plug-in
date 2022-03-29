@@ -19,6 +19,7 @@ import uk.ac.ed.inf.pepa.ctmc.ThroughputResult;
 import uk.ac.ed.inf.pepa.ctmc.derivation.common.DoubleArray;
 import uk.ac.ed.inf.pepa.ctmc.derivation.common.ISymbolGenerator;
 import uk.ac.ed.inf.pepa.ctmc.derivation.common.IntegerArray;
+import uk.ac.ed.inf.pepa.ctmc.derivation.common.ShortArray;
 import uk.ac.ed.inf.pepa.ctmc.derivation.common.State;
 import uk.ac.ed.inf.pepa.ctmc.solution.internal.simple.Generator;
 
@@ -34,10 +35,11 @@ public class MemoryStateSpace extends AbstractStateSpace {
 
 	private DoubleArray value;
 
-	private IntegerArray action;
+	private ShortArray action;
 
 	public MemoryStateSpace(ISymbolGenerator symbolGenerator,
-			ArrayList<State> states, IntegerArray row, IntegerArray column, IntegerArray action, DoubleArray value,
+			ArrayList<State> states, IntegerArray row, IntegerArray column,
+			ShortArray action, DoubleArray value,
 			boolean hasVariableLengthStates, int maximumLength) {
 		super(symbolGenerator, states,hasVariableLengthStates, maximumLength);
 		assert row != null;
@@ -53,36 +55,39 @@ public class MemoryStateSpace extends AbstractStateSpace {
 	
 	protected FlexCompRowMatrix createGeneratorMatrix() {
 		FlexCompRowMatrix genMatrix = null;
-		try {
-		 genMatrix = new FlexCompRowMatrix(row.size(), row
-				.size());
 		int rowSize = row.size();
-		for (int i = 0; i < rowSize; i++) {
-			int rangeStart = getColumnRangeStart(i);// row.get(i);
-			int rangeEnd = getColumnRangeEnd(i);// (i < rowSize - 1) ? row.get(i
-			// + 1) : column.size();
-			// System.err.println("Range start " + rangeStart);
-			// System.err.println("Range end " + rangeEnd);
-			for (int j = rangeStart; j < rangeEnd; j = j + 2) {
-				// each j represents the index of column
-				// System.err.println("J: " + j);
-				int colVal = column.get(j);
-				// System.err.println("Colval " + colVal);
-				int colRangeStart = column.get(j + 1);
-				// System.err.println("Colrangestart " + colRangeStart);
-				int colRangeEnd = (j < column.size() - 3) ? column.get(j + 3)
-						: value.size();
-				double sum = 0;
-				for (int k = colRangeStart; k < colRangeEnd; k++) {
-					sum += value.get(k);
-				}
-				if (sum != 0) {
-					genMatrix.set(i, colVal, sum);
-					// System.out.println("Prepared " + i + "," + colVal + "->"
-					// + sum);
+		//System.err.println("Row size of the matrix: " + rowSize);
+		//System.err.println("col size of the matrix: " + column.size());
+		try {
+			genMatrix = new FlexCompRowMatrix(rowSize, rowSize);
+			for (int i = 0; i < rowSize; i++) {
+				//System.err.println("i: " + i);
+				int rangeStart = getColumnRangeStart(i);// row.get(i);
+				int rangeEnd = getColumnRangeEnd(i);// (i < rowSize - 1) ? row.get(i
+				// + 1) : column.size();
+				//System.err.println("Range start " + rangeStart);
+				//System.err.println("Range end " + rangeEnd);
+				for (int j = rangeStart; j < rangeEnd; j = j + 2) {
+					// each j represents the index of column
+					//System.err.println("J: " + j);
+					int colVal = column.get(j);
+					//System.err.println("Colval " + colVal);
+					int colRangeStart = column.get(j + 1);
+					//System.err.println("Colrangestart " + colRangeStart);
+					int colRangeEnd = (j < column.size() - 3) ? column.get(j + 3)
+							: value.size();
+					//System.err.println("Colrangeend " + colRangeEnd);
+					double sum = 0;
+					for (int k = colRangeStart; k < colRangeEnd; k++) {
+						sum += value.get(k);
+					}
+					if (sum != 0) {
+						genMatrix.set(i, colVal, sum);
+						// System.out.println("Prepared " + i + "," + colVal + "->"
+						// + sum);
+					}
 				}
 			}
-		}
 		} catch (Throwable t ) {
 			t.printStackTrace();
 			
@@ -136,8 +141,7 @@ public class MemoryStateSpace extends AbstractStateSpace {
 	}
 
 	private int getColumnRangeEnd(int row) {
-		return (row < this.row.size() - 1) ? this.row.get(row + 1) : column
-				.size();
+		return (row < this.row.size() - 1) ? this.row.get(row + 1) : column.size();
 	}
 
 	private int getValueRangeEnd(int j) {
@@ -168,7 +172,7 @@ public class MemoryStateSpace extends AbstractStateSpace {
 			int valueEnd = (i == size - 1) ? valueSize : column.get(row
 					.get(i + 1) + 1);
 			for (int k = valueStart; k < valueEnd; k++) {
-				short actionId = (short) action.get(k);
+				short actionId = action.get(k);
 				Double d = thMap.get(actionId);
 				if (d == null) {
 					d = 0.0d;
@@ -211,8 +215,7 @@ public class MemoryStateSpace extends AbstractStateSpace {
 				int stop = (i + 3 <= column.size() - 1) ? column.get(i + 3)
 						: action.size();
 				for (int j = start; j < stop; j++) {
-					labels.add(symbolGenerator.getActionLabel((short) action
-							.get(j)));
+					labels.add(symbolGenerator.getActionLabel(action.get(j)));
 				}
 			}
 			if (found)

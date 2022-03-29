@@ -25,7 +25,7 @@ public class MemoryCallback implements ICallbackListener {
 
 	private DoubleArray value;
 
-	private IntegerArray action;
+	private ShortArray action;
 
 	private int t;
 
@@ -40,12 +40,14 @@ public class MemoryCallback implements ICallbackListener {
 	private int maximumLength = 0;
 	
 	private boolean hasVariableLength = false;
+	
+	private boolean isDone = false;
 
 	public MemoryCallback() {
 		row = new IntegerArray(INITIAL_CAPACITY);
 		column = new IntegerArray(INITIAL_CAPACITY);
 		value = new DoubleArray(INITIAL_CAPACITY * 2);
-		action = new IntegerArray(INITIAL_CAPACITY * 2);
+		action = new ShortArray(INITIAL_CAPACITY * 2);
 	}
 
 	public IStateSpace done(ISymbolGenerator generator, ArrayList<State> states)
@@ -54,8 +56,40 @@ public class MemoryCallback implements ICallbackListener {
 		column.trimToSize();
 		value.trimToSize();
 		action.trimToSize();
+		isDone = true;
+		/*
+		System.err.println("Row: " + row);
+		System.err.println("Col: " + column);
+		System.err.println("Rates: " + value);
+		System.err.println("Actions: " + action);
+		*/
 		return new MemoryStateSpace(generator, states, row, column, action,
 				value, hasVariableLength, maximumLength);
+	}
+	
+	// FIXME: this is a bit of a hack to retrieve these values...
+	public IntegerArray getRow() throws RuntimeException {
+		if (!isDone)
+			throw new RuntimeException("Cannot retrieve row before completion!");
+		return row;
+	}
+	
+	public IntegerArray getColumn() throws RuntimeException {
+		if (!isDone)
+			throw new RuntimeException("Cannot retrieve column before completion!");
+		return column;
+	}
+
+	public DoubleArray getRates() throws RuntimeException {
+		if (!isDone)
+			throw new RuntimeException("Cannot retrieve value before completion!");
+		return value;
+	}
+	
+	public ShortArray getActions() throws RuntimeException {
+		if (!isDone)
+			throw new RuntimeException("Cannot retrieve actions before completion!");
+		return action;
 	}
 
 	public void foundDerivatives(State state, Transition[] transitions) {
@@ -71,8 +105,7 @@ public class MemoryCallback implements ICallbackListener {
 			hasVariableLength = true;
 		t_count += transitions.length;
 		Arrays.sort(transitions);
-		for (int i = 0; i < transitions.length; i++) {
-			Transition t = transitions[i];
+		for (Transition t: transitions) {
 
 			/*
 			 * System.err.println("--\nFound:"); for (short s :
@@ -104,6 +137,7 @@ public class MemoryCallback implements ICallbackListener {
 			currentAction = action;
 			sum = 0;
 		}
+		
 		if (currentAction != action) {
 			writeAction();
 			currentAction = action;

@@ -122,10 +122,11 @@ public class PepaTools {
 			IResourceManager manager) {
 		if (model == null)
 			throw new NullPointerException("Model is null.");
-		if (map == null)
+		if (map == null) {
+			System.err.println("Map is null!");
 			map = new OptionMap();
-		return StateSpaceBuilderFactory.createStateSpaceBuilder(model, map,
-				manager);
+		}
+		return StateSpaceBuilderFactory.createStateSpaceBuilder(model, map, manager);
 	}
 
 	/**

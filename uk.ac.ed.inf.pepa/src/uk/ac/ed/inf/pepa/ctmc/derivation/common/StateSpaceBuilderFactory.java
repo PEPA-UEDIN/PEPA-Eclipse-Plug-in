@@ -9,6 +9,11 @@ package uk.ac.ed.inf.pepa.ctmc.derivation.common;
 
 import uk.ac.ed.inf.pepa.IResourceManager;
 import uk.ac.ed.inf.pepa.ctmc.derivation.IStateSpaceBuilder;
+import uk.ac.ed.inf.pepa.ctmc.derivation.aggregation.AggregationAlgorithm;
+import uk.ac.ed.inf.pepa.ctmc.derivation.aggregation.AggregationStateSpaceBuilder;
+import uk.ac.ed.inf.pepa.ctmc.derivation.aggregation.internal.ContextualLumpability;
+import uk.ac.ed.inf.pepa.ctmc.derivation.aggregation.internal.ExactEquivalence;
+import uk.ac.ed.inf.pepa.ctmc.derivation.aggregation.internal.StrongEquivalence;
 import uk.ac.ed.inf.pepa.ctmc.derivation.internal.StateExplorerBuilder;
 import uk.ac.ed.inf.pepa.ctmc.derivation.internal.hbf.NewParallelBuilder;
 import uk.ac.ed.inf.pepa.ctmc.derivation.internal.hbf.SequentialBuilder;
@@ -38,6 +43,8 @@ public class StateSpaceBuilderFactory {
 			OptionMap map, IResourceManager manager) {
 
 		boolean aggregate = (Boolean) map.get(OptionMap.AGGREGATE_ARRAYS);
+		int aggregationAlgorithm = (Integer) map.get(OptionMap.AGGREGATION);
+		boolean hasAggregation = (boolean)map.get(OptionMap.AGGREGATION_ENABLED);
 
 		Model cModel = new Compiler(aggregate, model).getModel();
 
@@ -58,8 +65,35 @@ public class StateSpaceBuilderFactory {
 				sg = seb.getSymbolGenerator();
 			explorers[i] = seb.getExplorer();
 		}
+		
 		// delegates storage to implementors
-		if (kind == OptionMap.DERIVATION_SEQUENTIAL) {
+		if (hasAggregation && aggregationAlgorithm != OptionMap.AGGREGATION_NONE) {
+			System.out.println("#aggregation");
+			System.out.println("Creating aggregating sequential tool");
+			AggregationAlgorithm<Integer> alg;
+			AggregationAlgorithm.Options algOptions = new AggregationAlgorithm.Options();
+			int partitionType = (Integer) map.get(OptionMap.PARTITION_TYPE);
+			if (partitionType == OptionMap.USE_LINKED_PARTITION) {
+				algOptions.useArrayBlocks = false;
+			}
+			
+			if (aggregationAlgorithm == OptionMap.AGGREGATION_CONTEXTUAL_LUMPABILITY) {
+				System.out.println("#contextual-lumpability");
+				alg = new ContextualLumpability<>(algOptions);
+			} else if (aggregationAlgorithm == OptionMap.AGGREGATION_EXACT_EQUIVALENCE){
+				System.out.println("#exact-equivalence");
+				alg = new ExactEquivalence<>(algOptions);
+			} else if (aggregationAlgorithm == OptionMap.AGGREGATION_STRONG_EQUIVALENCE){
+				System.out.println("#strong-equivalence");
+				alg = new StrongEquivalence<>(algOptions);
+			} else {
+				System.err.println("Invalid aggregation algorithm");
+				throw new IllegalArgumentException();
+			}
+			
+			return new AggregationStateSpaceBuilder(explorers[0], sg, alg);
+		} else if (kind == OptionMap.DERIVATION_SEQUENTIAL) {
+			System.out.println("#sequential");
 			System.out.println("Creating sequential tool");
 			return new
 			 SequentialBuilder(explorers[0], sg, storage, manager);

@@ -117,7 +117,25 @@ public class OptionMap {
 	/** Value for {@code DERIVATION_STORAGE} */
 	public static final int DERIVATION_MEMORY_STORAGE = 1;
 
+	public static final String AGGREGATION_ENABLED = "ctmc.derivation.aggregation_enabled";
+	
 	public static final String AGGREGATE_ARRAYS = "ctmc.derivation.aggregate_arrays";
+	
+	public static final String AGGREGATION = "ctmc.derivation.aggregation_algorithm";
+	
+	public static final int AGGREGATION_NONE = 0;
+	
+	public static final int AGGREGATION_CONTEXTUAL_LUMPABILITY = 1;
+	
+	public static final int AGGREGATION_EXACT_EQUIVALENCE = 2;
+	
+	public static final int AGGREGATION_STRONG_EQUIVALENCE = 3;
+	
+	public static final String PARTITION_TYPE = "ctmc.derivation.aggregation_partition";
+	
+	public static final int USE_ARRAY_PARTITION = 1;
+	
+	public static final int USE_LINKED_PARTITION = 2;
 	
 	/* Solvers */
 	/**
@@ -388,11 +406,11 @@ public class OptionMap {
 	 * @param initialOptions
 	 */
 
-	public OptionMap(Map initialOptions) {
+	public OptionMap(Map<String, Object> initialOptions) {
 		this();
 		// put the options only if different from the default ones
 		for (Object objectEntry : initialOptions.entrySet()) {
-			Map.Entry entry = (Map.Entry) objectEntry;
+			Map.Entry<String, Object> entry = (Map.Entry<String, Object>) objectEntry;
 			put(entry.getKey(), entry.getValue());
 		}
 
@@ -402,21 +420,21 @@ public class OptionMap {
 	 * Creates an option map with default values.
 	 */
 	public OptionMap() {
-		this.options = new Hashtable();
+		this.options = new Hashtable<String, Object>();
 	}
 
 	public OptionMap(OptionMap map) {
 		this(map.options);
 	}
 
-	private static final Hashtable DEFAULT;
+	private static final Hashtable<String, Object> DEFAULT;
 
 	
 	
 
 	
 	static {
-		DEFAULT = new Hashtable();
+		DEFAULT = new Hashtable<String, Object>();
 		DEFAULT.put(PRECONDITIONER, NO_PRECONDITIONER);
 		DEFAULT.put(ITER_MON_TYPE, ITER_MON_DEFAULT);
 		DEFAULT.put(ITER_MON_MAX_ITER, 100000);
@@ -443,7 +461,11 @@ public class OptionMap {
 		DEFAULT.put(SOLVER, MTJ_DIRECT);
 		DEFAULT.put(ILUT_TAU, 10e-6);
 		DEFAULT.put(ILUT_P, 50);
+		
+		DEFAULT.put(AGGREGATION_ENABLED, false);
 		DEFAULT.put(AGGREGATE_ARRAYS, true);
+		DEFAULT.put(AGGREGATION, AGGREGATION_NONE);
+		DEFAULT.put(PARTITION_TYPE, USE_ARRAY_PARTITION);
 		DEFAULT.put(DERIVATION_STORAGE, DERIVATION_MEMORY_STORAGE);
 		DEFAULT.put(DERIVATION_PARALLEL_NUM_WORKERS, 2);
 		DEFAULT.put(DERIVATION_KIND, DERIVATION_SEQUENTIAL);
@@ -476,7 +498,7 @@ public class OptionMap {
 		DEFAULT.put(SSA_BATCH_LENGTH_FACTOR, 10);
 	}
 
-	Hashtable options = null;
+	Hashtable<String, Object> options = null;
 
 	public static Object getDefaultValue(Object key) {
 		return DEFAULT.get(key);
@@ -486,7 +508,7 @@ public class OptionMap {
 	 * Returns the key set of non-default settings.
 	 * @return
 	 */
-	public Set keySet() {
+	public Set<String> keySet() {
 		return options.keySet();
 	}
 
@@ -507,7 +529,7 @@ public class OptionMap {
 	}
 
 	public static String[] defaultKeys() {
-		return (String[]) DEFAULT.keySet().toArray(new String[DEFAULT.size()]);
+		return DEFAULT.keySet().toArray(new String[DEFAULT.size()]);
 	}
 
 	/**
@@ -520,7 +542,7 @@ public class OptionMap {
 		Object defaultValue = DEFAULT.get(key);
 		if (defaultValue != null) {
 			if (!DEFAULT.get(key).equals(value))
-				options.put(key, value);
+				options.put((String) key, value);
 			else
 				options.remove(key); // remove key because it is duplicated
 		}
@@ -530,7 +552,7 @@ public class OptionMap {
 		StringBuffer message = new StringBuffer("Number of entries:"
 				+ options.size() + "\n");
 		for (Object entry : options.entrySet()) {
-			Map.Entry entryMap = (Map.Entry) entry;
+			Map.Entry<String, Object> entryMap = (Map.Entry<String, Object>) entry;
 			message.append(entryMap.getKey() + "["
 					+ entryMap.getKey().hashCode() + "]" + " : "
 					+ entryMap.getValue() + "\n");

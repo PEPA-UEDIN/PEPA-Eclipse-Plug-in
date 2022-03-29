@@ -23,9 +23,11 @@ import uk.ac.ed.inf.pepa.cpt.CPTAPI;
 import uk.ac.ed.inf.pepa.ctmc.derivation.DerivationException;
 import uk.ac.ed.inf.pepa.ctmc.solution.OptionMap;
 import uk.ac.ed.inf.pepa.ctmc.solution.SolverException;
+import uk.ac.ed.inf.pepa.eclipse.core.IOptionHandler;
 import uk.ac.ed.inf.pepa.eclipse.core.IPepaModel;
 import uk.ac.ed.inf.pepa.eclipse.core.IProcessAlgebraModel;
 import uk.ac.ed.inf.pepa.eclipse.core.PepaLog;
+import uk.ac.ed.inf.pepa.eclipse.ui.wizards.AggregationWizard;
 import uk.ac.ed.inf.pepa.eclipse.ui.wizards.PassageTimeWizard;
 import uk.ac.ed.inf.pepa.eclipse.ui.wizards.cpt.CapacityPlanningWizard;
 import uk.ac.ed.inf.pepa.eclipse.ui.wizards.ctmcsolver.resourceless.SolverWizard;
@@ -93,6 +95,13 @@ public class ActionCommands {
 				new ConcretePerformanceMetricFactory());
 		WizardDialog dialog = new WizardDialog(Display.getDefault()
 				.getActiveShell(), wizard);
+		dialog.setPageSize(400, 400);
+		dialog.open();
+	}
+	
+	public static void aggregation(IOptionHandler optHandler) {
+		AggregationWizard wizard = new AggregationWizard(optHandler);
+		WizardDialog dialog = new WizardDialog(Display.getDefault().getActiveShell(), wizard);
 		dialog.setPageSize(400, 400);
 		dialog.open();
 	}

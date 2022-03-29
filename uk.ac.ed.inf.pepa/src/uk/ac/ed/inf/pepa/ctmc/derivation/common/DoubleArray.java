@@ -66,4 +66,16 @@ public class DoubleArray {
 	public int size() {
 		return size;
 	}
+	
+	
+	public String toString() {
+		StringBuilder builder = new StringBuilder();
+		builder.append("DoubleArray([");
+		for (double el: elementData) {
+			builder.append("" + el + ", ");
+		}
+		builder.append("]");
+		
+		return builder.toString();
+	}
 }
